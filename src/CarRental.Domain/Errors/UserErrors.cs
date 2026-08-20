@@ -1,0 +1,34 @@
+using CarRental.Domain.Common;
+
+namespace CarRental.Domain.Errors;
+
+public static class UserErrors
+{
+    public static Error EmailAlreadyInUse(string email) => Error.Conflict(
+        "user.email_already_in_use",
+        $"An account with the email '{email}' already exists.");
+
+    public static Error LicenseAlreadyInUse => Error.Conflict(
+        "user.license_already_in_use",
+        "An account with that driver's license number already exists.");
+
+    public static Error NotFound => Error.NotFound(
+        "user.not_found",
+        "We could not find that account.");
+
+    /// <summary>
+    /// Deliberately identical for a wrong password and an unknown email so the response
+    /// cannot be used to discover which addresses are registered.
+    /// </summary>
+    public static Error InvalidCredentials => Error.Unauthorized(
+        "user.invalid_credentials",
+        "The email or password you entered is incorrect.");
+
+    public static Error LockedOut => Error.Forbidden(
+        "user.locked_out",
+        "This account is temporarily locked after too many failed sign-in attempts. Please try again later.");
+
+    public static Error IncorrectPassword => Error.Validation(
+        "currentPassword",
+        "Your current password is incorrect.");
+}
