@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create an account · Car Rental</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+</head>
+<body>
+  <main class="auth-shell">
+    <aside class="auth-aside">
+      <a class="brand" href="/signin.html">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.6 6.5A2.5 2.5 0 0 1 8 4.8h8a2.5 2.5 0 0 1 2.4 1.7l1.1 3.2a2.5 2.5 0 0 1 1.6 2.3v3.6a1 1 0 0 1-1 1h-.7v.9a1.4 1.4 0 0 1-2.8 0v-.9H7.4v.9a1.4 1.4 0 0 1-2.8 0v-.9h-.7a1 1 0 0 1-1-1V12a2.5 2.5 0 0 1 1.6-2.3l1.1-3.2Zm1.9.6-1 2.9h11l-1-2.9a.6.6 0 0 0-.5-.4H8a.6.6 0 0 0-.5.4ZM7 13.9a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm10 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/></svg>
+        </span>
+        Car Rental
+      </a>
+      <h1>Get on the road in minutes.</h1>
+      <p>Create an account once and book any car in our fleet — no paperwork at the counter.</p>
+      <ul class="auth-points">
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
+          <span>Live availability — you only ever see cars that are free on your dates.</span>
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
+          <span>Pricing shown up front, for the whole rental, before you confirm.</span>
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m20 6-11 11-5-5"/></svg>
+          <span>Free cancellation any time before your rental starts.</span>
+        </li>
+      </ul>
+    </aside>
+
+    <div class="auth-card">
+      <h2>Create your account</h2>
+      <p class="sub">Already have one? <a href="/signin.html">Sign in instead</a>.</p>
+
+      <form id="signup-form" novalidate>
+        <div class="alert" role="alert"></div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" name="firstName" autocomplete="given-name" required>
+            <p class="err" data-for="firstName"></p>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" name="lastName" autocomplete="family-name" required>
+            <p class="err" data-for="lastName"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+          <p class="hint">This is what you will sign in with, so use an address you check.</p>
+          <p class="err" data-for="email"></p>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input id="password" name="password" type="password" autocomplete="new-password" required>
+            <button type="button" class="pw-toggle" data-toggle="password">Show</button>
+          </div>
+          <div class="strength" id="strength" data-score="0" hidden>
+            <div class="strength-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <p class="strength-label" id="strength-label" role="status"></p>
+          </div>
+          <p class="hint">At least 8 characters, with an uppercase and a lowercase letter, a digit and a symbol.</p>
+          <p class="err" data-for="password"></p>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirm password</label>
+          <div class="pw-wrap">
+            <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required>
+            <button type="button" class="pw-toggle" data-toggle="confirmPassword">Show</button>
+          </div>
+          <p class="err" data-for="confirmPassword"></p>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="phoneNumber">Phone number</label>
+            <input id="phoneNumber" name="phoneNumber" type="tel" autocomplete="tel" placeholder="+962 79 123 4567" required>
+            <p class="hint">We use this only to reach you about a booking.</p>
+            <p class="err" data-for="phoneNumber"></p>
+          </div>
+          <div class="field">
+            <label for="dateOfBirth">Date of birth <span class="opt">— optional</span></label>
+            <input id="dateOfBirth" name="dateOfBirth" type="date">
+            <p class="hint">Drivers must be 18 or over. Adding it now saves a check later.</p>
+            <p class="err" data-for="dateOfBirth"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="addressLine1">Address line 1</label>
+          <input id="addressLine1" name="addressLine1" autocomplete="address-line1" required>
+          <p class="err" data-for="addressLine1"></p>
+        </div>
+
+        <div class="field">
+          <label for="addressLine2">Address line 2 <span class="opt">— optional</span></label>
+          <input id="addressLine2" name="addressLine2" autocomplete="address-line2" placeholder="Apartment, floor, building">
+          <p class="err" data-for="addressLine2"></p>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="city">City</label>
+            <input id="city" name="city" autocomplete="address-level2" required>
+            <p class="err" data-for="city"></p>
+          </div>
+          <div class="field">
+            <label for="country">Country</label>
+            <select id="country" name="country" autocomplete="country-name" required>
+              <option value="">Select a country</option>
+            </select>
+            <p class="err" data-for="country"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="driverLicenseNumber">Driver's license number</label>
+          <input id="driverLicenseNumber" name="driverLicenseNumber" placeholder="JO-4471902" required>
+          <p class="hint">Required to verify you before handover. Letters, digits and hyphens.</p>
+          <p class="err" data-for="driverLicenseNumber"></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="submit">Create account</button>
+
+        <p class="form-foot">By creating an account you agree to our rental terms.</p>
+      </form>
+    </div>
+  </main>
+
+  <script type="module" src="/js/signup.js"></script>
+</body>
+</html>
