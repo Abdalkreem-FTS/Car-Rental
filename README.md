@@ -117,6 +117,12 @@ All endpoints are under `/api`. Everything except the auth group requires a bear
 Supplying both dates hides any car with a confirmed booking overlapping the range, so results are
 always genuinely bookable. Both dates are inclusive — a same-day rental bills one day.
 
+**No double bookings, even under load.** The availability check reads before it writes, so
+concurrent requests all see a car as free. A PostgreSQL exclusion constraint
+(`daterange` + `btree_gist`, scoped to confirmed rows) is what actually settles it; the losing
+request gets `409 car.unavailable` rather than a raw constraint error, and a cancellation
+genuinely frees the days.
+
 ## Front end
 
 Plain ES modules and CSS in `src/CarRental.Api/wwwroot`. No build step, no npm — the API serves
@@ -135,7 +141,7 @@ against white — so it fills and outlines only. Light and dark themes both foll
 
 ## Tests
 
-**192 tests: 166 integration and 26 unit.** The only prerequisite is a working Docker daemon.
+**196 tests: 170 integration and 26 unit.** The only prerequisite is a working Docker daemon.
 
 `CarRentalApiFactory` starts a `postgres:16-alpine` container with Testcontainers and boots the
 app through `WebApplicationFactory<Program>`. Nothing is stubbed except `IEmailSender`: the tests
