@@ -72,23 +72,26 @@ public static class ApiAssertions
 
         private void ShouldHaveStatus(HttpStatusCode expected) =>
             response.StatusCode.ShouldBe(expected, $"body was: {response.RawBody}");
-        
-        public Problem ShouldFailValidation(params string[] fields)
+    }
+}
+
+public static class ValidationProblemAssertions
+{
+    public static Problem ShouldFailValidation(this ApiResponse response, params string[] fields)
+    {
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, $"body was: {response.RawBody}");
+
+        var problem = response.Problem.ShouldNotBeNull();
+
+        problem.Errors.ShouldNotBeNull($"expected a validation problem but got: {response.RawBody}");
+        problem.ErrorCode.ShouldBeNull("a document must not carry both conventions at once");
+        problem.Errors.Keys.OrderBy(key => key).ShouldBe(fields.OrderBy(field => field), ignoreOrder: false);
+
+        foreach (var field in fields)
         {
-            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest, $"body was: {response.RawBody}");
-
-            var problem = response.Problem.ShouldNotBeNull();
-
-            problem.Errors.ShouldNotBeNull($"expected a validation problem but got: {response.RawBody}");
-            problem.ErrorCode.ShouldBeNull("a document must not carry both conventions at once");
-            problem.Errors.Keys.OrderBy(key => key).ShouldBe(fields.OrderBy(field => field), ignoreOrder: false);
-
-            foreach (var field in fields)
-            {
-                problem.Errors[field].ShouldNotBeEmpty();
-            }
-
-            return problem;
+            problem.Errors[field].ShouldNotBeEmpty();
         }
+
+        return problem;
     }
 }

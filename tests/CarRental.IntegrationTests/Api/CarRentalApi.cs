@@ -12,7 +12,7 @@ using CarRental.Application.Contracts.Reservations;
 
 namespace CarRental.IntegrationTests.Api;
 
-public sealed class CarRentalApi(HttpClient http)
+public sealed class CarRentalApi(HttpClient http) : IDisposable
 {
     internal static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -35,6 +35,8 @@ public sealed class CarRentalApi(HttpClient http)
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
     public void SignOut() => Http.DefaultRequestHeaders.Authorization = null;
+
+    public void Dispose() => Http.Dispose();
     
     public async Task<ApiResponse> PostRawAsync(string route, string body)
     {

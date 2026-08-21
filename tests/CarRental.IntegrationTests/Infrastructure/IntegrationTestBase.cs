@@ -23,7 +23,7 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
 
     public Task DisposeAsync()
     {
-        Api.Http.Dispose();
+        Api.Dispose();
 
         return Task.CompletedTask;
     }
