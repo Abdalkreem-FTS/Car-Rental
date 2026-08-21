@@ -51,7 +51,11 @@ public sealed class ReservationService(
         reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
 
         reservations.Add(reservation);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        if (!await unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return CarErrors.Unavailable;
+        }
 
         return reservation.ToResponse();
     }
@@ -128,7 +132,10 @@ public sealed class ReservationService(
         reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
         reservation.Car = car;
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (!await unitOfWork.TrySaveChangesAsync(cancellationToken))
+        {
+            return CarErrors.Unavailable;
+        }
 
         return reservation.ToResponse();
     }
