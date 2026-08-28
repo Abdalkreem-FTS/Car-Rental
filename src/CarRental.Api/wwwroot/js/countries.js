@@ -1,15 +1,28 @@
-export const COUNTRIES = [
-  'Jordan', 'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
-  'Egypt', 'Lebanon', 'Palestine', 'Iraq', 'Morocco', 'Tunisia', 'Algeria', 'Libya',
-  'Turkey', 'Cyprus', 'Greece', 'Italy', 'Spain', 'Portugal', 'France', 'Germany',
-  'Netherlands', 'Belgium', 'Switzerland', 'Austria', 'Sweden', 'Norway', 'Denmark',
-  'Finland', 'Poland', 'Czechia', 'Romania', 'Ireland', 'United Kingdom',
-  'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile',
-  'India', 'Pakistan', 'Bangladesh', 'China', 'Japan', 'South Korea',
-  'Malaysia', 'Singapore', 'Indonesia', 'Philippines', 'Thailand', 'Vietnam',
-  'Australia', 'New Zealand', 'South Africa', 'Nigeria', 'Kenya', 'Ethiopia',
-];
+import { api } from './api.js';
 
-export function fillCountrySelect(select, selected) {
-  select.append(...COUNTRIES.map((name) => new Option(name, name, false, name === selected)));
+// The list comes from the server, so adding a country is not a front-end release. Fetched once per
+// page load and shared by every caller.
+let countries;
+
+function loadCountries() {
+  countries ??= api.countries().catch(() => []);
+
+  return countries;
+}
+
+/**
+ * Fills a <select> with the country list. Keeps whatever is already selected, and if that value is
+ * not in the list — an older name, say — it is added rather than silently dropped.
+ */
+export async function fillCountrySelect(select, selected) {
+  const names = await loadCountries();
+  const chosen = selected ?? select.value;
+  const options = names.map((name) => new Option(name, name, false, name === chosen));
+
+  if (chosen && !names.includes(chosen)) {
+    options.unshift(new Option(chosen, chosen, false, true));
+  }
+
+  select.replaceChildren(...options);
+  select.value = chosen ?? '';
 }

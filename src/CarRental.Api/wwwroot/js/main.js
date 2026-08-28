@@ -378,6 +378,10 @@ async function loadProfile() {
     const profile = await api.profile();
     state.profileLoaded = true;
 
+    // Wait for the options before assigning the stored country, or the assignment finds an empty
+    // list and is dropped.
+    await fillCountrySelect(profileForm.elements.country, profile.country);
+
     for (const field of ['firstName', 'lastName', 'phoneNumber', 'dateOfBirth',
       'addressLine1', 'addressLine2', 'city', 'country', 'driverLicenseNumber']) {
       profileForm.elements[field].value = profile[field] ?? '';

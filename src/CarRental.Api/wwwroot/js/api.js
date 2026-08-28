@@ -118,6 +118,8 @@ export const api = {
   forgotPassword: (payload) => send('POST', '/api/auth/forgot-password', { body: payload, auth: false }),
   resetPassword: (payload) => send('POST', '/api/auth/reset-password', { body: payload, auth: false }),
 
+  countries: () => send('GET', '/api/countries', { auth: false }),
+
   searchCars: (query) => send('GET', `/api/cars?${new URLSearchParams(query)}`),
   carLocations: () => send('GET', '/api/cars/locations'),
 

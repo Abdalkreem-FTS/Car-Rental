@@ -76,6 +76,7 @@ app.MapAuthEndpoints();
 app.MapCarEndpoints();
 app.MapReservationEndpoints();
 app.MapProfileEndpoints();
+app.MapCountryEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "healthy" }))
     .WithTags("Diagnostics")

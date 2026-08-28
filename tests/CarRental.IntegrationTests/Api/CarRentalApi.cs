@@ -29,6 +29,8 @@ public sealed class CarRentalApi(HttpClient http) : IDisposable
 
     public ProfileApi Profile { get; } = new(http);
 
+    public Task<ApiResponse<List<string>>> CountriesAsync() => Http.GetAsAsync<List<string>>(Routes.Countries);
+
     public Task<ApiResponse<HealthResponse>> HealthAsync() => Http.GetAsAsync<HealthResponse>(Routes.Health);
 
     public void Authenticate(string accessToken) =>

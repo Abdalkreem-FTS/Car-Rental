@@ -4,6 +4,8 @@ internal static class Routes
 {
     internal const string Health = "/api/health";
 
+    internal const string Countries = "/api/countries";
+
     internal static class Auth
     {
         internal const string Register = "/api/auth/register";
