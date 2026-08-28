@@ -44,9 +44,7 @@ public static class ApiPipelineExtensions
             app.MapProfileEndpoints();
             app.MapCountryEndpoints();
 
-            app.MapGet("/api/health", () => Results.Ok(new { status = "healthy" }))
-                .WithTags("Diagnostics")
-                .AllowAnonymous();
+            app.MapHealthEndpoint();
 
             return app;
         }

@@ -58,7 +58,7 @@ public sealed class CarRentalApi(HttpClient http) : IDisposable
     }
 }
 
-public sealed record HealthResponse(string Status);
+public sealed record HealthResponse(string Status, Dictionary<string, string> Checks);
 
 public sealed class AuthApi(HttpClient http)
 {

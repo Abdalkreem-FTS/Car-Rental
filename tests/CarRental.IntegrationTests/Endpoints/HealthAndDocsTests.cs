@@ -1,5 +1,9 @@
 using System.Net;
 using CarRental.IntegrationTests.Api;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using CarRental.IntegrationTests.Infrastructure;
 using Shouldly;
 
@@ -10,7 +14,26 @@ public sealed class HealthAndDocsTests(CarRentalApiFactory factory) : Integratio
     [Fact]
     public async Task Health_WithoutAToken_ReportsHealthy()
     {
-        (await Api.HealthAsync()).ShouldBeOk().Status.ShouldBe("healthy");
+        var health = (await Api.HealthAsync()).ShouldBeOk();
+
+        health.Status.ShouldBe("healthy");
+        health.Checks.ShouldContainKeyAndValue("database", "Healthy");
+    }
+
+    [Fact]
+    public async Task Health_WhenACheckFails_ReportsUnhealthyAndRefusesTraffic()
+    {
+        using var factory = Factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(services => services
+                .AddHealthChecks()
+                .AddCheck("boom", () => HealthCheckResult.Unhealthy("pretend the database went away"))));
+
+        using var api = new CarRentalApi(factory.CreateClient());
+
+        var response = await api.HealthAsync();
+
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        response.RawBody.ShouldContain("\"status\":\"unhealthy\"");
     }
 
     [Fact]

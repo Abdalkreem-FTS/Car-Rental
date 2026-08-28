@@ -76,6 +76,8 @@ public static class DependencyInjection
 
             services.AddEmailSender();
 
+            services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
+
             services.AddScoped<DatabaseSeeder>();
 
             return services;
