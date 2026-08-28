@@ -31,6 +31,7 @@ public static class ApiPipelineExtensions
             app.UseStaticFiles();
 
             app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseAuthorization();
 
             app.MapApiEndpoints();

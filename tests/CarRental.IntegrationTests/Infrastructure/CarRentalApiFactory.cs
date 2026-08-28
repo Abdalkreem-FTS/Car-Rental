@@ -61,6 +61,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
                 ["Jwt:AccessTokenMinutes"] = "15",
                 ["Jwt:RefreshTokenDays"] = "7",
                 ["ClientApp:BaseUrl"] = "https://rentals.example.test",
+                ["RateLimiting:Enabled"] = "false",
                 ["Seed:Enabled"] = "true",
                 ["Seed:AdminEmail"] = TestData.AdminEmail,
                 ["Seed:AdminPassword"] = TestData.AdminPassword,

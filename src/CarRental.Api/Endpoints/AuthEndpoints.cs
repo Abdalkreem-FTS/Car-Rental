@@ -27,6 +27,7 @@ public static class AuthEndpoints
                 return result.ToCreated(_ => "/api/profile");
             })
             .WithValidation<RegisterRequest>()
+            .RequireRateLimiting(RateLimiting.Accounts)
             .WithSummary("Create a customer account and sign in immediately.");
 
         group.MapPost("/login", async (
@@ -39,6 +40,7 @@ public static class AuthEndpoints
                 return result.ToOk();
             })
             .WithValidation<LoginRequest>()
+            .RequireRateLimiting(RateLimiting.Accounts)
             .WithSummary("Exchange email and password for an access token and a refresh token.");
 
         group.MapPost("/refresh", async (
@@ -74,6 +76,7 @@ public static class AuthEndpoints
                 return result.ToAccepted();
             })
             .WithValidation<ForgotPasswordRequest>()
+            .RequireRateLimiting(RateLimiting.Auth)
             .WithSummary("Email a password reset link. Always reports success, registered or not.");
 
         group.MapPost("/reset-password", async (
@@ -86,6 +89,7 @@ public static class AuthEndpoints
                 return result.ToNoContent();
             })
             .WithValidation<ResetPasswordRequest>()
+            .RequireRateLimiting(RateLimiting.Auth)
             .WithSummary("Set a new password using the token from the reset link.");
 
         return app;

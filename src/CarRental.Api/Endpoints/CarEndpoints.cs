@@ -30,6 +30,7 @@ public static class CarEndpoints
                 return result.ToOk();
             })
             .WithValidation<CarSearchRequest>()
+            .RequireRateLimiting(RateLimiting.Search)
             .WithSummary("Search the fleet by text, location, dates, category and price.");
 
         group.MapMethods("/", httpMethods: [HttpQueryMethod], async (
@@ -42,6 +43,7 @@ public static class CarEndpoints
                 return result.ToOk();
             })
             .WithValidation<CarQueryRequest>()
+            .RequireRateLimiting(RateLimiting.Search)
             .WithName("QueryCars")
             .WithSummary("Search the fleet with a request body. Filtering and sorting take Sieve expressions.");
 

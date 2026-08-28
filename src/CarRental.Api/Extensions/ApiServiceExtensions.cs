@@ -27,6 +27,8 @@ public static class ApiServiceExtensions
             services.ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+            services.AddApiRateLimiting(configuration);
+
             services.AddOpenApi();
 
             return services;
