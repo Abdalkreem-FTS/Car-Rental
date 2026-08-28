@@ -9,6 +9,13 @@ public static class ApiPipelineExtensions
     {
         public WebApplication UseApiPipeline()
         {
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+
             app.UseExceptionHandler();
             app.UseStatusCodePages();
 
