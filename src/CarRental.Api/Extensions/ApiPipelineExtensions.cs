@@ -16,6 +16,8 @@ public static class ApiPipelineExtensions
 
             app.UseHttpsRedirection();
 
+            app.UseSecurityHeaders();
+
             app.UseExceptionHandler();
             app.UseStatusCodePages();
 
