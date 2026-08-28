@@ -15,6 +15,7 @@ namespace CarRental.Application.Services;
 
 public sealed class AuthService(
     UserManager<ApplicationUser> userManager,
+    IUserRegistrar userRegistrar,
     IJwtTokenGenerator tokenGenerator,
     IRefreshTokenRepository refreshTokens,
     IUnitOfWork unitOfWork,
@@ -35,11 +36,6 @@ public sealed class AuthService(
 
         var driverLicenseNumber = request.DriverLicenseNumber.Trim().ToUpperInvariant();
 
-        if (userManager.Users.Any(user => user.DriverLicenseNumber == driverLicenseNumber))
-        {
-            return UserErrors.LicenseAlreadyInUse;
-        }
-
         var user = new ApplicationUser
         {
             Id = Guid.NewGuid(),
@@ -56,11 +52,16 @@ public sealed class AuthService(
             DriverLicenseNumber = driverLicenseNumber,
         };
 
-        var created = await userManager.CreateAsync(user, request.Password);
+        var created = await userRegistrar.CreateAsync(user, request.Password, cancellationToken);
 
-        if (!created.Succeeded)
+        if (created.IsError)
         {
-            return MapIdentityErrors(created);
+            return created.Errors;
+        }
+
+        if (!created.Value.Succeeded)
+        {
+            return MapIdentityErrors(created.Value);
         }
 
         await userManager.AddToRoleAsync(user, Roles.Customer);
@@ -208,6 +209,7 @@ public sealed class AuthService(
     [
         .. result.Errors.Select(error => error.Code switch
         {
+            "DuplicateEmail" or "DuplicateUserName" => UserErrors.EmailAlreadyInUse(),
             var code when code.Contains("Password", StringComparison.OrdinalIgnoreCase)
                 => Error.Validation("password", error.Description),
             var code when code.Contains("Email", StringComparison.OrdinalIgnoreCase)

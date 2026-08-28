@@ -8,9 +8,11 @@ public static class CarErrors
         "car.not_found",
         "We could not find that car.");
 
-    public static Error PlateAlreadyInUse(string plate) => Error.Conflict(
+    public static Error PlateAlreadyInUse(string? plate = null) => Error.Conflict(
         "car.plate_already_in_use",
-        $"A car with plate number '{plate}' already exists.");
+        plate is null
+            ? "A car with that plate number already exists."
+            : $"A car with plate number '{plate}' already exists.");
 
     public static Error Unavailable => Error.Conflict(
         "car.unavailable",

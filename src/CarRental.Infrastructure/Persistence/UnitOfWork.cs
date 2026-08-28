@@ -1,6 +1,6 @@
 using CarRental.Application.Abstractions;
+using CarRental.Domain.Common;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace CarRental.Infrastructure.Persistence;
 
@@ -8,17 +8,17 @@ public sealed class UnitOfWork(AppDbContext context) : IUnitOfWork
 {
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => context.SaveChangesAsync(cancellationToken);
 
-    public async Task<bool> TrySaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<Success>> TrySaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             await SaveChangesAsync(cancellationToken);
 
-            return true;
+            return Result.Success;
         }
-        catch (DbUpdateException exception)when (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation })
+        catch (DbUpdateException exception) when (DatabaseConflicts.ErrorFor(exception) is { } conflict)
         {
-            return false;
+            return conflict;
         }
     }
 }

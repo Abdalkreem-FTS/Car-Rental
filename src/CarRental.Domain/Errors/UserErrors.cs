@@ -4,9 +4,11 @@ namespace CarRental.Domain.Errors;
 
 public static class UserErrors
 {
-    public static Error EmailAlreadyInUse(string email) => Error.Conflict(
+    public static Error EmailAlreadyInUse(string? email = null) => Error.Conflict(
         "user.email_already_in_use",
-        $"An account with the email '{email}' already exists.");
+        email is null
+            ? "An account with that email already exists."
+            : $"An account with the email '{email}' already exists.");
 
     public static Error LicenseAlreadyInUse => Error.Conflict(
         "user.license_already_in_use",

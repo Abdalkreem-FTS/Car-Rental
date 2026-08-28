@@ -82,9 +82,10 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
         };
 
         cars.Add(car);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return car.ToResponse();
+        var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
+
+        return saved.IsError ? saved.Errors : car.ToResponse();
     }
 
     public async Task<Result<CarResponse>> UpdateAsync(Guid id, UpdateCarRequest request, CancellationToken cancellationToken = default)
@@ -117,9 +118,9 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
         car.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         car.IsActive = request.IsActive;
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
 
-        return car.ToResponse();
+        return saved.IsError ? saved.Errors : car.ToResponse();
     }
 
     public async Task<Result<Deleted>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)

@@ -52,9 +52,11 @@ public sealed class ReservationService(
 
         reservations.Add(reservation);
         
-        if (!await unitOfWork.TrySaveChangesAsync(cancellationToken))
+        var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
+
+        if (saved.IsError)
         {
-            return CarErrors.Unavailable;
+            return saved.Errors;
         }
 
         return reservation.ToResponse();
@@ -132,9 +134,11 @@ public sealed class ReservationService(
         reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
         reservation.Car = car;
 
-        if (!await unitOfWork.TrySaveChangesAsync(cancellationToken))
+        var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
+
+        if (saved.IsError)
         {
-            return CarErrors.Unavailable;
+            return saved.Errors;
         }
 
         return reservation.ToResponse();
