@@ -109,12 +109,12 @@ public sealed class CarsApi(HttpClient http)
         http.GetAsAsync<CarResponse>(Routes.Cars.ById(id));
 
     public Task<ApiResponse<CarResponse>> CreateAsync(CreateCarRequest request) =>
-        http.PostAsAsync<CarResponse>(Routes.Cars.Base, request);
+        http.PostAsAsync<CarResponse>(Routes.Cars.Admin, request);
 
     public Task<ApiResponse<CarResponse>> UpdateAsync(Guid id, UpdateCarRequest request) =>
-        http.PutAsAsync<CarResponse>(Routes.Cars.ById(id), request);
+        http.PutAsAsync<CarResponse>(Routes.Cars.AdminById(id), request);
 
-    public Task<ApiResponse> DeleteAsync(Guid id) => http.DeleteAsAsync(Routes.Cars.ById(id));
+    public Task<ApiResponse> DeleteAsync(Guid id) => http.DeleteAsAsync(Routes.Cars.AdminById(id));
 }
 
 public sealed class ReservationsApi(HttpClient http)

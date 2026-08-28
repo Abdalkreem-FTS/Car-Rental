@@ -25,6 +25,10 @@ internal static class Routes
         internal const string Locations = "/api/cars/locations";
 
         internal static string ById(Guid id) => $"{Base}/{id}";
+
+        internal const string Admin = "/api/admin/cars";
+
+        internal static string AdminById(Guid id) => $"{Admin}/{id}";
     }
 
     internal static class Reservations

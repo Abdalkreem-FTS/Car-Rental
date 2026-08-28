@@ -61,7 +61,7 @@ public sealed class OpenApiDocumentTests(CarRentalApiFactory factory) : Integrat
 
     [Theory]
     [InlineData("/api/cars", "get", "200")]
-    [InlineData("/api/cars", "post", "201")]
+    [InlineData("/api/admin/cars", "post", "201")]
     [InlineData("/api/cars/{id}", "get", "404")]
     [InlineData("/api/reservations", "post", "409")]
     [InlineData("/api/auth/login", "post", "400")]
@@ -78,6 +78,18 @@ public sealed class OpenApiDocumentTests(CarRentalApiFactory factory) : Integrat
             .Select(response => response.Name)
             .ShouldContain(status);
     }
+
+    [Fact]
+    public async Task Document_KeepsCustomerAndAdminOperationsUnderSeparateTags()
+    {
+        var operations = await OperationsAsync();
+
+        Tags(operations["GET /api/cars"]).ShouldBe(["Cars"]);
+        Tags(operations["POST /api/admin/cars"]).ShouldBe(["Cars (admin)"]);
+    }
+
+    private static List<string> Tags(JsonElement operation) =>
+        [.. operation.GetProperty("tags").EnumerateArray().Select(tag => tag.GetString()!)];
 
     [Fact]
     public async Task Document_ForAnEndpointReturningABody_NamesTheSchema()

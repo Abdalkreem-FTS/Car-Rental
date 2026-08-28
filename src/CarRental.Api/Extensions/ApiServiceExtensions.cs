@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json.Serialization;
 using CarRental.Application.Options;
+using CarRental.Domain.Entities;
 using CarRental.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,8 @@ public static class ApiServiceExtensions
 
             services.AddJwtAuthentication();
             services.AddAuthorizationBuilder()
-            .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+            .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
+            .AddPolicy(Policies.Admin, policy => policy.RequireRole(Roles.Admin));
 
             services.ConfigureHttpJsonOptions(options =>
                 options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));

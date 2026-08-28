@@ -2,7 +2,6 @@ using CarRental.Api.Extensions;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Application.Contracts.Common;
-using CarRental.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarRental.Api.Endpoints;
@@ -72,7 +71,10 @@ public static class CarEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Fetch one car.");
 
-        var admin = group.MapGroup(string.Empty).RequireAuthorization(policy => policy.RequireRole(Roles.Admin))
+        var admin = app.MapGroup("/api/admin/cars")
+            .WithTags("Cars (admin)")
+            .RequireAuthorization(Policies.Admin)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
         admin.MapPost("/", async (
