@@ -47,5 +47,7 @@ public sealed class ValidationFilter<TRequest>(IValidator<TRequest> validator) :
 public static class ValidationFilterExtensions
 {
     public static RouteHandlerBuilder WithValidation<TRequest>(this RouteHandlerBuilder builder) =>
-        builder.AddEndpointFilter<ValidationFilter<TRequest>>();
+        builder
+            .AddEndpointFilter<ValidationFilter<TRequest>>()
+            .ProducesValidationProblem();
 }

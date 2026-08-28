@@ -11,7 +11,8 @@ public static class ProfileEndpoints
     {
         var group = app.MapGroup("/api/profile")
             .WithTags("Profile")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/", async (
                 ClaimsPrincipal user,
@@ -22,6 +23,8 @@ public static class ProfileEndpoints
 
                 return result.ToOk();
             })
+            .Produces<ProfileResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Everything the sign-up form collected, for the account settings panel.");
 
         group.MapPut("/", async (
@@ -35,6 +38,9 @@ public static class ProfileEndpoints
                 return result.ToOk();
             })
             .WithValidation<UpdateProfileRequest>()
+            .Produces<ProfileResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Update personal details. The sign-in email is not changed here.");
 
         group.MapPut("/password", async (
@@ -48,6 +54,8 @@ public static class ProfileEndpoints
                 return result.ToNoContent();
             })
             .WithValidation<ChangePasswordRequest>()
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Change the password. Signs every other session out.");
 
         return app;

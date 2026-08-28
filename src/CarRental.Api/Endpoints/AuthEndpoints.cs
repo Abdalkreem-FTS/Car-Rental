@@ -15,7 +15,8 @@ public static class AuthEndpoints
 
         var authenticated = app.MapGroup("/api/auth")
             .WithTags("Authentication")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapPost("/register", async (
                 RegisterRequest request,
@@ -28,6 +29,9 @@ public static class AuthEndpoints
             })
             .WithValidation<RegisterRequest>()
             .RequireRateLimiting(RateLimiting.Accounts)
+            .Produces<AuthResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Create a customer account and sign in immediately.");
 
         group.MapPost("/login", async (
@@ -41,6 +45,10 @@ public static class AuthEndpoints
             })
             .WithValidation<LoginRequest>()
             .RequireRateLimiting(RateLimiting.Accounts)
+            .Produces<AuthResponse>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Exchange email and password for an access token and a refresh token.");
 
         group.MapPost("/refresh", async (
@@ -53,6 +61,8 @@ public static class AuthEndpoints
                 return result.ToOk();
             })
             .WithValidation<RefreshTokenRequest>()
+            .Produces<AuthResponse>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Trade a refresh token for a new pair. The presented token is revoked.");
 
         authenticated.MapPost("/logout", async (
@@ -64,6 +74,7 @@ public static class AuthEndpoints
 
                 return result.ToNoContent();
             })
+            .Produces(StatusCodes.Status204NoContent)
             .WithSummary("Revoke every refresh token for the signed-in user.");
 
         group.MapPost("/forgot-password", async (
@@ -77,6 +88,8 @@ public static class AuthEndpoints
             })
             .WithValidation<ForgotPasswordRequest>()
             .RequireRateLimiting(RateLimiting.Auth)
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Email a password reset link. Always reports success, registered or not.");
 
         group.MapPost("/reset-password", async (
@@ -90,6 +103,8 @@ public static class AuthEndpoints
             })
             .WithValidation<ResetPasswordRequest>()
             .RequireRateLimiting(RateLimiting.Auth)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Set a new password using the token from the reset link.");
 
         return app;

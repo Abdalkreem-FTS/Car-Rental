@@ -11,7 +11,8 @@ public static class ReservationEndpoints
     {
         var group = app.MapGroup("/api/reservations")
             .WithTags("Reservations")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapPost("/", async (
                 CreateReservationRequest request,
@@ -24,6 +25,9 @@ public static class ReservationEndpoints
                 return result.ToCreated(reservation => $"/api/reservations/{reservation.Id}");
             })
             .WithValidation<CreateReservationRequest>()
+            .Produces<ReservationResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Book a car for a date range.");
 
         group.MapGet("/", async (
@@ -35,6 +39,7 @@ public static class ReservationEndpoints
 
                 return result.ToOk();
             })
+            .Produces<List<ReservationResponse>>()
             .WithSummary("List the signed-in user's reservations, newest pickup first.");
 
         group.MapGet("/{id:guid}", async (
@@ -47,6 +52,9 @@ public static class ReservationEndpoints
 
                 return result.ToOk();
             })
+            .Produces<ReservationResponse>()
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Fetch one of the signed-in user's reservations.");
 
         group.MapPut("/{id:guid}", async (
@@ -61,6 +69,10 @@ public static class ReservationEndpoints
                 return result.ToOk();
             })
             .WithValidation<UpdateReservationRequest>()
+            .Produces<ReservationResponse>()
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Move a reservation that has not started yet to new dates, repriced.");
 
         group.MapPost("/{id:guid}/cancel", async (
@@ -73,6 +85,10 @@ public static class ReservationEndpoints
 
                 return result.ToNoContent();
             })
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Cancel a reservation that has not started yet.");
 
         return app;

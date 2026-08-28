@@ -1,6 +1,7 @@
 using CarRental.Api.Extensions;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Cars;
+using CarRental.Application.Contracts.Common;
 using CarRental.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +19,8 @@ public static class CarEndpoints
     {
         var group = app.MapGroup("/api/cars")
             .WithTags("Cars")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/", async (
                 [AsParameters] CarSearchRequest request,
@@ -31,6 +33,8 @@ public static class CarEndpoints
             })
             .WithValidation<CarSearchRequest>()
             .RequireRateLimiting(RateLimiting.Search)
+            .Produces<PagedResponse<CarResponse>>()
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Search the fleet by text, location, dates, category and price.");
 
         group.MapMethods("/", httpMethods: [HttpQueryMethod], async (
@@ -44,6 +48,8 @@ public static class CarEndpoints
             })
             .WithValidation<CarQueryRequest>()
             .RequireRateLimiting(RateLimiting.Search)
+            .Produces<PagedResponse<CarResponse>>()
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithName("QueryCars")
             .WithSummary("Search the fleet with a request body. Filtering and sorting take Sieve expressions.");
 
@@ -53,6 +59,7 @@ public static class CarEndpoints
 
                 return result.ToOk();
             })
+            .Produces<List<string>>()
             .WithSummary("List every pickup location currently served, for the search filters.");
 
         group.MapGet("/{id:guid}", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
@@ -61,9 +68,12 @@ public static class CarEndpoints
 
                 return result.ToOk();
             })
+            .Produces<CarResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Fetch one car.");
 
-        var admin = group.MapGroup(string.Empty).RequireAuthorization(policy => policy.RequireRole(Roles.Admin));
+        var admin = group.MapGroup(string.Empty).RequireAuthorization(policy => policy.RequireRole(Roles.Admin))
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         admin.MapPost("/", async (
                 CreateCarRequest request,
@@ -75,6 +85,8 @@ public static class CarEndpoints
                 return result.ToCreated(car => $"/api/cars/{car.Id}");
             })
             .WithValidation<CreateCarRequest>()
+            .Produces<CarResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Add a car to the fleet. Admin only.");
 
         admin.MapPut("/{id:guid}", async (
@@ -88,6 +100,9 @@ public static class CarEndpoints
                 return result.ToOk();
             })
             .WithValidation<UpdateCarRequest>()
+            .Produces<CarResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Update a car. Admin only.");
 
         admin.MapDelete("/{id:guid}", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
@@ -96,6 +111,8 @@ public static class CarEndpoints
 
                 return result.ToNoContent();
             })
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Retire a car from the fleet. Admin only. Existing reservations are kept.");
 
         return app;
