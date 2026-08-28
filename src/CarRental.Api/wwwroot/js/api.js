@@ -115,6 +115,9 @@ export const api = {
   register: (payload) => send('POST', '/api/auth/register', { body: payload, auth: false }),
   login: (payload) => send('POST', '/api/auth/login', { body: payload, auth: false }),
   logout: () => send('POST', '/api/auth/logout'),
+  confirmEmail: (payload) => send('POST', '/api/auth/confirm-email', { body: payload, auth: false }),
+  resendConfirmation: (payload) => send('POST', '/api/auth/resend-confirmation', { body: payload, auth: false }),
+
   forgotPassword: (payload) => send('POST', '/api/auth/forgot-password', { body: payload, auth: false }),
   resetPassword: (payload) => send('POST', '/api/auth/reset-password', { body: payload, auth: false }),
 

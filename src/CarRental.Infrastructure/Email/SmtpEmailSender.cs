@@ -13,20 +13,44 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpE
         ? options.Value
         : throw new InvalidOperationException($"{SmtpOptions.SectionName}:Host must be set to send mail over SMTP.");
 
-    public async Task SendPasswordResetAsync(
+    public Task SendPasswordResetAsync(
         string email,
         string firstName,
         string resetLink,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            email,
+            firstName,
+            PasswordResetEmail.Subject,
+            PasswordResetEmail.Html(firstName, resetLink, TimeSpan.FromHours(1)),
+            PasswordResetEmail.Text(firstName, resetLink, TimeSpan.FromHours(1)),
+            cancellationToken);
+
+    public Task SendEmailConfirmationAsync(
+        string email,
+        string firstName,
+        string confirmLink,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            email,
+            firstName,
+            EmailConfirmationEmail.Subject,
+            EmailConfirmationEmail.Html(firstName, confirmLink),
+            EmailConfirmationEmail.Text(firstName, confirmLink),
+            cancellationToken);
+
+    private async Task SendAsync(
+        string email,
+        string firstName,
+        string subject,
+        string html,
+        string text,
+        CancellationToken cancellationToken)
     {
         var message = new MimeMessage
         {
-            Subject = PasswordResetEmail.Subject,
-            Body = new BodyBuilder
-            {
-                HtmlBody = PasswordResetEmail.Html(firstName, resetLink, TimeSpan.FromHours(1)),
-                TextBody = PasswordResetEmail.Text(firstName, resetLink, TimeSpan.FromHours(1)),
-            }.ToMessageBody(),
+            Subject = subject,
+            Body = new BodyBuilder { HtmlBody = html, TextBody = text }.ToMessageBody(),
         };
 
         message.From.Add(new MailboxAddress(_options.FromName, _options.FromAddress));
@@ -47,11 +71,11 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpE
             await client.SendAsync(message, cancellationToken);
             await client.DisconnectAsync(quit: true, cancellationToken);
 
-            logger.LogInformation("Sent a password reset email via {Host}", _options.Host);
+            logger.LogInformation("Sent {Subject} via {Host}", subject, _options.Host);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            logger.LogError(exception, "Could not send a password reset email via {Host}", _options.Host);
+            logger.LogError(exception, "Could not send {Subject} via {Host}", subject, _options.Host);
         }
     }
 

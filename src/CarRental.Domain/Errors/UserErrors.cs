@@ -33,4 +33,8 @@ public static class UserErrors
     public static Error IncorrectPassword => Error.Validation(
         "currentPassword",
         "Your current password is incorrect.");
+
+    public static Error EmailNotConfirmed => Error.Forbidden(
+        "user.email_not_confirmed",
+        "Please confirm your email address before booking a car. Check your inbox for the confirmation link.");
 }

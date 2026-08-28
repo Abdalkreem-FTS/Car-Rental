@@ -11,6 +11,8 @@ internal static class Routes
         internal const string Register = "/api/auth/register";
         internal const string Login = "/api/auth/login";
         internal const string Refresh = "/api/auth/refresh";
+        internal const string ConfirmEmail = "/api/auth/confirm-email";
+        internal const string ResendConfirmation = "/api/auth/resend-confirmation";
         internal const string Logout = "/api/auth/logout";
         internal const string ForgotPassword = "/api/auth/forgot-password";
         internal const string ResetPassword = "/api/auth/reset-password";

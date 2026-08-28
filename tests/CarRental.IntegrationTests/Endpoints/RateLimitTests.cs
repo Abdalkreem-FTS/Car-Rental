@@ -42,7 +42,7 @@ public sealed class RateLimitTests(CarRentalApiFactory factory) : IAsyncLifetime
         await using var host = Limited(accounts: 1);
         using var api = new CarRentalApi(host.CreateClient());
 
-        (await api.Auth.RegisterAsync(TestData.Registration())).StatusCode.ShouldBe(HttpStatusCode.Created);
+        (await api.Auth.RegisterAsync(TestData.Registration())).StatusCode.ShouldBe(HttpStatusCode.OK);
 
         var refused = await api.Auth.RegisterAsync(TestData.Registration());
 
@@ -89,7 +89,7 @@ public sealed class RateLimitTests(CarRentalApiFactory factory) : IAsyncLifetime
     {
         using var api = new CarRentalApi(host.CreateClient());
 
-        var auth = (await api.Auth.RegisterAsync(TestData.Registration())).ShouldBeCreated();
+        var auth = (await api.Auth.RegisterAsync(TestData.Registration())).ShouldBeOk();
 
         return auth.AccessToken;
     }

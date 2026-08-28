@@ -19,9 +19,9 @@ public sealed class AccountConcurrencyTests(CarRentalApiFactory factory) : Integ
 
         var responses = await RaceAsync(_ => TestData.Registration() with { Email = email });
 
-        responses.Count(response => response.StatusCode == HttpStatusCode.Created).ShouldBe(1);
+        responses.Count(response => response.StatusCode == HttpStatusCode.OK).ShouldBe(1);
 
-        foreach (var loser in responses.Where(response => response.StatusCode != HttpStatusCode.Created))
+        foreach (var loser in responses.Where(response => response.StatusCode != HttpStatusCode.OK))
         {
             loser.ShouldBeConflict(UserErrors.EmailAlreadyInUse());
         }
@@ -37,9 +37,9 @@ public sealed class AccountConcurrencyTests(CarRentalApiFactory factory) : Integ
 
         var responses = await RaceAsync(_ => TestData.Registration() with { DriverLicenseNumber = licence });
 
-        responses.Count(response => response.StatusCode == HttpStatusCode.Created).ShouldBe(1);
+        responses.Count(response => response.StatusCode == HttpStatusCode.OK).ShouldBe(1);
 
-        foreach (var loser in responses.Where(response => response.StatusCode != HttpStatusCode.Created))
+        foreach (var loser in responses.Where(response => response.StatusCode != HttpStatusCode.OK))
         {
             loser.ShouldBeConflict(UserErrors.LicenseAlreadyInUse);
         }
@@ -55,14 +55,14 @@ public sealed class AccountConcurrencyTests(CarRentalApiFactory factory) : Integ
     {
         var responses = await RaceAsync(_ => TestData.Registration());
 
-        responses.ShouldAllBe(response => response.StatusCode == HttpStatusCode.Created);
+        responses.ShouldAllBe(response => response.StatusCode == HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task Register_WithALicenceAlreadyTaken_StillReportsTheConflictWhenUncontended()
     {
         var first = TestData.Registration();
-        (await Api.Auth.RegisterAsync(first)).ShouldBeCreated();
+        (await Api.Auth.RegisterAsync(first)).ShouldBeOk();
 
         var response = await Api.Auth.RegisterAsync(
             TestData.Registration() with { DriverLicenseNumber = first.DriverLicenseNumber });
@@ -110,7 +110,7 @@ public sealed class AccountConcurrencyTests(CarRentalApiFactory factory) : Integ
             for (var i = 0; i < Racers; i++)
             {
                 var client = new CarRentalApi(Factory.CreateClient());
-                var auth = (await client.Auth.RegisterAsync(TestData.Registration())).ShouldBeCreated();
+                var auth = (await client.Auth.RegisterAsync(TestData.Registration())).ShouldBeOk();
 
                 client.Authenticate(auth.AccessToken);
                 clients.Add(client);

@@ -15,4 +15,8 @@ public static class AuthErrors
     public static Error NotAuthenticated => Error.Unauthorized(
         "auth.not_authenticated",
         "You must be signed in to do that.");
+
+    public static Error InvalidConfirmationToken => Error.Validation(
+        "token",
+        "This confirmation link is invalid or has expired. Please request a new one.");
 }

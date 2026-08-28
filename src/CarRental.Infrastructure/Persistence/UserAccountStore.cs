@@ -19,6 +19,9 @@ public sealed class UserAccountStore(UserManager<ApplicationUser> userManager) :
         CancellationToken cancellationToken = default) =>
         WithoutConflictsAsync(() => userManager.UpdateAsync(user));
 
+    public async Task<bool> HasConfirmedEmailAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        await userManager.FindByIdAsync(userId.ToString()) is { EmailConfirmed: true };
+
     private static async Task<Result<IdentityResult>> WithoutConflictsAsync(Func<Task<IdentityResult>> write)
     {
         try

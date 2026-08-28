@@ -11,6 +11,7 @@ namespace CarRental.Application.Services;
 public sealed class ReservationService(
     IReservationRepository reservations,
     ICarRepository cars,
+    IUserAccountStore users,
     IUnitOfWork unitOfWork) : IReservationService
 {
     public async Task<Result<ReservationResponse>> CreateAsync(
@@ -18,6 +19,11 @@ public sealed class ReservationService(
         CreateReservationRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (!await users.HasConfirmedEmailAsync(userId, cancellationToken))
+        {
+            return UserErrors.EmailNotConfirmed;
+        }
+
         var car = await cars.GetByIdAsync(request.CarId, cancellationToken);
 
         if (car is null)

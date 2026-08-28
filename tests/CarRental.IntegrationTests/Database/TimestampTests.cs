@@ -67,7 +67,7 @@ public sealed class TimestampTests(CarRentalApiFactory factory) : IntegrationTes
     {
         var response = await Api.Auth.RegisterAsync(Registration());
 
-        response.ShouldBeCreated();
+        response.ShouldBeOk();
 
         using var document = JsonDocument.Parse(response.RawBody);
         var expiresAt = document.RootElement.GetProperty("expiresAtUtc").GetString();

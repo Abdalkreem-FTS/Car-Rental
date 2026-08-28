@@ -13,7 +13,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
     {
         var registration = TestData.Registration();
 
-        var auth = (await Api.Auth.RegisterAsync(registration)).ShouldBeCreated(atLocation: "/api/profile");
+        var auth = (await Api.Auth.RegisterAsync(registration)).ShouldBeOk();
 
         auth.AccessToken.ShouldNotBeNullOrWhiteSpace();
         auth.RefreshToken.ShouldNotBeNullOrWhiteSpace();
@@ -104,7 +104,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
     {
         var response = await Api.Auth.RegisterAsync(TestData.Registration() with { DateOfBirth = null });
 
-        response.ShouldBeCreated();
+        response.ShouldBeOk();
     }
     
     [Fact]

@@ -21,7 +21,7 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
         unknown.ShouldBeAccepted();
         unknown.RawBody.ShouldBe(known.RawBody);
 
-        Factory.Emails.Sent.ShouldHaveSingleItem().Email.ShouldBe(auth.User.Email);
+        Factory.Emails.Resets.ShouldHaveSingleItem().Email.ShouldBe(auth.User.Email);
     }
 
     [Fact]

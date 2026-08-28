@@ -28,13 +28,26 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
         return Task.CompletedTask;
     }
 
-    protected async Task<AuthResponse> SignUpAsync(RegisterRequest? registration = null)
+    protected async Task<AuthResponse> SignUpAsync(RegisterRequest? registration = null, bool confirmEmail = true)
     {
-        var auth = (await Api.Auth.RegisterAsync(registration ?? TestData.Registration())).ShouldBeCreated();
+        var request = registration ?? TestData.Registration();
+        var auth = (await Api.Auth.RegisterAsync(request)).ShouldBeOk();
 
         Api.Authenticate(auth.AccessToken);
 
+        if (confirmEmail)
+        {
+            await ConfirmEmailAsync(request.Email);
+        }
+
         return auth;
+    }
+
+    protected async Task ConfirmEmailAsync(string email)
+    {
+        var token = Factory.Emails.ConfirmationTokenFor(email);
+
+        (await Api.Auth.ConfirmEmailAsync(email, token)).ShouldBeNoContent();
     }
 
     protected async Task<AuthResponse> SignInAsync(string email, string password)

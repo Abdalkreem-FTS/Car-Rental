@@ -66,6 +66,8 @@ public sealed class AuthService(
 
         await userManager.AddToRoleAsync(user, Roles.Customer);
 
+        await SendConfirmationAsync(user, cancellationToken);
+
         logger.LogInformation("Registered new user {UserId}", user.Id);
 
         return await IssueTokensAsync(user, cancellationToken);
@@ -119,6 +121,51 @@ public sealed class AuthService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success;
+    }
+
+    public async Task<Result<Success>> ConfirmEmailAsync(ConfirmEmailRequest request, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email.Trim());
+
+        if (user is null || !TryDecode(request.Token, out var token))
+        {
+            return AuthErrors.InvalidConfirmationToken;
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return Result.Success;
+        }
+
+        var confirmed = await userManager.ConfirmEmailAsync(user, token);
+
+        return confirmed.Succeeded ? Result.Success : AuthErrors.InvalidConfirmationToken;
+    }
+
+    public async Task<Result<Success>> ResendConfirmationAsync(ResendConfirmationRequest request, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email.Trim());
+
+        if (user is not { EmailConfirmed: false })
+        {
+            logger.LogInformation("Confirmation resend requested for an address that cannot use one.");
+
+            return Result.Success;
+        }
+
+        await SendConfirmationAsync(user, cancellationToken);
+
+        return Result.Success;
+    }
+
+    private async Task SendConfirmationAsync(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+        var link = $"{_clientApp.BaseUrl.TrimEnd('/')}{_clientApp.ConfirmEmailPath}"
+                   + $"?email={Uri.EscapeDataString(user.Email!)}&token={Encode(token)}";
+
+        await emailSender.SendEmailConfirmationAsync(user.Email!, user.FirstName, link, cancellationToken);
     }
 
     public async Task<Result<Success>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)

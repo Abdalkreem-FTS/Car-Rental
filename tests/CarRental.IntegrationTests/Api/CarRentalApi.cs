@@ -73,6 +73,12 @@ public sealed class AuthApi(HttpClient http)
 
     public Task<ApiResponse> LogoutAsync() => http.PostAsAsync(Routes.Auth.Logout, content: null);
 
+    public Task<ApiResponse> ConfirmEmailAsync(string email, string token) =>
+        http.PostAsAsync(Routes.Auth.ConfirmEmail, new ConfirmEmailRequest(email, token));
+
+    public Task<ApiResponse> ResendConfirmationAsync(string email) =>
+        http.PostAsAsync(Routes.Auth.ResendConfirmation, new ResendConfirmationRequest(email));
+
     public Task<ApiResponse> ForgotPasswordAsync(string email) =>
         http.PostAsAsync(Routes.Auth.ForgotPassword, new ForgotPasswordRequest(email));
 

@@ -25,11 +25,11 @@ public static class AuthEndpoints
             {
                 var result = await authService.RegisterAsync(request, cancellationToken);
 
-                return result.ToCreated(_ => "/api/profile");
+                return result.ToOk();
             })
             .WithValidation<RegisterRequest>()
             .RequireRateLimiting(RateLimiting.Accounts)
-            .Produces<AuthResponse>(StatusCodes.Status201Created)
+            .Produces<AuthResponse>()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Create a customer account and sign in immediately.");
@@ -76,6 +76,36 @@ public static class AuthEndpoints
             })
             .Produces(StatusCodes.Status204NoContent)
             .WithSummary("Revoke every refresh token for the signed-in user.");
+
+        group.MapPost("/confirm-email", async (
+                ConfirmEmailRequest request,
+                IAuthService authService,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await authService.ConfirmEmailAsync(request, cancellationToken);
+
+                return result.ToNoContent();
+            })
+            .WithValidation<ConfirmEmailRequest>()
+            .RequireRateLimiting(RateLimiting.Auth)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .WithSummary("Confirm an email address using the token from the confirmation link.");
+
+        group.MapPost("/resend-confirmation", async (
+                ResendConfirmationRequest request,
+                IAuthService authService,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await authService.ResendConfirmationAsync(request, cancellationToken);
+
+                return result.ToAccepted();
+            })
+            .WithValidation<ResendConfirmationRequest>()
+            .RequireRateLimiting(RateLimiting.Auth)
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .WithSummary("Send the confirmation link again. Always reports success, confirmed or not.");
 
         group.MapPost("/forgot-password", async (
                 ForgotPasswordRequest request,

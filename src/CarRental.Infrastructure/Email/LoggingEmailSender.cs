@@ -15,4 +15,15 @@ public sealed class LoggingEmailSender(ILogger<LoggingEmailSender> logger) : IEm
 
         return Task.CompletedTask;
     }
+
+    public Task SendEmailConfirmationAsync(string email, string firstName, string confirmLink, CancellationToken cancellationToken = default)
+    {
+        logger.LogWarning(
+            "[DEV EMAIL] Email confirmation for {Email} ({FirstName}). Open this link to confirm: {ConfirmLink}",
+            email,
+            firstName,
+            confirmLink);
+
+        return Task.CompletedTask;
+    }
 }
