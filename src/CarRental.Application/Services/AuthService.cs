@@ -115,7 +115,27 @@ public sealed class AuthService(
         return await IssueTokensAsync(stored.User, cancellationToken);
     }
 
-    public async Task<Result<Success>> LogoutAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Result<Success>> LogoutAsync(Guid userId, string? refreshToken, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return Result.Success;
+        }
+
+        var stored = await refreshTokens.GetByTokenAsync(refreshToken, cancellationToken);
+
+        if (stored is null || stored.UserId != userId || stored.RevokedAtUtc is not null)
+        {
+            return Result.Success;
+        }
+
+        stored.RevokedAtUtc = DateTimeOffset.UtcNow;
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Result.Success;
+    }
+
+    public async Task<Result<Success>> LogoutEverywhereAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         await refreshTokens.RevokeAllForUserAsync(userId, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

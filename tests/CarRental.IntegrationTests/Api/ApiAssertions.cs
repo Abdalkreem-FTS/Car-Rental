@@ -8,9 +8,9 @@ public static class ApiAssertions
 {
     extension<T>(ApiResponse<T> response) where T : class
     {
-        public T ShouldBeOk()
+        public T ShouldBeOk(string? why = null)
         {
-            response.ShouldHaveStatus(HttpStatusCode.OK);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK, why ?? $"body was: {response.RawBody}");
 
             return response.Value.ShouldNotBeNull();
         }

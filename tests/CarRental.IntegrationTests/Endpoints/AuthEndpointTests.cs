@@ -213,18 +213,56 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
     }
     
     [Fact]
-    public async Task Logout_WhenSignedIn_RevokesEveryRefreshTokenTheUserHolds()
+    public async Task Logout_WhenSignedIn_LeavesTheUsersOtherSessionsAlone()
     {
-        var first = await SignUpAsync();
-        var second = await SignInAsync(first.User.Email, TestData.Password);
+        var registration = TestData.Registration();
+        var laptop = await SignUpAsync(registration);
+        var phone = await SecondDeviceAsync(registration.Email);
 
-        Api.Authenticate(first.AccessToken);
         (await Api.Auth.LogoutAsync()).ShouldBeNoContent();
 
-        foreach (var refreshToken in new[] { first.RefreshToken, second.RefreshToken })
+        (await RefreshWithAsync(laptop.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+
+        (await RefreshWithAsync(phone)).ShouldBeOk("signing out here must not sign you out there");
+    }
+
+    [Fact]
+    public async Task LogoutEverywhere_WhenSignedIn_RevokesEveryRefreshTokenTheUserHolds()
+    {
+        var registration = TestData.Registration();
+        var laptop = await SignUpAsync(registration);
+        var phone = await SecondDeviceAsync(registration.Email);
+
+        (await Api.Auth.LogoutEverywhereAsync()).ShouldBeNoContent();
+
+        foreach (var refreshToken in new[] { laptop.RefreshToken, phone })
         {
             (await RefreshWithAsync(refreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
         }
+    }
+
+    private async Task<string> SecondDeviceAsync(string email)
+    {
+        using var device = new CarRentalApi(Factory.CreateClient());
+
+        var response = await device.Auth.LoginAsync(email, TestData.Password);
+        response.ShouldBeOk();
+
+        return response.RefreshCookie.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Logout_WithNoRefreshCookie_StillSucceeds()
+    {
+        var auth = await SignUpAsync();
+
+        using var client = Factory.CreateDefaultClient();
+        using var api = new CarRentalApi(client);
+        api.Authenticate(auth.AccessToken);
+
+        (await api.Auth.LogoutAsync()).ShouldBeNoContent();
+
+        (await RefreshWithAsync(auth.RefreshToken)).ShouldBeOk("nothing was presented, so nothing should have been revoked");
     }
 
     [Fact]

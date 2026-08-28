@@ -83,14 +83,29 @@ public static class AuthEndpoints
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.LogoutAsync(user.GetUserId(), cancellationToken);
+                var result = await authService.LogoutAsync(user.GetUserId(), RefreshTokenCookie.Read(context), cancellationToken);
 
                 RefreshTokenCookie.Clear(context);
 
                 return result.ToNoContent();
             })
             .Produces(StatusCodes.Status204NoContent)
-            .WithSummary("Revoke every refresh token for the signed-in user.");
+            .WithSummary("Sign out of this device. Sessions on other devices keep working.");
+
+        authenticated.MapPost("/logout-all", async (
+                ClaimsPrincipal user,
+                IAuthService authService,
+                HttpContext context,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await authService.LogoutEverywhereAsync(user.GetUserId(), cancellationToken);
+
+                RefreshTokenCookie.Clear(context);
+
+                return result.ToNoContent();
+            })
+            .Produces(StatusCodes.Status204NoContent)
+            .WithSummary("Sign out of every device. Use this if an account may be compromised.");
 
         group.MapPost("/confirm-email", async (
                 ConfirmEmailRequest request,
