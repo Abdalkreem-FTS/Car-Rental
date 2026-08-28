@@ -86,6 +86,9 @@ public sealed class CarsApi(HttpClient http)
     public Task<ApiResponse<PagedResponse<CarResponse>>> SearchAsync(CarQuery? query = null) =>
         http.GetAsAsync<PagedResponse<CarResponse>>((query ?? new CarQuery()).ToRoute());
 
+    public Task<ApiResponse<PagedResponse<CarResponse>>> QueryAsync(CarQueryRequest? request = null) =>
+        http.QueryAsAsync<PagedResponse<CarResponse>>(Routes.Cars.Base, request ?? new CarQueryRequest());
+
     public Task<ApiResponse<PagedResponse<CarResponse>>> SearchRawAsync(string queryString) =>
         http.GetAsAsync<PagedResponse<CarResponse>>($"{Routes.Cars.Base}?{queryString}");
 
@@ -141,6 +144,12 @@ internal static class HttpClientExtensions
     {
         internal async Task<ApiResponse<T>> GetAsAsync<T>(string route) =>
             await (await http.GetAsync(route)).ReadAsync<T>();
+
+        internal async Task<ApiResponse<T>> QueryAsAsync<T>(string route, object body) =>
+            await (await http.SendAsync(new HttpRequestMessage(new HttpMethod("QUERY"), route)
+            {
+                Content = JsonContent.Create(body, options: CarRentalApi.Json),
+            })).ReadAsync<T>();
 
         internal async Task<ApiResponse<T>> PostAsAsync<T>(string route, object body) =>
             await (await http.PostAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();

@@ -1,4 +1,5 @@
 using CarRental.Application.Contracts.Cars;
+using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 
 namespace CarRental.Application.Abstractions;
@@ -7,8 +8,8 @@ public interface ICarRepository
 {
     Task<Car?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<(List<Car> Items, int TotalCount)> SearchAsync(
-        CarSearchRequest request,
+    Task<Result<(List<Car> Items, int TotalCount)>> QueryAsync(
+        CarQueryRequest request,
         CancellationToken cancellationToken = default);
 
     Task<List<string>> GetLocationsAsync(CancellationToken cancellationToken = default);

@@ -19,4 +19,12 @@ public static class CarErrors
     public static Error Inactive => Error.Conflict(
         "car.inactive",
         "This car is not currently part of the rental fleet.");
+
+    public static Error InvalidFilters(string reason) => Error.Validation(
+        "filters",
+        reason);
+
+    public static Error InvalidSorts(string reason) => Error.Validation(
+        "sorts",
+        reason);
 }

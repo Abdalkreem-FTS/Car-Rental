@@ -174,6 +174,19 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
         response.ShouldFailValidationOn("returnDate");
     }
     
+    [Theory]
+    [InlineData("Sharm, South")]
+    [InlineData("Wadi|Rum")]
+    public async Task Search_ByALocationCarryingASieveOperator_TreatsItAsPlainText(string location)
+    {
+        await SignInAsAdminAsync();
+        (await Api.Cars.CreateAsync(TestData.NewCar() with { Location = location })).ShouldBeCreated();
+
+        var page = (await Api.Cars.SearchAsync(CarQuery.All with { Location = location })).ShouldBeOk();
+
+        page.Items.ShouldHaveSingleItem().Location.ShouldBe(location);
+    }
+
     [Fact]
     public async Task GetLocations_WhenCalled_ListsEachServedCityOnceInOrder()
     {

@@ -1,87 +1,53 @@
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Cars;
+using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
+using CarRental.Domain.Errors;
 using Microsoft.EntityFrameworkCore;
+using Sieve.Exceptions;
+using Sieve.Models;
+using Sieve.Services;
 
 namespace CarRental.Infrastructure.Persistence.Repositories;
 
-public sealed class CarRepository(AppDbContext context) : ICarRepository
+public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) : ICarRepository
 {
     public Task<Car?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         context.Cars.FirstOrDefaultAsync(car => car.Id == id, cancellationToken);
 
-    public async Task<(List<Car> Items, int TotalCount)> SearchAsync(
-        CarSearchRequest request,
+    public async Task<Result<(List<Car> Items, int TotalCount)>> QueryAsync(
+        CarQueryRequest request,
         CancellationToken cancellationToken = default)
     {
-        var query = context.Cars.AsNoTracking().Where(car => car.IsActive);
-
-        if (!string.IsNullOrWhiteSpace(request.Query))
-        {
-            var term = $"%{request.Query}%";
-
-            query = query.Where(car =>
-                EF.Functions.ILike(car.Make, term) ||
-                EF.Functions.ILike(car.Model, term) ||
-                EF.Functions.ILike(car.Location, term));
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Location))
-        {
-            query = query.Where(car => EF.Functions.ILike(car.Location, request.Location));
-        }
-
-        if (request.Category is not null)
-        {
-            query = query.Where(car => car.Category == request.Category);
-        }
-
-        if (request.Transmission is not null)
-        {
-            query = query.Where(car => car.Transmission == request.Transmission);
-        }
-
-        if (request.Fuel is not null)
-        {
-            query = query.Where(car => car.Fuel == request.Fuel);
-        }
-
-        if (request.MinSeats is not null)
-        {
-            query = query.Where(car => car.Seats >= request.MinSeats);
-        }
-
-        if (request.MinDailyRate is not null)
-        {
-            query = query.Where(car => car.DailyRate >= request.MinDailyRate);
-        }
-
-        if (request.MaxDailyRate is not null)
-        {
-            query = query.Where(car => car.DailyRate <= request.MaxDailyRate);
-        }
+        var query = OnTheFleet(request.Query, request.PickupDate, request.ReturnDate);
+        var model = new SieveModel { Filters = request.Filters, Sorts = request.Sorts };
         
-        if (request is { PickupDate: { } pickup, ReturnDate: { } dropOff })
+        try
         {
-            query = query.Where(car => !car.Reservations.Any(reservation =>
-                reservation.Status == ReservationStatus.Confirmed &&
-                reservation.StartDate <= dropOff &&
-                reservation.EndDate >= pickup));
+            query = sieve.Apply(model, query, applyFiltering: true, applySorting: false, applyPagination: false);
+        }
+        catch (SieveException exception)
+        {
+            return CarErrors.InvalidFilters(exception.Message);
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        query = request.SortBy?.ToLowerInvariant() switch
+        try
         {
-            "price_desc" => query.OrderByDescending(car => car.DailyRate).ThenBy(car => car.Id),
-            "price_asc" => query.OrderBy(car => car.DailyRate).ThenBy(car => car.Id),
-            "year_desc" => query.OrderByDescending(car => car.Year).ThenBy(car => car.Id),
-            "seats_desc" => query.OrderByDescending(car => car.Seats).ThenBy(car => car.Id),
-            _ => query.OrderBy(car => car.Make).ThenBy(car => car.Model).ThenBy(car => car.Id),
-        };
+            query = sieve.Apply(model, query, applyFiltering: false, applySorting: true, applyPagination: false);
+        }
+        catch (SieveException exception)
+        {
+            return CarErrors.InvalidSorts(exception.Message);
+        }
+        
+        var ordered = string.IsNullOrWhiteSpace(request.Sorts)
+            ? query.OrderBy(car => car.Make).ThenBy(car => car.Model).ThenBy(car => car.Id)
+            : ((IOrderedQueryable<Car>)query).ThenBy(car => car.Id);
 
-        var items = await query
+        var items = await ordered
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
@@ -125,4 +91,29 @@ public sealed class CarRepository(AppDbContext context) : ICarRepository
     public void Add(Car car) => context.Cars.Add(car);
 
     public void Remove(Car car) => context.Cars.Remove(car);
+    
+    private IQueryable<Car> OnTheFleet(string? text, DateOnly? pickupDate, DateOnly? returnDate)
+    {
+        var query = context.Cars.AsNoTracking().Where(car => car.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            var term = $"%{text}%";
+
+            query = query.Where(car =>
+                EF.Functions.ILike(car.Make, term) ||
+                EF.Functions.ILike(car.Model, term) ||
+                EF.Functions.ILike(car.Location, term));
+        }
+
+        if (pickupDate is { } pickup && returnDate is { } dropOff)
+        {
+            query = query.Where(car => !car.Reservations.Any(reservation =>
+                reservation.Status == ReservationStatus.Confirmed &&
+                reservation.StartDate <= dropOff &&
+                reservation.EndDate >= pickup));
+        }
+
+        return query;
+    }
 }

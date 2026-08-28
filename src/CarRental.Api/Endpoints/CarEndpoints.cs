@@ -2,11 +2,18 @@ using CarRental.Api.Extensions;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CarRental.Api.Endpoints;
 
 public static class CarEndpoints
 {
+    /// <summary>
+    /// The HTTP QUERY method: safe and idempotent like GET, but it carries a request body. It has
+    /// no <see cref="HttpMethods"/> constant yet because the specification is still a draft.
+    /// </summary>
+    private const string HttpQueryMethod = "QUERY";
+
     public static IEndpointRouteBuilder MapCarEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/cars")
@@ -24,6 +31,19 @@ public static class CarEndpoints
             })
             .WithValidation<CarSearchRequest>()
             .WithSummary("Search the fleet by text, location, dates, category and price.");
+
+        group.MapMethods("/", httpMethods: [HttpQueryMethod], async (
+                [FromBody] CarQueryRequest request,
+                ICarService carService,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await carService.QueryAsync(request, cancellationToken);
+
+                return result.ToOk();
+            })
+            .WithValidation<CarQueryRequest>()
+            .WithName("QueryCars")
+            .WithSummary("Search the fleet with a request body. Filtering and sorting take Sieve expressions.");
 
         group.MapGet("/locations", async (ICarService carService, CancellationToken cancellationToken) =>
             {

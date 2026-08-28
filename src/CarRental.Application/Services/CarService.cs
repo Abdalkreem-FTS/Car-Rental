@@ -11,18 +11,31 @@ namespace CarRental.Application.Services;
 public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : ICarService
 {
     private const int MaxPageSize = 50;
+    
+    public Task<Result<PagedResponse<CarResponse>>> SearchAsync(CarSearchRequest request, CancellationToken cancellationToken = default)
+    {
+        var trimmedLocation = string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim();
 
-    public async Task<Result<PagedResponse<CarResponse>>> SearchAsync(CarSearchRequest request, CancellationToken cancellationToken = default)
+        return QueryAsync((request with { Location = trimmedLocation }).ToQuery(), cancellationToken);
+    }
+
+    public async Task<Result<PagedResponse<CarResponse>>> QueryAsync(CarQueryRequest request, CancellationToken cancellationToken = default)
     {
         var normalized = request with
         {
             Page = request.Page < 1 ? 1 : request.Page,
             PageSize = Math.Clamp(request.PageSize, 1, MaxPageSize),
             Query = string.IsNullOrWhiteSpace(request.Query) ? null : request.Query.Trim(),
-            Location = string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim(),
         };
 
-        var (items, totalCount) = await cars.SearchAsync(normalized, cancellationToken);
+        var result = await cars.QueryAsync(normalized, cancellationToken);
+
+        if (result.IsError)
+        {
+            return result.Errors;
+        }
+
+        var (items, totalCount) = result.Value;
 
         return new PagedResponse<CarResponse>(
             [.. items.Select(car => car.ToResponse())],

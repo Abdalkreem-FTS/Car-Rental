@@ -8,6 +8,8 @@ public interface ICarService
 {
     Task<Result<PagedResponse<CarResponse>>> SearchAsync(CarSearchRequest request, CancellationToken cancellationToken = default);
 
+    Task<Result<PagedResponse<CarResponse>>> QueryAsync(CarQueryRequest request, CancellationToken cancellationToken = default);
+
     Task<Result<CarResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Result<List<string>>> GetLocationsAsync(CancellationToken cancellationToken = default);

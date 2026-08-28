@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Sieve.Models;
+using Sieve.Services;
 
 namespace CarRental.Infrastructure;
 
@@ -53,6 +55,16 @@ public static class DependencyInjection
                 .ValidateOnStart();
 
             services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
+
+            // Sieve rejects an unknown property instead of quietly dropping that part of the
+            // request, so a client typo surfaces as a 400 rather than a wrong result set.
+            services.Configure<SieveOptions>(options =>
+            {
+                options.CaseSensitive = false;
+                options.ThrowExceptions = true;
+            });
+
+            services.AddScoped<ISieveProcessor, CarSieveProcessor>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICarRepository, CarRepository>();
