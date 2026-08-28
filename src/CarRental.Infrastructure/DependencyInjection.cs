@@ -55,6 +55,7 @@ public static class DependencyInjection
                 .ValidateOnStart();
 
             services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
+            services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
 
             // Sieve rejects an unknown property instead of quietly dropping that part of the
             // request, so a client typo surfaces as a 400 rather than a wrong result set.
@@ -79,6 +80,7 @@ public static class DependencyInjection
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
 
             services.AddScoped<DatabaseSeeder>();
+            services.AddScoped<DatabaseMigrator>();
 
             return services;
         }

@@ -12,6 +12,7 @@ var app = builder.Build();
 
 app.UseApiPipeline();
 
+await app.MigrateDatabaseAsync();
 await app.SeedDatabaseAsync();
 
 app.Run();

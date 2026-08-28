@@ -18,8 +18,6 @@ public sealed class DatabaseSeeder(
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        await context.Database.MigrateAsync(cancellationToken);
-
         await SeedRolesAsync();
         await SeedAdminAsync();
         await SeedCarsAsync(cancellationToken);

@@ -5,19 +5,30 @@ namespace CarRental.Api.Extensions;
 
 public static class SeedExtensions
 {
-    public static async Task SeedDatabaseAsync(this WebApplication app)
+    extension(WebApplication app)
     {
-        var options = app.Services.GetRequiredService<IOptions<SeedOptions>>().Value;
-
-        if (!options.Enabled)
+        public async Task MigrateDatabaseAsync()
         {
-            return;
+            if (!app.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value.MigrateOnStartup)
+            {
+                return;
+            }
+
+            await using var scope = app.Services.CreateAsyncScope();
+
+            await scope.ServiceProvider.GetRequiredService<DatabaseMigrator>().MigrateAsync();
         }
 
-        await using var scope = app.Services.CreateAsyncScope();
+        public async Task SeedDatabaseAsync()
+        {
+            if (!app.Services.GetRequiredService<IOptions<SeedOptions>>().Value.Enabled)
+            {
+                return;
+            }
 
-        var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+            await using var scope = app.Services.CreateAsyncScope();
 
-        await seeder.SeedAsync();
+            await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
+        }
     }
 }
