@@ -8,5 +8,7 @@ public interface IReservationRepository
 
     Task<List<Reservation>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default);
 
+    Task LockForBookingAsync(Guid carId, CancellationToken cancellationToken = default);
+
     void Add(Reservation reservation);
 }

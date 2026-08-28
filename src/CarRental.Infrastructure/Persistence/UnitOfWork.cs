@@ -21,4 +21,7 @@ public sealed class UnitOfWork(AppDbContext context) : IUnitOfWork
             return conflict;
         }
     }
+
+    public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
+        new EfTransaction(await context.Database.BeginTransactionAsync(cancellationToken));
 }

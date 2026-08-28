@@ -30,6 +30,10 @@ public sealed class ReservationService(
             return CarErrors.Inactive;
         }
 
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        await reservations.LockForBookingAsync(car.Id, cancellationToken);
+
         if (!await cars.IsAvailableAsync(car.Id, request.StartDate, request.EndDate, cancellationToken: cancellationToken))
         {
             return CarErrors.Unavailable;
@@ -51,13 +55,15 @@ public sealed class ReservationService(
         reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
 
         reservations.Add(reservation);
-        
+
         var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
 
         if (saved.IsError)
         {
             return saved.Errors;
         }
+
+        await transaction.CommitAsync(cancellationToken);
 
         return reservation.ToResponse();
     }
@@ -120,6 +126,10 @@ public sealed class ReservationService(
             return CarErrors.NotFound;
         }
         
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
+        await reservations.LockForBookingAsync(car.Id, cancellationToken);
+
         if (!await cars.IsAvailableAsync(car.Id, request.StartDate, request.EndDate, reservation.Id, cancellationToken))
         {
             return CarErrors.Unavailable;
@@ -140,6 +150,8 @@ public sealed class ReservationService(
         {
             return saved.Errors;
         }
+
+        await transaction.CommitAsync(cancellationToken);
 
         return reservation.ToResponse();
     }

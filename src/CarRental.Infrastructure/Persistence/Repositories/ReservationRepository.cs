@@ -20,5 +20,10 @@ public sealed class ReservationRepository(AppDbContext context) : IReservationRe
             .ThenByDescending(reservation => reservation.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 
+    public Task LockForBookingAsync(Guid carId, CancellationToken cancellationToken = default) =>
+        context.Database.ExecuteSqlAsync(
+            $"SELECT pg_advisory_xact_lock(hashtextextended({carId.ToString()}, 0))",
+            cancellationToken);
+
     public void Add(Reservation reservation) => context.Reservations.Add(reservation);
 }
