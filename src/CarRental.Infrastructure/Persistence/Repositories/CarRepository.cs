@@ -89,8 +89,6 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
     }
 
     public void Add(Car car) => context.Cars.Add(car);
-
-    public void Remove(Car car) => context.Cars.Remove(car);
     
     private IQueryable<Car> OnTheFleet(string? text, DateOnly? pickupDate, DateOnly? returnDate)
     {

@@ -24,6 +24,4 @@ public interface ICarRepository
         CancellationToken cancellationToken = default);
 
     void Add(Car car);
-
-    void Remove(Car car);
 }
