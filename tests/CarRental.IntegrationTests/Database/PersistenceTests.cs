@@ -166,7 +166,7 @@ public sealed class PersistenceTests(CarRentalApiFactory factory) : IntegrationT
     {
         var auth = await SignUpAsync();
 
-        (await Api.Auth.RefreshAsync(auth.RefreshToken)).ShouldBeOk();
+        (await RefreshWithAsync(auth.RefreshToken)).ShouldBeOk();
 
         var tokens = await Factory.WithDbAsync(db => db.RefreshTokens
             .Where(t => t.UserId == auth.User.Id)

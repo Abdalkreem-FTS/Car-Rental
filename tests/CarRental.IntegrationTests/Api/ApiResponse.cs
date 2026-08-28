@@ -4,12 +4,15 @@ namespace CarRental.IntegrationTests.Api;
 
 public class ApiResponse
 {
-    internal ApiResponse(HttpStatusCode statusCode, Problem? problem, string rawBody)
+    internal ApiResponse(HttpStatusCode statusCode, Problem? problem, string rawBody, string? refreshCookie = null)
     {
         StatusCode = statusCode;
         Problem = problem;
         RawBody = rawBody;
+        RefreshCookie = refreshCookie;
     }
+
+    public string? RefreshCookie { get; }
 
     public HttpStatusCode StatusCode { get; }
 
@@ -22,8 +25,8 @@ public class ApiResponse
 
 public sealed class ApiResponse<T> : ApiResponse
 {
-    internal ApiResponse(HttpStatusCode statusCode, T? value, Problem? problem, string rawBody, Uri? location)
-        : base(statusCode, problem, rawBody)
+    internal ApiResponse(HttpStatusCode statusCode, T? value, Problem? problem, string rawBody, Uri? location, string? refreshCookie = null)
+        : base(statusCode, problem, rawBody, refreshCookie)
     {
         Value = value;
         Location = location;

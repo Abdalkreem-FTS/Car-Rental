@@ -249,7 +249,12 @@ public sealed class AuthService(
         refreshTokens.Add(refreshToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new AuthResponse(accessToken, refreshToken.Token, expiresAtUtc, user.ToResponse(roles));
+        return new AuthResponse(
+            accessToken,
+            refreshToken.Token,
+            refreshToken.ExpiresAtUtc,
+            expiresAtUtc,
+            user.ToResponse(roles));
     }
     
     private static List<Error> MapIdentityErrors(IdentityResult result) =>

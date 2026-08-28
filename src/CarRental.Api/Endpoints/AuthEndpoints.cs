@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CarRental.Api.Extensions;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Auth;
+using CarRental.Domain.Errors;
 
 namespace CarRental.Api.Endpoints;
 
@@ -21,11 +22,12 @@ public static class AuthEndpoints
         group.MapPost("/register", async (
                 RegisterRequest request,
                 IAuthService authService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await authService.RegisterAsync(request, cancellationToken);
 
-                return result.ToOk();
+                return result.ToOkWithRefreshCookie(context);
             })
             .WithValidation<RegisterRequest>()
             .RequireRateLimiting(RateLimiting.Accounts)
@@ -37,11 +39,12 @@ public static class AuthEndpoints
         group.MapPost("/login", async (
                 LoginRequest request,
                 IAuthService authService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await authService.LoginAsync(request, cancellationToken);
 
-                return result.ToOk();
+                return result.ToOkWithRefreshCookie(context);
             })
             .WithValidation<LoginRequest>()
             .RequireRateLimiting(RateLimiting.Accounts)
@@ -52,15 +55,24 @@ public static class AuthEndpoints
             .WithSummary("Exchange email and password for an access token and a refresh token.");
 
         group.MapPost("/refresh", async (
-                RefreshTokenRequest request,
                 IAuthService authService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.RefreshAsync(request, cancellationToken);
+                if (RefreshTokenCookie.Read(context) is not { } presented)
+                {
+                    return AuthErrors.InvalidRefreshToken.ToProblem();
+                }
 
-                return result.ToOk();
+                var result = await authService.RefreshAsync(new RefreshTokenRequest(presented), cancellationToken);
+
+                if (result.IsError)
+                {
+                    RefreshTokenCookie.Clear(context);
+                }
+
+                return result.ToOkWithRefreshCookie(context);
             })
-            .WithValidation<RefreshTokenRequest>()
             .Produces<AuthResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .WithSummary("Trade a refresh token for a new pair. The presented token is revoked.");
@@ -68,9 +80,12 @@ public static class AuthEndpoints
         authenticated.MapPost("/logout", async (
                 ClaimsPrincipal user,
                 IAuthService authService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await authService.LogoutAsync(user.GetUserId(), cancellationToken);
+
+                RefreshTokenCookie.Clear(context);
 
                 return result.ToNoContent();
             })

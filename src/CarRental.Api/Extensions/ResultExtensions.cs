@@ -1,3 +1,4 @@
+using CarRental.Application.Contracts.Auth;
 using CarRental.Domain.Common;
 using IResult = Microsoft.AspNetCore.Http.IResult;
 
@@ -10,6 +11,14 @@ public static class ResultExtensions
 
     public static IResult ToOk<TValue>(this Result<TValue> result) =>
         result.ToHttpResult(Results.Ok);
+
+    public static IResult ToOkWithRefreshCookie(this Result<AuthResponse> result, HttpContext context) =>
+        result.ToHttpResult(auth =>
+        {
+            RefreshTokenCookie.Write(context, auth.RefreshToken, auth.RefreshExpiresAtUtc);
+
+            return Results.Ok(auth);
+        });
 
     public static IResult ToCreated<TValue>(this Result<TValue> result, Func<TValue, string> location) =>
         result.ToHttpResult(value => Results.Created(location(value), value));

@@ -31,7 +31,8 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
     protected async Task<AuthResponse> SignUpAsync(RegisterRequest? registration = null, bool confirmEmail = true)
     {
         var request = registration ?? TestData.Registration();
-        var auth = (await Api.Auth.RegisterAsync(request)).ShouldBeOk();
+        var response = await Api.Auth.RegisterAsync(request);
+        var auth = response.ShouldBeOk() with { RefreshToken = response.RefreshCookie ?? string.Empty };
 
         Api.Authenticate(auth.AccessToken);
 
@@ -52,7 +53,8 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
 
     protected async Task<AuthResponse> SignInAsync(string email, string password)
     {
-        var auth = (await Api.Auth.LoginAsync(email, password)).ShouldBeOk();
+        var response = await Api.Auth.LoginAsync(email, password);
+        var auth = response.ShouldBeOk() with { RefreshToken = response.RefreshCookie ?? string.Empty };
 
         Api.Authenticate(auth.AccessToken);
 
@@ -62,6 +64,16 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
     protected Task<AuthResponse> SignInAsAdminAsync() => SignInAsync(TestData.AdminEmail, TestData.AdminPassword);
 
     protected void SignOut() => Api.SignOut();
+
+    protected async Task<ApiResponse<AuthResponse>> RefreshWithAsync(string refreshToken)
+    {
+        using var client = Factory.CreateDefaultClient();
+        client.DefaultRequestHeaders.Add("Cookie", $"cr_refresh={refreshToken}");
+
+        using var api = new CarRentalApi(client);
+
+        return await api.Auth.RefreshAsync();
+    }
     
     protected async Task<CarResponse> FindCarAsync(string query)
     {

@@ -403,7 +403,6 @@ profileForm.addEventListener('submit', async (event) => {
       const user = session.user;
       session.save({
         accessToken: session.accessToken,
-        refreshToken: session.refreshToken,
         user: { ...user, firstName: profile.firstName, lastName: profile.lastName, phoneNumber: profile.phoneNumber },
       });
       paintUser(session.user);

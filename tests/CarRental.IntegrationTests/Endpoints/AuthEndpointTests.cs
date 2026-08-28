@@ -13,10 +13,12 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
     {
         var registration = TestData.Registration();
 
-        var auth = (await Api.Auth.RegisterAsync(registration)).ShouldBeOk();
+        var response = await Api.Auth.RegisterAsync(registration);
+        var auth = response.ShouldBeOk();
 
         auth.AccessToken.ShouldNotBeNullOrWhiteSpace();
-        auth.RefreshToken.ShouldNotBeNullOrWhiteSpace();
+        response.RefreshCookie.ShouldNotBeNullOrWhiteSpace();
+        response.RawBody.ShouldNotContain("refreshToken", Case.Insensitive);
         auth.ExpiresAtUtc.ShouldBeGreaterThan(DateTimeOffset.UtcNow);
         auth.User.Email.ShouldBe(registration.Email);
         auth.User.Roles.ShouldBe(["Customer"]);
@@ -175,18 +177,21 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
     {
         var auth = await SignUpAsync();
 
-        var rotated = (await Api.Auth.RefreshAsync(auth.RefreshToken)).ShouldBeOk();
-        rotated.RefreshToken.ShouldNotBe(auth.RefreshToken);
+        var response = await RefreshWithAsync(auth.RefreshToken);
+        response.ShouldBeOk();
 
-        (await Api.Auth.RefreshAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+        var rotated = response.RefreshCookie.ShouldNotBeNull();
+        rotated.ShouldNotBe(auth.RefreshToken);
 
-        (await Api.Auth.RefreshAsync(rotated.RefreshToken)).ShouldBeOk();
+        (await RefreshWithAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+
+        (await RefreshWithAsync(rotated)).ShouldBeOk();
     }
 
     [Fact]
     public async Task Refresh_WithATokenThatWasNeverIssued_ReportsUnauthorized()
     {
-        var response = await Api.Auth.RefreshAsync("not-a-real-token");
+        var response = await RefreshWithAsync("not-a-real-token");
 
         response.ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
     }
@@ -204,7 +209,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
             return await db.SaveChangesAsync();
         });
 
-        (await Api.Auth.RefreshAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+        (await RefreshWithAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
     }
     
     [Fact]
@@ -218,7 +223,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
 
         foreach (var refreshToken in new[] { first.RefreshToken, second.RefreshToken })
         {
-            (await Api.Auth.RefreshAsync(refreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+            (await RefreshWithAsync(refreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
         }
     }
 

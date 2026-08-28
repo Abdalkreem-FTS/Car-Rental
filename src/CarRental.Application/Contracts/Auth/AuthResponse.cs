@@ -1,7 +1,10 @@
+using System.Text.Json.Serialization;
+
 namespace CarRental.Application.Contracts.Auth;
 
 public sealed record AuthResponse(
     string AccessToken,
-    string RefreshToken,
+    [property: JsonIgnore] string RefreshToken,
+    [property: JsonIgnore] DateTimeOffset RefreshExpiresAtUtc,
     DateTimeOffset ExpiresAtUtc,
     UserResponse User);

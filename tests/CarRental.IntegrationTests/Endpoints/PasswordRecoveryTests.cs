@@ -112,7 +112,7 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
 
         (await Api.Auth.ResetPasswordAsync(auth.User.Email, token, NewPassword)).ShouldBeNoContent();
 
-        (await Api.Auth.RefreshAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+        (await RefreshWithAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
     }
 
     [Fact]

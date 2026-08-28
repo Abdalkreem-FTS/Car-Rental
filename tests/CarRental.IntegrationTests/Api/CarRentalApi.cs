@@ -68,8 +68,8 @@ public sealed class AuthApi(HttpClient http)
     public Task<ApiResponse<AuthResponse>> LoginAsync(string email, string password) =>
         http.PostAsAsync<AuthResponse>(Routes.Auth.Login, new LoginRequest(email, password));
 
-    public Task<ApiResponse<AuthResponse>> RefreshAsync(string refreshToken) =>
-        http.PostAsAsync<AuthResponse>(Routes.Auth.Refresh, new RefreshTokenRequest(refreshToken));
+    public Task<ApiResponse<AuthResponse>> RefreshAsync() =>
+        http.PostAsAsync<AuthResponse>(Routes.Auth.Refresh, body: null);
 
     public Task<ApiResponse> LogoutAsync() => http.PostAsAsync(Routes.Auth.Logout, content: null);
 
@@ -159,8 +159,10 @@ internal static class HttpClientExtensions
                 Content = JsonContent.Create(body, options: CarRentalApi.Json),
             })).ReadAsync<T>();
 
-        internal async Task<ApiResponse<T>> PostAsAsync<T>(string route, object body) =>
-            await (await http.PostAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();
+        internal async Task<ApiResponse<T>> PostAsAsync<T>(string route, object? body) =>
+            await (body is null
+                ? await http.PostAsync(route, null)
+                : await http.PostAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();
 
         internal async Task<ApiResponse> PostAsAsync(string route, object? content) =>
             await (content is null
@@ -183,7 +185,7 @@ internal static class HttpClientExtensions
         {
             var body = await response.Content.ReadAsStringAsync();
 
-            return new ApiResponse(response.StatusCode, ProblemFrom(body, response.StatusCode), body);
+            return new ApiResponse(response.StatusCode, ProblemFrom(body, response.StatusCode), body, RefreshCookie(response));
         }
 
         private async Task<ApiResponse<T>> ReadAsync<T>()
@@ -201,8 +203,24 @@ internal static class HttpClientExtensions
                 value,
                 ProblemFrom(body, response.StatusCode),
                 body,
-                response.Headers.Location);
+                response.Headers.Location,
+                RefreshCookie(response));
         }
+    }
+
+    private static string? RefreshCookie(HttpResponseMessage response)
+    {
+        if (!response.Headers.TryGetValues("Set-Cookie", out var cookies))
+        {
+            return null;
+        }
+
+        const string prefix = "cr_refresh=";
+
+        return cookies
+            .Where(cookie => cookie.StartsWith(prefix, StringComparison.Ordinal))
+            .Select(cookie => cookie[prefix.Length..].Split(';')[0])
+            .LastOrDefault(value => !string.IsNullOrEmpty(value));
     }
 
     private static Problem? ProblemFrom(string body, HttpStatusCode statusCode)

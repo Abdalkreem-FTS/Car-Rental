@@ -1,28 +1,29 @@
 // Talks to the Minimal API and owns the token pair. Every failed response from the server is
 // an RFC 9457 problem document, so there is exactly one place that turns one into an Error.
 
-const ACCESS_KEY = 'cr.accessToken';
-const REFRESH_KEY = 'cr.refreshToken';
 const USER_KEY = 'cr.user';
 
+// The refresh token lives in an HttpOnly cookie the browser sends to /api/auth on its own, so no
+// script here can read it. The access token is kept in memory only: a reload drops it and is
+// re-minted from the cookie. Only the user's display details survive in storage, and those are
+// not a credential.
+let accessToken = null;
+
 export const session = {
-  get accessToken() { return localStorage.getItem(ACCESS_KEY); },
-  get refreshToken() { return localStorage.getItem(REFRESH_KEY); },
+  get accessToken() { return accessToken; },
   get user() {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   },
   save(auth) {
-    localStorage.setItem(ACCESS_KEY, auth.accessToken);
-    localStorage.setItem(REFRESH_KEY, auth.refreshToken);
+    accessToken = auth.accessToken;
     localStorage.setItem(USER_KEY, JSON.stringify(auth.user));
   },
   clear() {
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
+    accessToken = null;
     localStorage.removeItem(USER_KEY);
   },
-  get isSignedIn() { return Boolean(localStorage.getItem(ACCESS_KEY)); },
+  get isSignedIn() { return Boolean(localStorage.getItem(USER_KEY)); },
 };
 
 /**
@@ -52,16 +53,9 @@ async function readProblem(response) {
 let refreshInFlight = null;
 
 async function refreshTokens() {
-  const refreshToken = session.refreshToken;
-  if (!refreshToken) return false;
-
   refreshInFlight ??= (async () => {
     try {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
+      const response = await fetch('/api/auth/refresh', { method: 'POST' });
       if (!response.ok) return false;
       session.save(await response.json());
       return true;
@@ -77,6 +71,12 @@ async function refreshTokens() {
 }
 
 async function send(method, path, { body, auth = true, retry = true } = {}) {
+  // After a reload the access token is gone but the cookie is not, so mint a new one first
+  // rather than spending a guaranteed 401 to discover the same thing.
+  if (auth && !session.accessToken && session.isSignedIn) {
+    await refreshTokens();
+  }
+
   const headers = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && session.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
@@ -88,7 +88,7 @@ async function send(method, path, { body, auth = true, retry = true } = {}) {
   });
 
   // An expired access token is normal — spend the refresh token and replay the request once.
-  if (response.status === 401 && auth && retry && session.refreshToken) {
+  if (response.status === 401 && auth && retry && session.isSignedIn) {
     if (await refreshTokens()) {
       return send(method, path, { body, auth, retry: false });
     }

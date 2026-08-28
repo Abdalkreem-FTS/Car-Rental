@@ -173,7 +173,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
 
         foreach (var refreshToken in new[] { firstDevice.RefreshToken, secondDevice.RefreshToken })
         {
-            (await Api.Auth.RefreshAsync(refreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
+            (await RefreshWithAsync(refreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
         }
     }
 
