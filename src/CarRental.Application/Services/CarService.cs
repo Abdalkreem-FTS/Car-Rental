@@ -1,4 +1,5 @@
 using CarRental.Application.Abstractions;
+using CarRental.Application.Common;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Application.Contracts.Common;
 using CarRental.Application.Mapping;
@@ -23,8 +24,8 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
     {
         var normalized = request with
         {
-            Page = request.Page < 1 ? 1 : request.Page,
-            PageSize = Math.Clamp(request.PageSize, 1, MaxPageSize),
+            Page = request.Page < Paging.FirstPage ? Paging.FirstPage : request.Page,
+            PageSize = Math.Clamp(request.PageSize, Paging.MinPageSize, Paging.MaxPageSize),
             Query = string.IsNullOrWhiteSpace(request.Query) ? null : request.Query.Trim(),
         };
 

@@ -1,3 +1,4 @@
+using CarRental.Application.Common;
 using CarRental.Domain.Enums;
 
 namespace CarRental.Application.Contracts.Cars;
@@ -14,5 +15,5 @@ public sealed record CarSearchRequest(
     decimal? MinDailyRate = null,
     decimal? MaxDailyRate = null,
     string? SortBy = null,
-    int Page = 1,
-    int PageSize = 12);
+    int Page = Paging.FirstPage,
+    int PageSize = Paging.DefaultPageSize);
