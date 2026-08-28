@@ -22,6 +22,8 @@ public sealed class CarConfiguration : IEntityTypeConfiguration<Car>
         builder.Property(x => x.Transmission).HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.Fuel).HasConversion<string>().HasMaxLength(20);
 
+        builder.HasQueryFilter(x => x.IsActive);
+
         builder.HasIndex(x => x.PlateNumber).IsUnique();
         builder.HasIndex(x => new { x.IsActive, x.Location });
     }

@@ -91,7 +91,7 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
 
     public async Task<Result<CarResponse>> UpdateAsync(Guid id, UpdateCarRequest request, CancellationToken cancellationToken = default)
     {
-        var car = await cars.GetByIdAsync(id, cancellationToken);
+        var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
 
         if (car is null)
         {
@@ -126,7 +126,7 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
 
     public async Task<Result<Deleted>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var car = await cars.GetByIdAsync(id, cancellationToken);
+        var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
 
         if (car is null)
         {

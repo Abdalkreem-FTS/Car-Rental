@@ -150,7 +150,27 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
     }
 
     [Fact]
-    public async Task CreateReservation_WithARetiredCar_ReportsAConflict()
+    public async Task ListReservations_WhenTheCarWasRetiredAfterBooking_StillRendersTheBooking()
+    {
+        var registration = TestData.Registration();
+        await SignUpAsync(registration);
+
+        var car = await FindCarAsync("Hiace");
+        (await Api.Reservations.CreateAsync(Booking(car.Id, 12, 14))).ShouldBeCreated();
+
+        await SignInAsAdminAsync();
+        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+
+        await SignInAsync(registration.Email, TestData.Password);
+
+        var mine = (await Api.Reservations.ListAsync()).ShouldBeOk().ShouldHaveSingleItem();
+
+        mine.CarMake.ShouldBe(car.Make, "retiring a car must not blank out the bookings that reference it");
+        mine.CarModel.ShouldBe(car.Model);
+    }
+
+    [Fact]
+    public async Task CreateReservation_WithARetiredCar_ReportsNotFound()
     {
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Clio");
@@ -158,7 +178,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         await SignUpAsync();
 
-        (await Api.Reservations.CreateAsync(Booking(car.Id, 2, 3))).ShouldBeConflict(CarErrors.Inactive);
+        (await Api.Reservations.CreateAsync(Booking(car.Id, 2, 3))).ShouldBeNotFound(CarErrors.NotFound);
     }
 
     [Fact]

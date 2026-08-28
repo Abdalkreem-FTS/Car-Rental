@@ -18,10 +18,6 @@ public static class CarErrors
         "car.unavailable",
         "This car is already booked for one or more of the days you selected.");
 
-    public static Error Inactive => Error.Conflict(
-        "car.inactive",
-        "This car is not currently part of the rental fleet.");
-
     public static Error InvalidFilters(string reason) => Error.Validation(
         "filters",
         reason);

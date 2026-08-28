@@ -8,12 +8,14 @@ public sealed class ReservationRepository(AppDbContext context) : IReservationRe
 {
     public Task<Reservation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         context.Reservations
+            .IgnoreQueryFilters()
             .Include(reservation => reservation.Car)
             .FirstOrDefaultAsync(reservation => reservation.Id == id, cancellationToken);
 
     public Task<List<Reservation>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
         context.Reservations
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .Include(reservation => reservation.Car)
             .Where(reservation => reservation.UserId == userId)
             .OrderByDescending(reservation => reservation.StartDate)

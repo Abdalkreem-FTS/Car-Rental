@@ -16,6 +16,9 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
     public Task<Car?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         context.Cars.FirstOrDefaultAsync(car => car.Id == id, cancellationToken);
 
+    public Task<Car?> GetIncludingRetiredAsync(Guid id, CancellationToken cancellationToken = default) =>
+        context.Cars.IgnoreQueryFilters().FirstOrDefaultAsync(car => car.Id == id, cancellationToken);
+
     public async Task<Result<(List<Car> Items, int TotalCount)>> QueryAsync(
         CarQueryRequest request,
         CancellationToken cancellationToken = default)
@@ -58,14 +61,13 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
     public Task<List<string>> GetLocationsAsync(CancellationToken cancellationToken = default) =>
         context.Cars
             .AsNoTracking()
-            .Where(car => car.IsActive)
             .Select(car => car.Location)
             .Distinct()
             .OrderBy(location => location)
             .ToListAsync(cancellationToken);
 
     public Task<bool> PlateExistsAsync(string plateNumber, Guid? excludeCarId = null, CancellationToken cancellationToken = default) =>
-        context.Cars.AnyAsync(
+        context.Cars.IgnoreQueryFilters().AnyAsync(
             car => car.PlateNumber == plateNumber && (excludeCarId == null || car.Id != excludeCarId),
             cancellationToken);
 
@@ -92,7 +94,7 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
     
     private IQueryable<Car> OnTheFleet(string? text, DateOnly? pickupDate, DateOnly? returnDate)
     {
-        var query = context.Cars.AsNoTracking().Where(car => car.IsActive);
+        var query = context.Cars.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(text))
         {

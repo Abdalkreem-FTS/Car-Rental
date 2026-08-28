@@ -8,6 +8,8 @@ public interface ICarRepository
 {
     Task<Car?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<Car?> GetIncludingRetiredAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<Result<(List<Car> Items, int TotalCount)>> QueryAsync(
         CarQueryRequest request,
         CancellationToken cancellationToken = default);

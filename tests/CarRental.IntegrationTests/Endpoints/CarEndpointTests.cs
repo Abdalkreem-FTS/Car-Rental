@@ -304,6 +304,50 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
     }
 
     [Fact]
+    public async Task GetCar_ForARetiredCar_ReportsNotFoundRatherThanRenderingIt()
+    {
+        await SignInAsAdminAsync();
+        var car = await FindCarAsync("Picanto");
+        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+
+        await SignUpAsync();
+
+        (await Api.Cars.GetAsync(car.Id)).ShouldBeNotFound(CarErrors.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateCar_ForARetiredCar_StillReachesItSoItCanBeBroughtBack()
+    {
+        await SignInAsAdminAsync();
+        var car = await FindCarAsync("Kicks");
+        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+
+        var request = TestData.CarUpdate(TestData.NewCar()) with
+        {
+            Make = car.Make,
+            Model = car.Model,
+            PlateNumber = car.PlateNumber,
+            IsActive = true,
+        };
+
+        (await Api.Cars.UpdateAsync(car.Id, request)).ShouldBeOk().IsActive.ShouldBeTrue();
+
+        (await Api.Cars.GetAsync(car.Id)).ShouldBeOk();
+    }
+
+    [Fact]
+    public async Task CreateCar_WithARetiredCarsPlate_StillReportsTheConflict()
+    {
+        await SignInAsAdminAsync();
+        var car = await FindCarAsync("Accent");
+        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+
+        var response = await Api.Cars.CreateAsync(TestData.NewCar() with { PlateNumber = car.PlateNumber });
+
+        response.ShouldBeConflict(CarErrors.PlateAlreadyInUse(car.PlateNumber));
+    }
+
+    [Fact]
     public async Task DeleteCar_AsAnAdmin_RetiresItInsteadOfRemovingTheRow()
     {
         await SignInAsAdminAsync();
@@ -311,7 +355,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
 
-        var stored = await Factory.WithDbAsync(db => db.Cars.SingleAsync(c => c.Id == car.Id));
+        var stored = await Factory.WithDbAsync(db => db.Cars.IgnoreQueryFilters().SingleAsync(c => c.Id == car.Id));
         stored.IsActive.ShouldBeFalse();
 
         var page = (await Api.Cars.SearchAsync(CarQuery.All)).ShouldBeOk();

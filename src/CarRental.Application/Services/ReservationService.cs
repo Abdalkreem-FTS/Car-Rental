@@ -31,11 +31,6 @@ public sealed class ReservationService(
             return CarErrors.NotFound;
         }
 
-        if (!car.IsActive)
-        {
-            return CarErrors.Inactive;
-        }
-
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         await reservations.LockForBookingAsync(car.Id, cancellationToken);
@@ -125,7 +120,7 @@ public sealed class ReservationService(
             return ReservationErrors.AlreadyStarted;
         }
 
-        var car = reservation.Car ?? await cars.GetByIdAsync(reservation.CarId, cancellationToken);
+        var car = reservation.Car ?? await cars.GetIncludingRetiredAsync(reservation.CarId, cancellationToken);
 
         if (car is null)
         {
