@@ -47,6 +47,8 @@ public sealed class HealthAndDocsTests(CarRentalApiFactory factory) : Integratio
     [Fact]
     public async Task Request_ForAnUnknownRoute_ReturnsAProblemWithTheCustomisedDetail()
     {
+        await SignUpAsync();
+
         var response = await Api.SendAsync(HttpMethod.Get, "/api/does-not-exist");
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -56,6 +58,8 @@ public sealed class HealthAndDocsTests(CarRentalApiFactory factory) : Integratio
     [Fact]
     public async Task Request_WithAnUnsupportedMethod_ReturnsAProblemWithTheCustomisedDetail()
     {
+        await SignUpAsync();
+
         var response = await Api.SendAsync(HttpMethod.Delete, Routes.Health);
 
         response.StatusCode.ShouldBe(HttpStatusCode.MethodNotAllowed);
@@ -69,5 +73,13 @@ public sealed class HealthAndDocsTests(CarRentalApiFactory factory) : Integratio
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         response.Problem!.Detail.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Request_ForAnUnknownRoute_WithoutAToken_RefusesRatherThanConfirmingTheRouteIsMissing()
+    {
+        var response = await Api.SendAsync(HttpMethod.Get, "/api/does-not-exist");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

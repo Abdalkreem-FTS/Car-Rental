@@ -21,8 +21,8 @@ public static class ApiPipelineExtensions
 
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
-                app.MapScalarApiReference(options => options.WithTitle("Car Rental API"));
+                app.MapOpenApi().AllowAnonymous();
+                app.MapScalarApiReference(options => options.WithTitle("Car Rental API")).AllowAnonymous();
             }
 
             app.UseDefaultFiles();
