@@ -8,7 +8,7 @@ using Shouldly;
 
 namespace CarRental.IntegrationTests.Endpoints;
 
-public sealed class RegistrationConcurrencyTests(CarRentalApiFactory factory) : IntegrationTestBase(factory)
+public sealed class AccountConcurrencyTests(CarRentalApiFactory factory) : IntegrationTestBase(factory)
 {
     private const int Racers = 8;
 
@@ -91,6 +91,44 @@ public sealed class RegistrationConcurrencyTests(CarRentalApiFactory factory) : 
             }
 
             var stored = await Factory.WithDbAsync(db => db.Cars.CountAsync(car => car.PlateNumber == plate));
+            stored.ShouldBe(1);
+        }
+        finally
+        {
+            clients.ForEach(client => client.Dispose());
+        }
+    }
+
+    [Fact]
+    public async Task UpdateProfile_WhenManyAccountsRaceForTheSameLicence_LetsExactlyOneThrough()
+    {
+        var licence = TestData.UniqueLicense();
+        var clients = new List<CarRentalApi>();
+
+        try
+        {
+            for (var i = 0; i < Racers; i++)
+            {
+                var client = new CarRentalApi(Factory.CreateClient());
+                var auth = (await client.Auth.RegisterAsync(TestData.Registration())).ShouldBeCreated();
+
+                client.Authenticate(auth.AccessToken);
+                clients.Add(client);
+            }
+
+            var responses = await Task.WhenAll(clients.Select(client =>
+                client.Profile.UpdateAsync(TestData.ProfileUpdate() with { DriverLicenseNumber = licence })));
+
+            responses.Count(response => response.StatusCode == HttpStatusCode.OK).ShouldBe(1);
+
+            foreach (var loser in responses.Where(response => response.StatusCode != HttpStatusCode.OK))
+            {
+                loser.ShouldBeConflict(UserErrors.LicenseAlreadyInUse);
+            }
+
+            var stored = await Factory.WithDbAsync(db =>
+                db.Users.CountAsync(user => user.DriverLicenseNumber == licence));
+
             stored.ShouldBe(1);
         }
         finally

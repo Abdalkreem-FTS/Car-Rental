@@ -67,7 +67,7 @@ public static class DependencyInjection
             services.AddScoped<ISieveProcessor, CarSieveProcessor>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IUserRegistrar, UserRegistrar>();
+            services.AddScoped<IUserAccountStore, UserAccountStore>();
             services.AddScoped<ICarRepository, CarRepository>();
             services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

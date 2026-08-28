@@ -15,7 +15,7 @@ namespace CarRental.Application.Services;
 
 public sealed class AuthService(
     UserManager<ApplicationUser> userManager,
-    IUserRegistrar userRegistrar,
+    IUserAccountStore userAccounts,
     IJwtTokenGenerator tokenGenerator,
     IRefreshTokenRepository refreshTokens,
     IUnitOfWork unitOfWork,
@@ -52,7 +52,7 @@ public sealed class AuthService(
             DriverLicenseNumber = driverLicenseNumber,
         };
 
-        var created = await userRegistrar.CreateAsync(user, request.Password, cancellationToken);
+        var created = await userAccounts.CreateAsync(user, request.Password, cancellationToken);
 
         if (created.IsError)
         {

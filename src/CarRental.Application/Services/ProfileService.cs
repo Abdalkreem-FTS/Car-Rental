@@ -10,6 +10,7 @@ namespace CarRental.Application.Services;
 
 public sealed class ProfileService(
     UserManager<ApplicationUser> userManager,
+    IUserAccountStore userAccounts,
     IRefreshTokenRepository refreshTokens,
     IUnitOfWork unitOfWork) : IProfileService
 {
@@ -34,28 +35,18 @@ public sealed class ProfileService(
             return UserErrors.NotFound;
         }
 
-        var driverLicenseNumber = request.DriverLicenseNumber.Trim().ToUpperInvariant();
+        request.ApplyTo(user);
 
-        if (userManager.Users.Any(other => other.DriverLicenseNumber == driverLicenseNumber && other.Id != userId))
+        var updated = await userAccounts.UpdateAsync(user, cancellationToken);
+
+        if (updated.IsError)
         {
-            return UserErrors.LicenseAlreadyInUse;
+            return updated.Errors;
         }
 
-        user.FirstName = request.FirstName.Trim();
-        user.LastName = request.LastName.Trim();
-        user.PhoneNumber = request.PhoneNumber.Trim();
-        user.DateOfBirth = request.DateOfBirth;
-        user.AddressLine1 = request.AddressLine1.Trim();
-        user.AddressLine2 = string.IsNullOrWhiteSpace(request.AddressLine2) ? null : request.AddressLine2.Trim();
-        user.City = request.City.Trim();
-        user.Country = request.Country.Trim();
-        user.DriverLicenseNumber = driverLicenseNumber;
-
-        var updated = await userManager.UpdateAsync(user);
-
-        if (!updated.Succeeded)
+        if (!updated.Value.Succeeded)
         {
-            return MapIdentityErrors(updated);
+            return MapIdentityErrors(updated.Value);
         }
 
         return user.ToProfileResponse((await userManager.GetRolesAsync(user)).ToList());
