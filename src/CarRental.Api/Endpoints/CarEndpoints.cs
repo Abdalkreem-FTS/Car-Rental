@@ -2,6 +2,7 @@ using CarRental.Api.Extensions;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Application.Contracts.Common;
+using CarRental.Application.Contracts.Reservations;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarRental.Api.Endpoints;
@@ -117,15 +118,30 @@ public static class CarEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Bring a retired car back into the fleet. Admin only.");
 
-        admin.MapDelete("/{id:guid}", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
+        admin.MapPost("/{id:guid}/retire", async (
+                Guid id,
+                RetireCarRequest? request,
+                ICarService carService,
+                CancellationToken cancellationToken) =>
             {
-                var result = await carService.DeleteAsync(id, cancellationToken);
+                var result = await carService.RetireAsync(id, request ?? new RetireCarRequest(), cancellationToken);
 
-                return result.ToNoContent();
+                return result.ToOk();
             })
-            .Produces(StatusCodes.Status204NoContent)
+            .Produces<RetireCarResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .WithSummary("Retire a car from the fleet. Admin only. Existing reservations are kept.");
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .WithSummary("Take a car out of the fleet. Refused while it has confirmed bookings, unless those are cancelled with it. Admin only.");
+
+        admin.MapGet("/{id:guid}/reservations", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
+            {
+                var result = await carService.GetReservationsAsync(id, cancellationToken);
+
+                return result.ToOk();
+            })
+            .Produces<List<ReservationResponse>>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .WithSummary("Every reservation ever made against a car, newest first. Admin only.");
 
         return app;
     }

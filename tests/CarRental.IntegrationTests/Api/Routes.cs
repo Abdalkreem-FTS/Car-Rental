@@ -31,6 +31,10 @@ internal static class Routes
         internal static string AdminById(Guid id) => $"{Admin}/{id}";
 
         internal static string Reinstate(Guid id) => $"{Admin}/{id}/reinstate";
+
+        internal static string Retire(Guid id) => $"{Admin}/{id}/retire";
+
+        internal static string AdminReservations(Guid id) => $"{Admin}/{id}/reservations";
     }
 
     internal static class Reservations

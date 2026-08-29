@@ -207,7 +207,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         foreach (var car in zarqaCars)
         {
-            (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+            (await Api.Cars.RetireAsync(car.Id)).ShouldBeOk();
         }
 
         (await Api.Cars.LocationsAsync()).ShouldBeOk().ShouldNotContain("Zarqa");
@@ -242,7 +242,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         (await Api.Cars.CreateAsync(TestData.NewCar())).ShouldBeForbidden();
         (await Api.Cars.UpdateAsync(car.Id, TestData.CarUpdate(TestData.NewCar()))).ShouldBeForbidden();
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeForbidden();
+        (await Api.Cars.RetireAsync(car.Id)).ShouldBeForbidden();
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
     {
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Picanto");
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+        (await Api.Cars.RetireAsync(car.Id)).ShouldBeOk();
 
         await SignUpAsync();
 
@@ -355,7 +355,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
     {
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Kicks");
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+        (await Api.Cars.RetireAsync(car.Id)).ShouldBeOk();
 
         (await Api.Cars.ReinstateAsync(car.Id)).ShouldBeOk().IsActive.ShouldBeTrue();
 
@@ -367,7 +367,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
     {
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Accent");
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+        (await Api.Cars.RetireAsync(car.Id)).ShouldBeOk();
 
         var response = await Api.Cars.CreateAsync(TestData.NewCar() with { PlateNumber = car.PlateNumber });
 
@@ -380,7 +380,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Corolla");
 
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+        (await Api.Cars.RetireAsync(car.Id)).ShouldBeOk();
 
         var stored = await Factory.WithDbAsync(db => db.Cars.IgnoreQueryFilters().SingleAsync(c => c.Id == car.Id));
         stored.IsActive.ShouldBeFalse();

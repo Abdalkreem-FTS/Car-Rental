@@ -1,4 +1,5 @@
 using CarRental.Application.Contracts.Cars;
+using CarRental.Application.Contracts.Reservations;
 using CarRental.Application.Contracts.Common;
 using CarRental.Domain.Common;
 
@@ -20,5 +21,7 @@ public interface ICarService
 
     Task<Result<CarResponse>> ReinstateAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<Result<Deleted>> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<RetireCarResponse>> RetireAsync(Guid id, RetireCarRequest request, CancellationToken cancellationToken = default);
+
+    Task<Result<List<ReservationResponse>>> GetReservationsAsync(Guid carId, CancellationToken cancellationToken = default);
 }

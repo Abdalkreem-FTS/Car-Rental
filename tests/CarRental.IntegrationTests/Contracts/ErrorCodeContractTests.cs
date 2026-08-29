@@ -18,6 +18,7 @@ public sealed class ErrorCodeContractTests
         ("car.not_found", CarErrors.NotFound),
         ("car.plate_already_in_use", CarErrors.PlateAlreadyInUse("AMM-0001")),
         ("car.unavailable", CarErrors.Unavailable),
+        ("car.has_active_bookings", CarErrors.HasActiveBookings(1)),
         ("reservation.not_found", ReservationErrors.NotFound),
         ("reservation.not_yours", ReservationErrors.NotYours),
         ("reservation.already_cancelled", ReservationErrors.AlreadyCancelled),

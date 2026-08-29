@@ -2,6 +2,8 @@ using CarRental.Application.Abstractions;
 using CarRental.Application.Common;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Application.Contracts.Common;
+using CarRental.Application.Contracts.Reservations;
+using CarRental.Domain.Enums;
 using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
@@ -9,7 +11,7 @@ using CarRental.Domain.Errors;
 
 namespace CarRental.Application.Services;
 
-public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : ICarService
+public sealed class CarService(ICarRepository cars, IReservationRepository reservations, IUnitOfWork unitOfWork) : ICarService
 {
     private const int MaxPageSize = 50;
     
@@ -138,7 +140,10 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
         return saved.IsError ? saved.Errors : car.ToResponse();
     }
 
-    public async Task<Result<Deleted>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<RetireCarResponse>> RetireAsync(
+        Guid id,
+        RetireCarRequest request,
+        CancellationToken cancellationToken = default)
     {
         var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
 
@@ -147,9 +152,38 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
             return CarErrors.NotFound;
         }
 
-        car.IsActive = false;
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
+        var unfinished = await reservations.GetUnfinishedForCarAsync(id, today, cancellationToken);
 
-        return Result.Deleted;
+        if (unfinished.Count > 0 && !request.CancelActiveBookings)
+        {
+            return CarErrors.HasActiveBookings(unfinished.Count);
+        }
+
+        foreach (var reservation in unfinished)
+        {
+            reservation.Status = ReservationStatus.Cancelled;
+            reservation.CancelledAtUtc = DateTimeOffset.UtcNow;
+        }
+
+        car.IsActive = false;
+
+        var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
+
+        return saved.IsError
+            ? saved.Errors
+            : new RetireCarResponse(car.ToResponse(), unfinished.Count);
+    }
+
+    public async Task<Result<List<ReservationResponse>>> GetReservationsAsync(Guid carId, CancellationToken cancellationToken = default)
+    {
+        if (await cars.GetIncludingRetiredAsync(carId, cancellationToken) is null)
+        {
+            return CarErrors.NotFound;
+        }
+
+        var items = await reservations.GetForCarAsync(carId, cancellationToken);
+
+        return items.Select(reservation => reservation.ToResponse()).ToList();
     }
 }

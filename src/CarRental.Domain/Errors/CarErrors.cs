@@ -25,4 +25,8 @@ public static class CarErrors
     public static Error InvalidSorts(string reason) => Error.Validation(
         "sorts",
         reason);
+
+    public static Error HasActiveBookings(int count) => Error.Conflict(
+        "car.has_active_bookings",
+        $"This car has {count} confirmed booking(s) that have not finished. Retire it anyway to cancel them, or wait until they are over.");
 }

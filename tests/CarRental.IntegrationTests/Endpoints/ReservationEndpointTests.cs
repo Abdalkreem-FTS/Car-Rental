@@ -159,7 +159,8 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         (await Api.Reservations.CreateAsync(Booking(car.Id, 12, 14))).ShouldBeCreated();
 
         await SignInAsAdminAsync();
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+        (await Api.Cars.RetireAsync(car.Id, cancelActiveBookings: true)).ShouldBeOk()
+            .CancelledReservations.ShouldBe(1);
 
         await SignInAsync(registration.Email, TestData.Password);
 
@@ -167,6 +168,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         mine.CarMake.ShouldBe(car.Make, "retiring a car must not blank out the bookings that reference it");
         mine.CarModel.ShouldBe(car.Model);
+        mine.Status.ShouldBe(ReservationStatus.Cancelled);
     }
 
     [Fact]
@@ -174,7 +176,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
     {
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Clio");
-        (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
+        (await Api.Cars.RetireAsync(car.Id)).ShouldBeOk();
 
         await SignUpAsync();
 

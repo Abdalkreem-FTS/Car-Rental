@@ -117,7 +117,11 @@ public sealed class CarsApi(HttpClient http)
     public Task<ApiResponse<CarResponse>> ReinstateAsync(Guid id) =>
         http.PostAsAsync<CarResponse>(Routes.Cars.Reinstate(id), body: null);
 
-    public Task<ApiResponse> DeleteAsync(Guid id) => http.DeleteAsAsync(Routes.Cars.AdminById(id));
+    public Task<ApiResponse<RetireCarResponse>> RetireAsync(Guid id, bool cancelActiveBookings = false) =>
+        http.PostAsAsync<RetireCarResponse>(Routes.Cars.Retire(id), new RetireCarRequest(cancelActiveBookings));
+
+    public Task<ApiResponse<List<ReservationResponse>>> ReservationsAsync(Guid id) =>
+        http.GetAsAsync<List<ReservationResponse>>(Routes.Cars.AdminReservations(id));
 }
 
 public sealed class ReservationsApi(HttpClient http)
