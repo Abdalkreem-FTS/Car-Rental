@@ -55,23 +55,9 @@ public static class ValidationFilterExtensions
 
         List<Error> errors =
         [
-            .. validation.Errors.Select(failure => Error.Validation(ToCamelCase(failure.PropertyName), failure.ErrorMessage)),
+            .. validation.Errors.Select(failure => Error.Validation(PropertyPath.ToJsonName(failure.PropertyName), failure.ErrorMessage)),
         ];
 
         return errors.ToProblem();
-    }
-
-    private static string ToCamelCase(string propertyName)
-    {
-        if (string.IsNullOrEmpty(propertyName) || char.IsLower(propertyName[0]))
-        {
-            return propertyName;
-        }
-
-        return string.Create(propertyName.Length, propertyName, static (span, name) =>
-        {
-            name.AsSpan().CopyTo(span);
-            span[0] = char.ToLowerInvariant(span[0]);
-        });
     }
 }
