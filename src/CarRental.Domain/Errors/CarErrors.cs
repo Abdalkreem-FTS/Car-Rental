@@ -31,4 +31,9 @@ public static class CarErrors
     public static Error HasActiveBookings(int count) => Error.Conflict(
         "car.has_active_bookings",
         $"This car has {count} confirmed booking(s) that have not finished. Retire it anyway to cancel them, or wait until they are over.");
+
+    public static Error PickupLocationNotOffered(string requested, string carLocation) => Error.Validation(
+        "car.pickup_location_not_offered",
+        "pickupLocation",
+        $"This car is in {carLocation} and we do not move cars between cities, so it cannot be collected from {requested}.");
 }

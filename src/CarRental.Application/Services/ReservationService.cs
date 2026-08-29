@@ -65,15 +65,18 @@ public sealed class ReservationService(
             return CarErrors.Unavailable;
         }
 
+        if (PickupLocationFor(car, request.PickupLocation) is not { } pickupLocation)
+        {
+            return CarErrors.PickupLocationNotOffered(request.PickupLocation!.Trim(), car.Location);
+        }
+
         var reservation = new Reservation
         {
             UserId = userId,
             CarId = car.Id,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            PickupLocation = string.IsNullOrWhiteSpace(request.PickupLocation)
-                ? car.Location
-                : request.PickupLocation.Trim(),
+            PickupLocation = pickupLocation,
             TotalPrice = car.DailyRate * Reservation.DaysBetween(request.StartDate, request.EndDate),
             Car = car,
         };
@@ -162,9 +165,12 @@ public sealed class ReservationService(
 
         reservation.StartDate = request.StartDate;
         reservation.EndDate = request.EndDate;
-        reservation.PickupLocation = string.IsNullOrWhiteSpace(request.PickupLocation)
-            ? car.Location
-            : request.PickupLocation.Trim();
+        if (PickupLocationFor(car, request.PickupLocation) is not { } pickupLocation)
+        {
+            return CarErrors.PickupLocationNotOffered(request.PickupLocation!.Trim(), car.Location);
+        }
+
+        reservation.PickupLocation = pickupLocation;
 
         reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
         reservation.Car = car;
@@ -206,5 +212,17 @@ public sealed class ReservationService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Updated;
+    }
+
+    private static string? PickupLocationFor(Car car, string? requested)
+    {
+        if (string.IsNullOrWhiteSpace(requested))
+        {
+            return car.Location;
+        }
+
+        return string.Equals(requested.Trim(), car.Location, StringComparison.OrdinalIgnoreCase)
+            ? car.Location
+            : null;
     }
 }
