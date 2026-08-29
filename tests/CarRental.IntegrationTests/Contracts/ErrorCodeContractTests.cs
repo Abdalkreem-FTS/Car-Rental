@@ -106,7 +106,7 @@ public sealed class ErrorCodeContractTests
     [MemberData(nameof(StatusForType))]
     public void ErrorType_MapsToTheStatusItClaims(ErrorType type, int expectedStatus)
     {
-        var problem = Error.Create((int)type, "some.code", "Something went wrong.").ToProblem();
+        var problem = Error.Create(type, "some.code", "Something went wrong.").ToProblem();
 
         problem.ShouldBeAssignableTo<IStatusCodeHttpResult>()!.StatusCode.ShouldBe(expectedStatus);
     }

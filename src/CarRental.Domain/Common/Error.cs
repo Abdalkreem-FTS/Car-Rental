@@ -59,6 +59,6 @@ public readonly record struct Error
     public static Error PreconditionFailed(string code = nameof(PreconditionFailed), string description = "A precondition failed.")
         => new(code, description, ErrorType.PreconditionFailed);
 
-    public static Error Create(int type, string code, string description, string? field = null)
-        => new(code, description, (ErrorType)type, field);
+    public static Error Create(ErrorType type, string code, string description, string? field = null)
+        => new(code, description, type, field);
 }
