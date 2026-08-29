@@ -25,6 +25,7 @@ public static class ReservationEndpoints
                 return result.ToCreated(reservation => $"/api/reservations/{reservation.Id}");
             })
             .WithValidation<CreateReservationRequest>()
+            .WithIdempotency<CreateReservationRequest>()
             .Produces<ReservationResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)

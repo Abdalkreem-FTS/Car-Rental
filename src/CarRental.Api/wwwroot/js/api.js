@@ -70,7 +70,7 @@ async function refreshTokens() {
   return refreshInFlight;
 }
 
-async function send(method, path, { body, auth = true, retry = true } = {}) {
+async function send(method, path, { body, auth = true, retry = true, idempotencyKey } = {}) {
   // After a reload the access token is gone but the cookie is not, so mint a new one first
   // rather than spending a guaranteed 401 to discover the same thing.
   if (auth && !session.accessToken && session.isSignedIn) {
@@ -80,6 +80,7 @@ async function send(method, path, { body, auth = true, retry = true } = {}) {
   const headers = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && session.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
 
   const response = await fetch(path, {
     method,
@@ -90,7 +91,7 @@ async function send(method, path, { body, auth = true, retry = true } = {}) {
   // An expired access token is normal — spend the refresh token and replay the request once.
   if (response.status === 401 && auth && retry && session.isSignedIn) {
     if (await refreshTokens()) {
-      return send(method, path, { body, auth, retry: false });
+      return send(method, path, { body, auth, retry: false, idempotencyKey });
     }
     session.clear();
     redirectToSignIn();
@@ -127,7 +128,8 @@ export const api = {
   searchCars: (query) => send('GET', `/api/cars?${new URLSearchParams(query)}`),
   carLocations: () => send('GET', '/api/cars/locations'),
 
-  createReservation: (payload) => send('POST', '/api/reservations', { body: payload }),
+  createReservation: (payload, idempotencyKey) =>
+    send('POST', '/api/reservations', { body: payload, idempotencyKey }),
   myReservations: () => send('GET', '/api/reservations'),
   updateReservation: (id, payload) => send('PUT', `/api/reservations/${id}`, { body: payload }),
   cancelReservation: (id) => send('POST', `/api/reservations/${id}/cancel`),

@@ -20,6 +20,7 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
             "AspNetUserTokens",
             "AspNetUsers",
             "Cars",
+            "IdempotentRequests",
             "RefreshTokens",
             "Reservations",
             "__EFMigrationsHistory",

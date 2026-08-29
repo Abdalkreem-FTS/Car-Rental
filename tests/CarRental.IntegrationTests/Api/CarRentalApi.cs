@@ -126,7 +126,13 @@ public sealed class CarsApi(HttpClient http)
 
 public sealed class ReservationsApi(HttpClient http)
 {
-    public Task<ApiResponse<ReservationResponse>> CreateAsync(CreateReservationRequest request) =>
+    public Task<ApiResponse<ReservationResponse>> CreateAsync(CreateReservationRequest request, string? idempotencyKey = null) =>
+        http.PostAsAsync<ReservationResponse>(
+            Routes.Reservations.Base,
+            request,
+            idempotencyKey ?? Guid.NewGuid().ToString("N"));
+
+    public Task<ApiResponse<ReservationResponse>> CreateWithoutIdempotencyKeyAsync(CreateReservationRequest request) =>
         http.PostAsAsync<ReservationResponse>(Routes.Reservations.Base, request);
 
     public Task<ApiResponse<List<ReservationResponse>>> ListAsync() =>
@@ -172,6 +178,18 @@ internal static class HttpClientExtensions
             await (body is null
                 ? await http.PostAsync(route, null)
                 : await http.PostAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();
+
+        internal async Task<ApiResponse<T>> PostAsAsync<T>(string route, object body, string idempotencyKey)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, route)
+            {
+                Content = JsonContent.Create(body, options: CarRentalApi.Json),
+            };
+
+            request.Headers.Add("Idempotency-Key", idempotencyKey);
+
+            return await (await http.SendAsync(request)).ReadAsync<T>();
+        }
 
         internal async Task<ApiResponse> PostAsAsync(string route, object? content) =>
             await (content is null

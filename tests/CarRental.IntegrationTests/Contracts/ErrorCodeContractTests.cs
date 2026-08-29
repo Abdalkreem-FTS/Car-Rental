@@ -22,6 +22,8 @@ public sealed class ErrorCodeContractTests
         ("reservation.not_found", ReservationErrors.NotFound),
         ("reservation.already_cancelled", ReservationErrors.AlreadyCancelled),
         ("reservation.already_started", ReservationErrors.AlreadyStarted),
+        ("idempotency.key_reused", IdempotencyErrors.KeyReused),
+        ("idempotency.in_progress", IdempotencyErrors.InProgress),
     ];
 
     public static TheoryData<string, string, string> PublishedErrors

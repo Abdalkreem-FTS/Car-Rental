@@ -12,6 +12,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
     public DbSet<Reservation> Reservations => Set<Reservation>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<IdempotentRequest> IdempotentRequests => Set<IdempotentRequest>();
     
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {

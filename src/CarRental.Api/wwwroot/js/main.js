@@ -156,6 +156,10 @@ const dialog = $('#book-dialog');
 const bookForm = $('#book-form');
 let bookingCar = null;
 
+// One key per booking attempt, so a double tap or a retry after a timeout replays the first
+// booking instead of making a second one.
+let bookingKey = null;
+
 function paintSummary() {
   const { startDate, endDate } = bookForm.elements;
   const summary = $('#book-summary');
@@ -173,6 +177,7 @@ function paintSummary() {
 
 function openBooking(car) {
   bookingCar = car;
+  bookingKey = crypto.randomUUID();
   clearErrors(bookForm);
   bookForm.reset();
 
@@ -220,7 +225,7 @@ bookForm.addEventListener('submit', async (event) => {
 
   await withBusy($('#book-confirm'), 'Booking…', async () => {
     try {
-      const reservation = await api.createReservation({ carId: bookingCar.id, ...data });
+      const reservation = await api.createReservation({ carId: bookingCar.id, ...data }, bookingKey);
       dialog.close();
       toast(`Booked — ${reservation.carMake} ${reservation.carModel} for ${money(reservation.totalPrice)}.`);
 
