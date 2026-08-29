@@ -1,3 +1,5 @@
+using CarRental.Domain.Common;
+using CarRental.Domain.Errors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +16,18 @@ public sealed class GlobalExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
+        // A client that hung up cannot be answered, and it is not a fault of ours. Say so at debug
+        // volume rather than paging someone about a closed browser tab.
+        if (exception is OperationCanceledException && httpContext.RequestAborted.IsCancellationRequested)
+        {
+            logger.LogDebug(
+                "Client cancelled {Method} {Path}",
+                httpContext.Request.Method,
+                httpContext.Request.Path);
+
+            return true;
+        }
+
         var statusCode = exception switch
         {
             UnauthenticatedException => StatusCodes.Status401Unauthorized,
@@ -46,12 +60,17 @@ public sealed class GlobalExceptionHandler(
                     ? "Unauthorized"
                     : isClientError ? null : "An unexpected error occurred.",
                 Detail = ExceptionDetail(exception, isClientError, environment.IsDevelopment()),
-                Extensions = exception is UnauthenticatedException unauthenticated
-                    ? new Dictionary<string, object?> { ["errorCode"] = unauthenticated.Error.Code }
-                    : new Dictionary<string, object?>(),
+                Extensions = new Dictionary<string, object?> { ["errorCode"] = ErrorFor(exception).Code },
             }
         });
     }
+
+    private static Error ErrorFor(Exception exception) => exception switch
+    {
+        UnauthenticatedException unauthenticated => unauthenticated.Error,
+        BadHttpRequestException => RequestErrors.Malformed,
+        _ => RequestErrors.Unexpected,
+    };
 
     private static string ExceptionDetail(Exception exception, bool isClientError, bool isDevelopment)
     {
@@ -60,13 +79,6 @@ public sealed class GlobalExceptionHandler(
             return unauthenticated.Error.Description;
         }
 
-        if (isDevelopment)
-        {
-            return exception.Message;
-        }
-
-        return isClientError
-            ? "The request could not be read. Check that the body is valid JSON and that every field has the type this endpoint expects."
-            : "An unexpected server error occurred.";
+        return isDevelopment ? exception.Message : ErrorFor(exception).Description;
     }
 }

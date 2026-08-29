@@ -1,4 +1,5 @@
 using CarRental.Domain.Common;
+using CarRental.Domain.Errors;
 using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace CarRental.Api.Extensions;
@@ -22,14 +23,27 @@ public static class ProblemExtensions
 
     public static void Customize(ProblemDetailsContext context)
     {
-        context.ProblemDetails.Detail ??= context.ProblemDetails.Status switch
+        Error? error = context.ProblemDetails.Status switch
         {
-            StatusCodes.Status404NotFound => "No endpoint matches this URL.",
-            StatusCodes.Status405MethodNotAllowed => "This endpoint does not accept that HTTP method.",
-            StatusCodes.Status406NotAcceptable => "This endpoint cannot produce any of the media types listed in the 'Accept' header.",
-            StatusCodes.Status415UnsupportedMediaType => "This endpoint expects a JSON body sent as 'Content-Type: application/json'.",
+            StatusCodes.Status404NotFound => RequestErrors.NoSuchEndpoint,
+            StatusCodes.Status405MethodNotAllowed => RequestErrors.MethodNotAllowed,
+            StatusCodes.Status406NotAcceptable => RequestErrors.NotAcceptable,
+            StatusCodes.Status415UnsupportedMediaType => RequestErrors.UnsupportedMediaType,
             _ => null,
         };
+
+        if (error is not { } known)
+        {
+            return;
+        }
+
+        context.ProblemDetails.Detail ??= known.Description;
+
+        // A document carries either an errors map or an errorCode, never both.
+        if (context.ProblemDetails is not HttpValidationProblemDetails)
+        {
+            context.ProblemDetails.Extensions.TryAdd("errorCode", known.Code);
+        }
     }
 
     private static IResult Problem(Error error)
