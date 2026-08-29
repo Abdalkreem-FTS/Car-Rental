@@ -28,6 +28,8 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
 
     public CapturingEmailSender Emails { get; } = new();
 
+    public TestClock Clock { get; } = new();
+
     public DatabaseProbe Database => field ??= new DatabaseProbe(ConnectionString);
 
     public async Task InitializeAsync()
@@ -75,12 +77,16 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+
+            services.RemoveAll<TimeProvider>();
+            services.AddSingleton<TimeProvider>(Clock);
         });
     }
     
     public async Task ResetAsync()
     {
         Emails.Clear();
+        Clock.ResetToRealTime();
 
         await _respawner.ResetAsync(_resetConnection);
 

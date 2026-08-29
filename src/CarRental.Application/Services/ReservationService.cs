@@ -6,6 +6,7 @@ using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
+using Microsoft.Extensions.Logging;
 
 namespace CarRental.Application.Services;
 
@@ -13,8 +14,12 @@ public sealed class ReservationService(
     IReservationRepository reservations,
     ICarRepository cars,
     IUserAccountStore users,
-    IUnitOfWork unitOfWork) : IReservationService
+    IUnitOfWork unitOfWork,
+    TimeProvider clock,
+    ILogger<ReservationService> logger) : IReservationService
 {
+    private DateOnly Today => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
+
     public async Task<Result<ReservationResponse>> CreateAsync(
         Guid userId,
         CreateReservationRequest request,
@@ -35,7 +40,7 @@ public sealed class ReservationService(
             return UserErrors.DateOfBirthMissing;
         }
 
-        if (!RenterRules.IsOldEnough(dateOfBirth, DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)))
+        if (!RenterRules.IsOldEnough(dateOfBirth, Today))
         {
             return UserErrors.TooYoungToRent(RenterRules.MinimumAge);
         }
@@ -93,6 +98,15 @@ public sealed class ReservationService(
 
         await transaction.CommitAsync(cancellationToken);
 
+        logger.LogInformation(
+            "Booked {ReservationId}: car {CarId} for {UserId} from {StartDate} to {EndDate} at {TotalPrice}",
+            reservation.Id,
+            reservation.CarId,
+            userId,
+            reservation.StartDate,
+            reservation.EndDate,
+            reservation.TotalPrice);
+
         return reservation.ToResponse();
     }
 
@@ -136,7 +150,7 @@ public sealed class ReservationService(
             return ReservationErrors.AlreadyCancelled;
         }
 
-        if (reservation.StartDate <= DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime))
+        if (reservation.StartDate <= Today)
         {
             return ReservationErrors.AlreadyStarted;
         }
@@ -192,6 +206,15 @@ public sealed class ReservationService(
 
         await transaction.CommitAsync(cancellationToken);
 
+        logger.LogInformation(
+            "Moved {ReservationId} for {UserId} to {StartDate}-{EndDate}, {PreviousTotalPrice} to {TotalPrice}",
+            reservation.Id,
+            userId,
+            reservation.StartDate,
+            reservation.EndDate,
+            previousTotalPrice,
+            reservation.TotalPrice);
+
         return reservation.ToResponse() with { PreviousTotalPrice = previousTotalPrice };
     }
 
@@ -209,15 +232,23 @@ public sealed class ReservationService(
             return ReservationErrors.AlreadyCancelled;
         }
 
-        if (reservation.StartDate <= DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime))
+        if (reservation.StartDate <= Today)
         {
             return ReservationErrors.AlreadyStarted;
         }
 
         reservation.Status = ReservationStatus.Cancelled;
-        reservation.CancelledAtUtc = DateTimeOffset.UtcNow;
+        reservation.CancelledAtUtc = clock.GetUtcNow();
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Cancelled {ReservationId} for {UserId}, releasing car {CarId} from {StartDate} to {EndDate}",
+            reservation.Id,
+            userId,
+            reservation.CarId,
+            reservation.StartDate,
+            reservation.EndDate);
 
         return Result.Updated;
     }
