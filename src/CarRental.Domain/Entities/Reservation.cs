@@ -30,5 +30,7 @@ public sealed class Reservation
 
     public uint Version { get; set; }
 
-    public int TotalDays => EndDate.DayNumber - StartDate.DayNumber + 1;
+    public int TotalDays => DaysBetween(StartDate, EndDate);
+
+    public static int DaysBetween(DateOnly start, DateOnly end) => end.DayNumber - start.DayNumber + 1;
 }

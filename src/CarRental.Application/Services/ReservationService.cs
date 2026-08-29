@@ -58,11 +58,9 @@ public sealed class ReservationService(
             PickupLocation = string.IsNullOrWhiteSpace(request.PickupLocation)
                 ? car.Location
                 : request.PickupLocation.Trim(),
-            TotalPrice = 0m,
+            TotalPrice = car.DailyRate * Reservation.DaysBetween(request.StartDate, request.EndDate),
             Car = car,
         };
-
-        reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
 
         reservations.Add(reservation);
 
