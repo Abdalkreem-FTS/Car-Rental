@@ -38,4 +38,8 @@ public static class UserErrors
     public static Error EmailNotConfirmed => Error.Forbidden(
         "user.email_not_confirmed",
         "Please confirm your email address before booking a car. Check your inbox for the confirmation link.");
+
+    public static Error RegistrationIncomplete => Error.Failure(
+        "user.registration_incomplete",
+        "We could not finish setting up the account. Nothing was saved. Please try again.");
 }

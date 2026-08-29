@@ -52,6 +52,8 @@ public sealed class AuthService(
             DriverLicenseNumber = driverLicenseNumber,
         };
 
+        await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
+
         var created = await userAccounts.CreateAsync(user, request.Password, cancellationToken);
 
         if (created.IsError)
@@ -64,13 +66,33 @@ public sealed class AuthService(
             return MapIdentityErrors(created.Value);
         }
 
-        await userManager.AddToRoleAsync(user, Roles.Customer);
+        var role = await userManager.AddToRoleAsync(user, Roles.Customer);
 
-        await SendConfirmationAsync(user, cancellationToken);
+        if (!role.Succeeded)
+        {
+            logger.LogError(
+                "Could not put {UserId} in the {Role} role: {Errors}",
+                user.Id,
+                Roles.Customer,
+                string.Join("; ", role.Errors.Select(error => error.Description)));
+
+            return UserErrors.RegistrationIncomplete;
+        }
+
+        var tokens = await IssueTokensAsync(user, cancellationToken);
+
+        if (tokens.IsError)
+        {
+            return tokens.Errors;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
 
         logger.LogInformation("Registered new user {UserId}", user.Id);
 
-        return await IssueTokensAsync(user, cancellationToken);
+        await SendConfirmationAsync(user, cancellationToken);
+
+        return tokens;
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
