@@ -13,6 +13,8 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
 
         builder.HasIndex(x => x.TokenHash).IsUnique();
+        builder.Property(x => x.CreatedAtUtc).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
         builder.HasIndex(x => x.UserId);
 
         builder.HasOne(x => x.User)

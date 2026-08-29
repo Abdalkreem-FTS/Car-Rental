@@ -68,21 +68,24 @@ public sealed class PersistenceTests(CarRentalApiFactory factory) : IntegrationT
         Task<int> Insert() =>
             Factory.WithDbAsync(async db =>
             {
-                db.Users.Add(new ApplicationUser
-                {
-                    UserName = UniqueEmail(),
-                    NormalizedUserName = UniqueEmail().ToUpperInvariant(),
-                    Email = existing.Email!.ToUpperInvariant(),
-                    NormalizedEmail = existing.NormalizedEmail,
-                    PasswordHash = "irrelevant",
-                    PhoneNumber = "+962790000000",
-                    FirstName = "Copy",
-                    LastName = "Cat",
-                    AddressLine1 = "1 St",
-                    City = "Amman",
-                    Country = "Jordan",
-                    DriverLicenseNumber = UniqueLicense(),
-                });
+                var duplicate = ApplicationUser.Register(
+                    UniqueEmail(),
+                    "Copy",
+                    "Cat",
+                    "+962790000000",
+                    null,
+                    "1 St",
+                    null,
+                    "Amman",
+                    "Jordan",
+                    UniqueLicense());
+
+                duplicate.NormalizedUserName = duplicate.UserName!.ToUpperInvariant();
+                duplicate.Email = existing.Email!.ToUpperInvariant();
+                duplicate.NormalizedEmail = existing.NormalizedEmail;
+                duplicate.PasswordHash = "irrelevant";
+
+                db.Users.Add(duplicate);
 
                 return await db.SaveChangesAsync();
             });

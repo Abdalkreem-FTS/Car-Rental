@@ -16,6 +16,8 @@ public sealed class OutboxEmailConfiguration : IEntityTypeConfiguration<OutboxEm
         builder.Property(x => x.Link).HasMaxLength(2000).IsRequired();
         builder.Property(x => x.LastError).HasMaxLength(1000);
 
+        builder.Property(x => x.CreatedAtUtc).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
         builder.HasIndex(x => new { x.SentAtUtc, x.AbandonedAtUtc, x.NextAttemptAtUtc });
     }
 }

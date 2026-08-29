@@ -39,7 +39,7 @@ public sealed class ProfileService(
             return UserErrors.NotFound;
         }
 
-        var requestedLicence = ProfileMappings.NormaliseLicence(request.DriverLicenseNumber);
+        var requestedLicence = ApplicationUser.NormaliseLicence(request.DriverLicenseNumber);
 
         if (!string.Equals(requestedLicence, user.DriverLicenseNumber, StringComparison.Ordinal)
             && await reservations.HasUnfinishedForUserAsync(userId, Today, cancellationToken))
@@ -49,7 +49,16 @@ public sealed class ProfileService(
             return UserErrors.LicenceLockedByBooking;
         }
 
-        request.ApplyTo(user);
+        user.Describe(
+            request.FirstName,
+            request.LastName,
+            request.PhoneNumber,
+            request.DateOfBirth,
+            request.AddressLine1,
+            request.AddressLine2,
+            request.City,
+            request.Country,
+            request.DriverLicenseNumber);
 
         var updated = await userAccounts.UpdateAsync(user, cancellationToken);
 

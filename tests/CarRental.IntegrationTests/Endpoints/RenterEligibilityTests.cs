@@ -34,7 +34,16 @@ public sealed class RenterEligibilityTests(CarRentalApiFactory factory) : Integr
         await Factory.WithDbAsync(async db =>
         {
             var user = await db.Users.SingleAsync(candidate => candidate.Id == auth.User.Id);
-            user.DateOfBirth = stillSeventeen;
+            user.Describe(
+                user.FirstName,
+                user.LastName,
+                user.PhoneNumber!,
+                stillSeventeen,
+                user.AddressLine1,
+                user.AddressLine2,
+                user.City,
+                user.Country,
+                user.DriverLicenseNumber);
 
             return await db.SaveChangesAsync();
         });

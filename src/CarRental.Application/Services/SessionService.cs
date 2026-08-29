@@ -48,15 +48,17 @@ public sealed class SessionService(
     public Task<Result<Success>> LogoutEverywhereAsync(Guid userId, CancellationToken cancellationToken = default) =>
         tokenIssuer.RevokeEverythingAsync(userId, cancellationToken);
 
-    private static readonly ApplicationUser Nobody = new()
-    {
-        FirstName = string.Empty,
-        LastName = string.Empty,
-        AddressLine1 = string.Empty,
-        City = string.Empty,
-        Country = string.Empty,
-        DriverLicenseNumber = string.Empty,
-    };
+    private static readonly ApplicationUser Nobody = ApplicationUser.Register(
+        "nobody@carrental.invalid",
+        "Nobody",
+        "Nobody",
+        "+000000000",
+        null,
+        "Nowhere",
+        null,
+        "Nowhere",
+        "Nowhere",
+        "NOBODY");
 
     private static string? _nobodysHash;
 

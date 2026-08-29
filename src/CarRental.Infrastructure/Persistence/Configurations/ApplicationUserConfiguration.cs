@@ -18,6 +18,8 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.Ignore(x => x.FullName);
 
+        builder.Property(x => x.CreatedAtUtc).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
         builder.HasIndex(x => x.DriverLicenseNumber).IsUnique();
 
         builder.HasIndex(x => x.NormalizedEmail).IsUnique();

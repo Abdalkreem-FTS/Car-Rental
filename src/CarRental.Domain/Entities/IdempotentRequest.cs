@@ -16,7 +16,7 @@ public sealed class IdempotentRequest
 
     public string? ResponseBody { get; set; }
 
-    public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAtUtc { get; set; }
 
     public DateTimeOffset? CompletedAtUtc { get; set; }
 }

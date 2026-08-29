@@ -44,20 +44,19 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var admin = new ApplicationUser
-        {
-            Id = Guid.NewGuid(),
-            UserName = _options.AdminEmail,
-            Email = _options.AdminEmail,
-            EmailConfirmed = true,
-            PhoneNumber = "+962790000000",
-            FirstName = "Site",
-            LastName = "Administrator",
-            AddressLine1 = "1 Rainbow Street",
-            City = "Amman",
-            Country = "Jordan",
-            DriverLicenseNumber = "ADMIN-0001",
-        };
+        var admin = ApplicationUser.Register(
+            _options.AdminEmail,
+            "Site",
+            "Administrator",
+            "+962790000000",
+            new DateOnly(1990, 1, 1),
+            "1 Rainbow Street",
+            null,
+            "Amman",
+            "Jordan",
+            "ADMIN-0001");
+
+        admin.EmailConfirmed = true;
 
         var created = await userManager.CreateAsync(admin, _options.AdminPassword);
 

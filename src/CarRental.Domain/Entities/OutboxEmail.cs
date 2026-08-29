@@ -24,5 +24,5 @@ public sealed class OutboxEmail
 
     public string? LastError { get; set; }
 
-    public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAtUtc { get; set; }
 }

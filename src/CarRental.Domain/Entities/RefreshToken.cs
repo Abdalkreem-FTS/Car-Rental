@@ -16,7 +16,7 @@ public sealed class RefreshToken
 
     public required DateTimeOffset ExpiresAtUtc { get; set; }
 
-    public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAtUtc { get; set; }
 
     public DateTimeOffset? RevokedAtUtc { get; set; }
 

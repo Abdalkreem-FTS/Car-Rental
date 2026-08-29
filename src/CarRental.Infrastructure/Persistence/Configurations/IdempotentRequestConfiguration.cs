@@ -20,6 +20,8 @@ public sealed class IdempotentRequestConfiguration : IEntityTypeConfiguration<Id
             .IsUnique()
             .HasDatabaseName(UniqueIndexName);
 
+        builder.Property(x => x.CreatedAtUtc).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
         builder.HasIndex(x => x.CreatedAtUtc);
     }
 }

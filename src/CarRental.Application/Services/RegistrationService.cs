@@ -32,23 +32,17 @@ public sealed class RegistrationService(
             return UserErrors.EmailAlreadyInUse(email);
         }
 
-        var driverLicenseNumber = request.DriverLicenseNumber.Trim().ToUpperInvariant();
-
-        var user = new ApplicationUser
-        {
-            Id = Guid.NewGuid(),
-            UserName = email,
-            Email = email,
-            PhoneNumber = request.PhoneNumber.Trim(),
-            FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim(),
-            DateOfBirth = request.DateOfBirth,
-            AddressLine1 = request.AddressLine1.Trim(),
-            AddressLine2 = string.IsNullOrWhiteSpace(request.AddressLine2) ? null : request.AddressLine2.Trim(),
-            City = request.City.Trim(),
-            Country = request.Country.Trim(),
-            DriverLicenseNumber = driverLicenseNumber,
-        };
+        var user = ApplicationUser.Register(
+            email,
+            request.FirstName,
+            request.LastName,
+            request.PhoneNumber,
+            request.DateOfBirth,
+            request.AddressLine1,
+            request.AddressLine2,
+            request.City,
+            request.Country,
+            request.DriverLicenseNumber);
 
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 

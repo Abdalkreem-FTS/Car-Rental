@@ -22,7 +22,7 @@ public sealed class Reservation
 
     public string? PickupLocation { get; set; }
 
-    public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAtUtc { get; set; }
 
     public DateTimeOffset? CancelledAtUtc { get; set; }
 
