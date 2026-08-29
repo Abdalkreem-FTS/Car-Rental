@@ -24,6 +24,10 @@ public static class RequestErrors
         "request.unsupported_media_type",
         "This endpoint expects a JSON body sent as 'Content-Type: application/json'.");
 
+    public static Error BodyRequired => Error.BadRequest(
+        "request.body_required",
+        "This endpoint expects a JSON body. None was sent, or it was the literal null.");
+
     public static Error Unexpected => Error.Unexpected(
         "server.unexpected",
         "An unexpected server error occurred.");
