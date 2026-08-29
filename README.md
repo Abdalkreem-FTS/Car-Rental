@@ -54,7 +54,13 @@ tests/
   CarRental.UnitTests        domain rules and validators, no I/O
 ```
 
-Each project depends only on the one inside it, with one deliberate exception: ASP.NET Core
+References point inward only: `Application` on `Domain`, `Infrastructure` on `Application`, and
+`Api` on both `Application` and `Infrastructure` — the last so endpoints can name a service
+without reaching through the layer that composes it. Nothing points outward, and `Domain` names
+no project at all. `ArchitectureTests` asserts exactly that, so this paragraph fails the build
+rather than going quietly stale.
+
+There is one deliberate exception, and it is about packages rather than projects: ASP.NET Core
 Identity. `ApplicationUser : IdentityUser<Guid>` lives in Domain, and the services take
 `UserManager<ApplicationUser>` directly rather than behind an interface of our own. Wrapping
 Identity would mean re-declaring most of its surface for no gain, so it is treated as part of the
