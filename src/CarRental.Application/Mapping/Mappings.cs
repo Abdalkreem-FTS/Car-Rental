@@ -16,6 +16,6 @@ public static partial class Mappings
 
     public static partial ProfileResponse ToProfileResponse(this ApplicationUser user, IReadOnlyList<string> roles);
     
-    [MapProperty("Car.DailyRate", nameof(ReservationResponse.DailyRate))]
+    [MapperIgnoreTarget(nameof(ReservationResponse.PreviousTotalPrice))]
     public static partial ReservationResponse ToResponse(this Reservation reservation);
 }

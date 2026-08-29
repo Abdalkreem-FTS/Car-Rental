@@ -26,6 +26,7 @@ public sealed class ReservationTests
         CarId = Guid.NewGuid(),
         StartDate = start,
         EndDate = end,
+        DailyRate = 40m,
         TotalPrice = 0m,
     };
 }

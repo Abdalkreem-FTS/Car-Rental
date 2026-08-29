@@ -14,6 +14,8 @@ public sealed class Reservation
 
     public required DateOnly EndDate { get; set; }
 
+    public required decimal DailyRate { get; set; }
+
     public required decimal TotalPrice { get; set; }
 
     public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;

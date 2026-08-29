@@ -77,6 +77,7 @@ public sealed class ReservationService(
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             PickupLocation = pickupLocation,
+            DailyRate = car.DailyRate,
             TotalPrice = car.DailyRate * Reservation.DaysBetween(request.StartDate, request.EndDate),
             Car = car,
         };
@@ -177,7 +178,9 @@ public sealed class ReservationService(
 
         reservation.PickupLocation = pickupLocation;
 
-        reservation.TotalPrice = car.DailyRate * reservation.TotalDays;
+        var previousTotalPrice = reservation.TotalPrice;
+
+        reservation.TotalPrice = reservation.DailyRate * reservation.TotalDays;
         reservation.Car = car;
 
         var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
@@ -189,7 +192,7 @@ public sealed class ReservationService(
 
         await transaction.CommitAsync(cancellationToken);
 
-        return reservation.ToResponse();
+        return reservation.ToResponse() with { PreviousTotalPrice = previousTotalPrice };
     }
 
     public async Task<Result<Updated>> CancelAsync(Guid userId, Guid reservationId, CancellationToken cancellationToken = default)

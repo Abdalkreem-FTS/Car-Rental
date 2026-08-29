@@ -359,7 +359,10 @@ modifyForm.addEventListener('submit', async (event) => {
     try {
       const updated = await api.updateReservation(modifying.id, data, modifying.version);
       modifyDialog.close();
-      toast(`Moved to ${formatDate(updated.startDate)} — ${money(updated.totalPrice)}.`);
+      const change = updated.previousTotalPrice != null && updated.previousTotalPrice !== updated.totalPrice
+        ? ` (was ${money(updated.previousTotalPrice)})`
+        : '';
+      toast(`Moved to ${formatDate(updated.startDate)} — ${money(updated.totalPrice)}${change}.`);
 
       await loadReservations();
       loadCars();
