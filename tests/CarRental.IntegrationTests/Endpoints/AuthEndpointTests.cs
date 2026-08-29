@@ -1,3 +1,4 @@
+using CarRental.Domain.Entities;
 using CarRental.Domain.Errors;
 using CarRental.IntegrationTests.Api;
 using CarRental.IntegrationTests.Infrastructure;
@@ -203,7 +204,8 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
 
         await Factory.WithDbAsync(async db =>
         {
-            var token = await db.RefreshTokens.SingleAsync(t => t.Token == auth.RefreshToken);
+            var hash = RefreshToken.HashOf(auth.RefreshToken);
+            var token = await db.RefreshTokens.SingleAsync(t => t.TokenHash == hash);
             token.ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
 
             return await db.SaveChangesAsync();

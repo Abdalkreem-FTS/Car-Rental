@@ -1,12 +1,18 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace CarRental.Domain.Entities;
 
 public sealed class RefreshToken
 {
+    public static string HashOf(string token) =>
+        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
     public Guid Id { get; set; } = Guid.NewGuid();
 
     public required Guid UserId { get; set; }
 
-    public required string Token { get; set; }
+    public required string TokenHash { get; set; }
 
     public required DateTimeOffset ExpiresAtUtc { get; set; }
 

@@ -127,16 +127,24 @@ public sealed class AuthService(
     {
         var stored = await refreshTokens.GetByTokenAsync(request.RefreshToken, cancellationToken);
 
-        if (stored?.User is null)
+        if (stored is null)
+        {
+            return AuthErrors.InvalidRefreshToken;
+        }
+
+        // Asked for explicitly rather than relying on the repository having included the
+        // navigation, so a query the repository changes later cannot quietly turn this into an
+        // authentication hole.
+        if (await userManager.FindByIdAsync(stored.UserId.ToString()) is not { } user)
         {
             return AuthErrors.InvalidRefreshToken;
         }
 
         var replacement = NewRefreshToken(stored.UserId);
 
-        if (await refreshTokens.TrySpendAsync(request.RefreshToken, replacement.Id, cancellationToken))
+        if (await refreshTokens.TrySpendAsync(request.RefreshToken, replacement.Entity.Id, cancellationToken))
         {
-            return await IssueTokensAsync(stored.User, replacement, cancellationToken);
+            return await IssueTokensAsync(user, replacement, cancellationToken);
         }
 
         return await RefusalFor(request.RefreshToken, stored.UserId, cancellationToken);
@@ -291,31 +299,36 @@ public sealed class AuthService(
         }
     }
 
-    private RefreshToken NewRefreshToken(Guid userId) => new()
+    private (RefreshToken Entity, string Token) NewRefreshToken(Guid userId)
     {
-        UserId = userId,
-        Token = tokenGenerator.GenerateRefreshToken(),
-        ExpiresAtUtc = DateTimeOffset.UtcNow.Add(tokenGenerator.RefreshTokenLifetime),
-    };
+        var token = tokenGenerator.GenerateRefreshToken();
+
+        return (new RefreshToken
+        {
+            UserId = userId,
+            TokenHash = RefreshToken.HashOf(token),
+            ExpiresAtUtc = DateTimeOffset.UtcNow.Add(tokenGenerator.RefreshTokenLifetime),
+        }, token);
+    }
 
     private Task<Result<AuthResponse>> IssueTokensAsync(ApplicationUser user, CancellationToken cancellationToken) =>
         IssueTokensAsync(user, NewRefreshToken(user.Id), cancellationToken);
 
     private async Task<Result<AuthResponse>> IssueTokensAsync(
         ApplicationUser user,
-        RefreshToken refreshToken,
+        (RefreshToken Entity, string Token) refreshToken,
         CancellationToken cancellationToken)
     {
         var roles = (await userManager.GetRolesAsync(user)).ToList();
         var (accessToken, expiresAtUtc) = tokenGenerator.GenerateAccessToken(user, roles);
 
-        refreshTokens.Add(refreshToken);
+        refreshTokens.Add(refreshToken.Entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AuthResponse(
             accessToken,
             refreshToken.Token,
-            refreshToken.ExpiresAtUtc,
+            refreshToken.Entity.ExpiresAtUtc,
             expiresAtUtc,
             user.ToResponse(roles));
     }

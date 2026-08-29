@@ -6,19 +6,23 @@ namespace CarRental.Infrastructure.Persistence.Repositories;
 
 public sealed class RefreshTokenRepository(AppDbContext context) : IRefreshTokenRepository
 {
-    public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default) =>
-        context.RefreshTokens
+    public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        var hash = RefreshToken.HashOf(token);
+
+        return context.RefreshTokens
             .AsNoTracking()
-            .Include(refreshToken => refreshToken.User)
-            .FirstOrDefaultAsync(refreshToken => refreshToken.Token == token, cancellationToken);
+            .FirstOrDefaultAsync(refreshToken => refreshToken.TokenHash == hash, cancellationToken);
+    }
 
     public async Task<bool> TrySpendAsync(string token, Guid replacedByTokenId, CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
+        var hash = RefreshToken.HashOf(token);
 
         var spent = await context.RefreshTokens
             .Where(refreshToken =>
-                refreshToken.Token == token &&
+                refreshToken.TokenHash == hash &&
                 refreshToken.RevokedAtUtc == null &&
                 refreshToken.ExpiresAtUtc > now)
             .ExecuteUpdateAsync(
@@ -30,15 +34,19 @@ public sealed class RefreshTokenRepository(AppDbContext context) : IRefreshToken
         return spent == 1;
     }
 
-    public Task RevokeAsync(string token, Guid userId, CancellationToken cancellationToken = default) =>
-        context.RefreshTokens
+    public Task RevokeAsync(string token, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var hash = RefreshToken.HashOf(token);
+
+        return context.RefreshTokens
             .Where(refreshToken =>
-                refreshToken.Token == token &&
+                refreshToken.TokenHash == hash &&
                 refreshToken.UserId == userId &&
                 refreshToken.RevokedAtUtc == null)
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(refreshToken => refreshToken.RevokedAtUtc, DateTimeOffset.UtcNow),
                 cancellationToken);
+    }
 
     public void Add(RefreshToken refreshToken) => context.RefreshTokens.Add(refreshToken);
 

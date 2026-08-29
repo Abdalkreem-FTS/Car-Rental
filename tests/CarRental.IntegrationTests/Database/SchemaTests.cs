@@ -50,7 +50,7 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
     [InlineData("AspNetUsers", "NormalizedEmail")]
     [InlineData("AspNetUsers", "DriverLicenseNumber")]
     [InlineData("Cars", "PlateNumber")]
-    [InlineData("RefreshTokens", "Token")]
+    [InlineData("RefreshTokens", "TokenHash")]
     public async Task Migrate_ForAnIdentifyingColumn_CreatesAUniqueIndex(string table, string column)
     {
         var uniqueIndexes = await Factory.Database.UniqueIndexesAsync(table);

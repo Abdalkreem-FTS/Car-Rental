@@ -1,4 +1,5 @@
 using System.Net;
+using CarRental.Domain.Entities;
 using CarRental.Domain.Errors;
 using CarRental.IntegrationTests.Api;
 using CarRental.IntegrationTests.Infrastructure;
@@ -69,7 +70,7 @@ public sealed class RefreshRotationTests(CarRentalApiFactory factory) : Integrat
         (await RefreshWithAsync(auth.RefreshToken)).ShouldBeOk();
 
         var spent = await Factory.WithDbAsync(db => db.RefreshTokens
-            .SingleAsync(token => token.Token == auth.RefreshToken));
+            .SingleAsync(token => token.TokenHash == RefreshToken.HashOf(auth.RefreshToken)));
 
         spent.RevokedAtUtc.ShouldNotBeNull();
         spent.ReplacedByTokenId.ShouldNotBeNull("without this a replay cannot be told from an ordinary revocation");

@@ -52,7 +52,7 @@ public sealed class TokenLifetimeTests
     private static RefreshToken NewRefreshToken(DateTimeOffset expiresAtUtc) => new()
     {
         UserId = Guid.NewGuid(),
-        Token = "token",
+        TokenHash = RefreshToken.HashOf("token"),
         ExpiresAtUtc = expiresAtUtc,
     };
 

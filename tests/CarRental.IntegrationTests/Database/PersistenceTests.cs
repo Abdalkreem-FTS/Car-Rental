@@ -174,7 +174,7 @@ public sealed class PersistenceTests(CarRentalApiFactory factory) : IntegrationT
             .ToListAsync());
 
         tokens.Count.ShouldBe(2);
-        tokens[0].Token.ShouldBe(auth.RefreshToken);
+        tokens[0].TokenHash.ShouldBe(RefreshToken.HashOf(auth.RefreshToken));
         tokens[0].RevokedAtUtc.ShouldNotBeNull();
         tokens[1].RevokedAtUtc.ShouldBeNull();
     }
