@@ -5,18 +5,33 @@ using FluentValidation;
 
 namespace CarRental.Api.Extensions;
 
+public sealed record ValidatedRequest(Type RequestType);
+
 public static class ValidationFilterExtensions
 {
     public static RouteHandlerBuilder WithValidation<TRequest>(this RouteHandlerBuilder builder) =>
         builder
             .AddEndpointFilterFactory((factory, next) =>
             {
+                RequireValidator<TRequest>(factory.ApplicationServices);
+
                 var index = ArgumentIndexOf<TRequest>(factory.MethodInfo);
 
                 return context => ValidateAsync<TRequest>(context, next, index);
             })
+            .WithMetadata(new ValidatedRequest(typeof(TRequest)))
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest);
+
+    private static void RequireValidator<TRequest>(IServiceProvider services)
+    {
+        if (!services.GetRequiredService<IServiceProviderIsService>().IsService(typeof(IValidator<TRequest>)))
+        {
+            throw new InvalidOperationException(
+                $"WithValidation<{typeof(TRequest).Name}> needs an IValidator<{typeof(TRequest).Name}> registered. " +
+                "Without one the endpoint would answer 500 on its first request instead of failing here.");
+        }
+    }
 
     private static int ArgumentIndexOf<TRequest>(MethodInfo handler)
     {
