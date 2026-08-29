@@ -43,7 +43,7 @@ public sealed class RenterEligibilityTests(CarRentalApiFactory factory) : Integr
                 user.AddressLine2,
                 user.City,
                 user.Country,
-                user.DriverLicenseNumber);
+                user.DriverLicenseNumber!);
 
             return await db.SaveChangesAsync();
         });

@@ -44,17 +44,11 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var admin = ApplicationUser.Register(
+        var admin = ApplicationUser.RegisterAdministrator(
             _options.AdminEmail,
             "Site",
             "Administrator",
-            "+962790000000",
-            new DateOnly(1990, 1, 1),
-            "1 Rainbow Street",
-            null,
-            "Amman",
-            "Jordan",
-            "ADMIN-0001");
+            "+962790000000");
 
         admin.EmailConfirmed = true;
 

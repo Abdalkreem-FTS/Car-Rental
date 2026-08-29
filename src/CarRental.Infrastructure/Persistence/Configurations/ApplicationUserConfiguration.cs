@@ -14,13 +14,17 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
         builder.Property(x => x.AddressLine2).HasMaxLength(200);
         builder.Property(x => x.City).HasMaxLength(100).IsRequired();
         builder.Property(x => x.Country).HasMaxLength(100).IsRequired();
-        builder.Property(x => x.DriverLicenseNumber).HasMaxLength(30).IsRequired();
+        builder.Property(x => x.DriverLicenseNumber).HasMaxLength(30);
 
         builder.Ignore(x => x.FullName);
 
         builder.Property(x => x.CreatedAtUtc).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
-        builder.HasIndex(x => x.DriverLicenseNumber).IsUnique();
+        builder.HasIndex(x => x.DriverLicenseNumber)
+            .IsUnique()
+            .HasFilter("""
+                "DriverLicenseNumber" IS NOT NULL
+                """);
 
         builder.HasIndex(x => x.NormalizedEmail).IsUnique();
     }

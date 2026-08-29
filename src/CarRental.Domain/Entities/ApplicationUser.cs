@@ -22,7 +22,7 @@ public sealed class ApplicationUser : IdentityUser<Guid>
 
     public string Country { get; private set; } = string.Empty;
 
-    public string DriverLicenseNumber { get; private set; } = string.Empty;
+    public string? DriverLicenseNumber { get; private set; }
 
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
@@ -61,6 +61,25 @@ public sealed class ApplicationUser : IdentityUser<Guid>
             city,
             country,
             driverLicenseNumber);
+
+        return user;
+    }
+
+    public static ApplicationUser RegisterAdministrator(
+        string email,
+        string firstName,
+        string lastName,
+        string phoneNumber)
+    {
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            Email = Required(email, nameof(email)),
+            UserName = Required(email, nameof(email)),
+            FirstName = Required(firstName, nameof(firstName)),
+            LastName = Required(lastName, nameof(lastName)),
+            PhoneNumber = PhoneNumbers.Normalise(Required(phoneNumber, nameof(phoneNumber))),
+        };
 
         return user;
     }

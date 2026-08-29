@@ -103,8 +103,9 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
 
         nullable.ShouldContain("AddressLine2");
         nullable.ShouldContain("DateOfBirth");
+        nullable.ShouldContain("DriverLicenseNumber", "an administrator is not a renter and has no licence");
 
-        foreach (var required in new[] { "FirstName", "LastName", "AddressLine1", "City", "Country", "DriverLicenseNumber" })
+        foreach (var required in new[] { "FirstName", "LastName", "AddressLine1", "City", "Country" })
         {
             nullable.ShouldNotContain(required);
         }
@@ -152,5 +153,15 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
                 definition => definition.Contains($"""USING gin ("{column}" gin_trgm_ops)"""),
                 $"ILIKE '%term%' on {column} cannot use a btree index, so it needs a trigram one.");
         }
+    }
+
+    [Fact]
+    public async Task Migrate_ForTheLicenceIndex_LeavesRoomForPrincipalsWhoNeverRent()
+    {
+        var definitions = await Factory.Database.IndexDefinitionsAsync("AspNetUsers");
+
+        definitions.ShouldContain(
+            definition => definition.Contains("\"DriverLicenseNumber\"") && definition.Contains("IS NOT NULL"),
+            "without the filter every licenceless account competes for one slot in the unique index");
     }
 }
