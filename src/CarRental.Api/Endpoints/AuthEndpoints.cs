@@ -21,11 +21,11 @@ public static class AuthEndpoints
 
         group.MapPost("/register", async (
                 RegisterRequest request,
-                IAuthService authService,
+                IRegistrationService registrationService,
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.RegisterAsync(request, cancellationToken);
+                var result = await registrationService.RegisterAsync(request, cancellationToken);
 
                 return result.ToOkWithRefreshCookie(context);
             })
@@ -38,11 +38,11 @@ public static class AuthEndpoints
 
         group.MapPost("/login", async (
                 LoginRequest request,
-                IAuthService authService,
+                ISessionService sessionService,
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.LoginAsync(request, cancellationToken);
+                var result = await sessionService.LoginAsync(request, cancellationToken);
 
                 return result.ToOkWithRefreshCookie(context);
             })
@@ -55,7 +55,7 @@ public static class AuthEndpoints
             .WithSummary("Exchange email and password for an access token and a refresh token.");
 
         group.MapPost("/refresh", async (
-                IAuthService authService,
+                ISessionService sessionService,
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
@@ -64,7 +64,7 @@ public static class AuthEndpoints
                     return AuthErrors.InvalidRefreshToken.ToProblem();
                 }
 
-                var result = await authService.RefreshAsync(new RefreshTokenRequest(presented), cancellationToken);
+                var result = await sessionService.RefreshAsync(new RefreshTokenRequest(presented), cancellationToken);
 
                 if (result.IsError)
                 {
@@ -79,11 +79,11 @@ public static class AuthEndpoints
 
         authenticated.MapPost("/logout", async (
                 ClaimsPrincipal user,
-                IAuthService authService,
+                ISessionService sessionService,
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.LogoutAsync(user.GetUserId(), RefreshTokenCookie.Read(context), cancellationToken);
+                var result = await sessionService.LogoutAsync(user.GetUserId(), RefreshTokenCookie.Read(context), cancellationToken);
 
                 RefreshTokenCookie.Clear(context);
 
@@ -94,11 +94,11 @@ public static class AuthEndpoints
 
         authenticated.MapPost("/logout-all", async (
                 ClaimsPrincipal user,
-                IAuthService authService,
+                ISessionService sessionService,
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.LogoutEverywhereAsync(user.GetUserId(), cancellationToken);
+                var result = await sessionService.LogoutEverywhereAsync(user.GetUserId(), cancellationToken);
 
                 RefreshTokenCookie.Clear(context);
 
@@ -109,10 +109,10 @@ public static class AuthEndpoints
 
         group.MapPost("/confirm-email", async (
                 ConfirmEmailRequest request,
-                IAuthService authService,
+                IRegistrationService registrationService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.ConfirmEmailAsync(request, cancellationToken);
+                var result = await registrationService.ConfirmEmailAsync(request, cancellationToken);
 
                 return result.ToNoContent();
             })
@@ -124,10 +124,10 @@ public static class AuthEndpoints
 
         group.MapPost("/resend-confirmation", async (
                 ResendConfirmationRequest request,
-                IAuthService authService,
+                IRegistrationService registrationService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.ResendConfirmationAsync(request, cancellationToken);
+                var result = await registrationService.ResendConfirmationAsync(request, cancellationToken);
 
                 return result.ToAccepted();
             })
@@ -139,10 +139,10 @@ public static class AuthEndpoints
 
         group.MapPost("/forgot-password", async (
                 ForgotPasswordRequest request,
-                IAuthService authService,
+                IPasswordResetService passwordResetService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.ForgotPasswordAsync(request, cancellationToken);
+                var result = await passwordResetService.ForgotPasswordAsync(request, cancellationToken);
 
                 return result.ToAccepted();
             })
@@ -154,10 +154,10 @@ public static class AuthEndpoints
 
         group.MapPost("/reset-password", async (
                 ResetPasswordRequest request,
-                IAuthService authService,
+                IPasswordResetService passwordResetService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authService.ResetPasswordAsync(request, cancellationToken);
+                var result = await passwordResetService.ResetPasswordAsync(request, cancellationToken);
 
                 return result.ToNoContent();
             })

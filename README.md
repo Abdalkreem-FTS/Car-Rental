@@ -38,7 +38,12 @@ tests/
   CarRental.UnitTests        domain rules and validators, no I/O
 ```
 
-Each project depends only on the one inside it.
+Each project depends only on the one inside it, with one deliberate exception: ASP.NET Core
+Identity. `ApplicationUser : IdentityUser<Guid>` lives in Domain, and the services take
+`UserManager<ApplicationUser>` directly rather than behind an interface of our own. Wrapping
+Identity would mean re-declaring most of its surface for no gain, so it is treated as part of the
+platform, like `DateTimeOffset`. Everything that touches EF Core, Npgsql, JWT or SMTP does stay
+behind an interface.
 
 **No exceptions for control flow.** Every service method returns `Result<TValue>` holding either
 a value or a list of `Error`s. Implicit conversions keep the call sites clean:
