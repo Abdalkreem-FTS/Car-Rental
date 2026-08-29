@@ -4,6 +4,7 @@ using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Errors;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
 
 namespace CarRental.Application.Services;
@@ -12,8 +13,13 @@ public sealed class ProfileService(
     UserManager<ApplicationUser> userManager,
     IUserAccountStore userAccounts,
     IRefreshTokenRepository refreshTokens,
-    IUnitOfWork unitOfWork) : IProfileService
+    IReservationRepository reservations,
+    IUnitOfWork unitOfWork,
+    TimeProvider clock,
+    ILogger<ProfileService> logger) : IProfileService
 {
+    private DateOnly Today => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
+
     public async Task<Result<ProfileResponse>> GetAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
@@ -33,6 +39,16 @@ public sealed class ProfileService(
         if (user is null)
         {
             return UserErrors.NotFound;
+        }
+
+        var requestedLicence = ProfileMappings.NormaliseLicence(request.DriverLicenseNumber);
+
+        if (!string.Equals(requestedLicence, user.DriverLicenseNumber, StringComparison.Ordinal)
+            && await reservations.HasUnfinishedForUserAsync(userId, Today, cancellationToken))
+        {
+            logger.LogWarning("Refused a licence change for {UserId} while a booking stands against the old one.", userId);
+
+            return UserErrors.LicenceLockedByBooking;
         }
 
         request.ApplyTo(user);

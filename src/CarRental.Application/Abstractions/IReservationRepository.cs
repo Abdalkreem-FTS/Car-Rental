@@ -15,6 +15,8 @@ public interface IReservationRepository
         int pageSize,
         CancellationToken cancellationToken = default);
 
+    Task<bool> HasUnfinishedForUserAsync(Guid userId, DateOnly asOf, CancellationToken cancellationToken = default);
+
     Task<List<Reservation>> GetForCarAsync(Guid carId, CancellationToken cancellationToken = default);
 
     Task<List<Reservation>> GetUnfinishedForCarAsync(Guid carId, DateOnly asOf, CancellationToken cancellationToken = default);

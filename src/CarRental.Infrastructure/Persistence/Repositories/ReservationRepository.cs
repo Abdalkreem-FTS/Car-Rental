@@ -51,6 +51,16 @@ public sealed class ReservationRepository(AppDbContext context) : IReservationRe
         return (items, totalCount);
     }
 
+    public Task<bool> HasUnfinishedForUserAsync(Guid userId, DateOnly asOf, CancellationToken cancellationToken = default) =>
+        context.Reservations
+            .IgnoreQueryFilters()
+            .AnyAsync(
+                reservation =>
+                    reservation.UserId == userId &&
+                    reservation.Status == ReservationStatus.Confirmed &&
+                    reservation.EndDate >= asOf,
+                cancellationToken);
+
     public Task<List<Reservation>> GetForCarAsync(Guid carId, CancellationToken cancellationToken = default) =>
         context.Reservations
             .AsNoTracking()

@@ -10,11 +10,11 @@ public static partial class ProfileMappings
     [MapProperty(
         nameof(UpdateProfileRequest.DriverLicenseNumber),
         nameof(ApplicationUser.DriverLicenseNumber),
-        Use = nameof(NormalizeLicence))]
+        Use = nameof(NormaliseLicence))]
     public static partial void ApplyTo(this UpdateProfileRequest request, ApplicationUser user);
 
     [UserMapping(Default = false)]
-    public static string NormalizeLicence(string value) => value.Trim().ToUpperInvariant();
+    public static string NormaliseLicence(string value) => value.Trim().ToUpperInvariant();
 
     [UserMapping(Default = true)]
     private static string Tidy(string value) => value.Trim();

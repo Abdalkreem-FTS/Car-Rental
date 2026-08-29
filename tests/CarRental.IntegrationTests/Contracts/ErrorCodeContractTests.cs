@@ -19,6 +19,7 @@ public sealed class ErrorCodeContractTests
         ("user.email_not_confirmed", UserErrors.EmailNotConfirmed),
         ("user.date_of_birth_missing", UserErrors.DateOfBirthMissing),
         ("user.too_young_to_rent", UserErrors.TooYoungToRent(18)),
+        ("user.licence_locked_by_booking", UserErrors.LicenceLockedByBooking),
         ("user.invalid_credentials", UserErrors.InvalidCredentials),
         ("user.locked_out", UserErrors.LockedOut),
         ("auth.invalid_refresh_token", AuthErrors.InvalidRefreshToken),

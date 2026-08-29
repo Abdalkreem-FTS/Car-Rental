@@ -58,4 +58,8 @@ public static class UserErrors
     public static Error TooYoungToRent(int minimumAge) => Error.Forbidden(
         "user.too_young_to_rent",
         $"You must be at least {minimumAge} years old to book a car.");
+
+    public static Error LicenceLockedByBooking => Error.Conflict(
+        "user.licence_locked_by_booking",
+        "Your driving licence number is the document your current booking is written against, so it cannot be changed while that booking stands. Contact us if it is wrong.");
 }
