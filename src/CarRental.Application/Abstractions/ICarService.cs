@@ -18,5 +18,7 @@ public interface ICarService
 
     Task<Result<CarResponse>> UpdateAsync(Guid id, UpdateCarRequest request, CancellationToken cancellationToken = default);
 
+    Task<Result<CarResponse>> ReinstateAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<Result<Deleted>> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

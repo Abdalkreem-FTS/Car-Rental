@@ -14,5 +14,4 @@ public sealed record UpdateCarRequest(
     TransmissionType Transmission,
     FuelType Fuel,
     string? ImageUrl,
-    string? Description,
-    bool IsActive);
+    string? Description);

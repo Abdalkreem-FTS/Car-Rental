@@ -114,6 +114,9 @@ public sealed class CarsApi(HttpClient http)
     public Task<ApiResponse<CarResponse>> UpdateAsync(Guid id, UpdateCarRequest request) =>
         http.PutAsAsync<CarResponse>(Routes.Cars.AdminById(id), request);
 
+    public Task<ApiResponse<CarResponse>> ReinstateAsync(Guid id) =>
+        http.PostAsAsync<CarResponse>(Routes.Cars.Reinstate(id), body: null);
+
     public Task<ApiResponse> DeleteAsync(Guid id) => http.DeleteAsAsync(Routes.Cars.AdminById(id));
 }
 

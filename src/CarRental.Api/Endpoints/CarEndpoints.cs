@@ -107,6 +107,16 @@ public static class CarEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Update a car. Admin only.");
 
+        admin.MapPost("/{id:guid}/reinstate", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
+            {
+                var result = await carService.ReinstateAsync(id, cancellationToken);
+
+                return result.ToOk();
+            })
+            .Produces<CarResponse>()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .WithSummary("Bring a retired car back into the fleet. Admin only.");
+
         admin.MapDelete("/{id:guid}", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
             {
                 var result = await carService.DeleteAsync(id, cancellationToken);

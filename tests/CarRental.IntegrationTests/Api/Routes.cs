@@ -29,6 +29,8 @@ internal static class Routes
         internal const string Admin = "/api/admin/cars";
 
         internal static string AdminById(Guid id) => $"{Admin}/{id}";
+
+        internal static string Reinstate(Guid id) => $"{Admin}/{id}/reinstate";
     }
 
     internal static class Reservations

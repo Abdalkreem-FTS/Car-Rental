@@ -117,7 +117,21 @@ public sealed class CarService(ICarRepository cars, IUnitOfWork unitOfWork) : IC
         car.Fuel = request.Fuel;
         car.ImageUrl = string.IsNullOrWhiteSpace(request.ImageUrl) ? null : request.ImageUrl.Trim();
         car.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
-        car.IsActive = request.IsActive;
+        var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
+
+        return saved.IsError ? saved.Errors : car.ToResponse();
+    }
+
+    public async Task<Result<CarResponse>> ReinstateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
+
+        if (car is null)
+        {
+            return CarErrors.NotFound;
+        }
+
+        car.IsActive = true;
 
         var saved = await unitOfWork.TrySaveChangesAsync(cancellationToken);
 

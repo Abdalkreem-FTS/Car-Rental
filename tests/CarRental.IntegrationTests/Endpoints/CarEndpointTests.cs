@@ -1,3 +1,4 @@
+using CarRental.Application.Contracts.Cars;
 using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
 using CarRental.IntegrationTests.Api;
@@ -316,21 +317,47 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
     }
 
     [Fact]
-    public async Task UpdateCar_ForARetiredCar_StillReachesItSoItCanBeBroughtBack()
+    public async Task UpdateCar_WhenTheBodyOmitsAvailability_LeavesTheCarInTheFleet()
+    {
+        await SignInAsAdminAsync();
+        var car = await FindCarAsync("Elantra");
+
+        // A form that edits the rate and sends nothing else. isActive used to default to false
+        // here and quietly retire the car.
+        var response = await Api.PutOffContractAsync<CarResponse>(
+            Routes.Cars.AdminById(car.Id),
+            new
+            {
+                car.Make,
+                car.Model,
+                car.Year,
+                car.PlateNumber,
+                car.Location,
+                DailyRate = 41m,
+                car.Seats,
+                Category = car.Category.ToString(),
+                Transmission = car.Transmission.ToString(),
+                Fuel = car.Fuel.ToString(),
+                car.ImageUrl,
+                car.Description,
+            });
+
+        var updated = response.ShouldBeOk();
+
+        updated.DailyRate.ShouldBe(41m);
+        updated.IsActive.ShouldBeTrue("editing a rate must not retire the car");
+
+        (await Api.Cars.GetAsync(car.Id)).ShouldBeOk();
+    }
+
+    [Fact]
+    public async Task Reinstate_ForARetiredCar_BringsItBackIntoTheFleet()
     {
         await SignInAsAdminAsync();
         var car = await FindCarAsync("Kicks");
         (await Api.Cars.DeleteAsync(car.Id)).ShouldBeNoContent();
 
-        var request = TestData.CarUpdate(TestData.NewCar()) with
-        {
-            Make = car.Make,
-            Model = car.Model,
-            PlateNumber = car.PlateNumber,
-            IsActive = true,
-        };
-
-        (await Api.Cars.UpdateAsync(car.Id, request)).ShouldBeOk().IsActive.ShouldBeTrue();
+        (await Api.Cars.ReinstateAsync(car.Id)).ShouldBeOk().IsActive.ShouldBeTrue();
 
         (await Api.Cars.GetAsync(car.Id)).ShouldBeOk();
     }

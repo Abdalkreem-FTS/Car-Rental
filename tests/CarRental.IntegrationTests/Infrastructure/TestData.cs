@@ -79,8 +79,7 @@ public static class TestData
         from.Transmission,
         from.Fuel,
         from.ImageUrl,
-        from.Description,
-        IsActive: true);
+        from.Description);
 
     public static CreateReservationRequest Booking(Guid carId, int fromDay, int toDay) =>
         new(carId, In(fromDay), In(toDay), PickupLocation: null);
