@@ -58,4 +58,9 @@ public static class SharedRules
             .Must(date => date is null || RenterRules.AgeOn(date.Value, DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)) >= MinimumRenterAge)
             .WithMessage($"You must be at least {MinimumRenterAge} years old to rent a car.");
 
+    public static readonly string[] CarSortKeys = ["price_asc", "price_desc", "year_desc", "seats_desc"];
+
+    public static IRuleBuilderOptions<T, string?> ValidCarSortKey<T>(this IRuleBuilder<T, string?> rule) =>
+        rule.Must(key => string.IsNullOrWhiteSpace(key) || CarSortKeys.Contains(key, StringComparer.OrdinalIgnoreCase))
+            .WithMessage($"Sort by one of: {string.Join(", ", CarSortKeys)}.");
 }

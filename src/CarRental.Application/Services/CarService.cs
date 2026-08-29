@@ -26,8 +26,6 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
     {
         var normalized = request with
         {
-            Page = request.Page < Paging.FirstPage ? Paging.FirstPage : request.Page,
-            PageSize = Math.Clamp(request.PageSize, Paging.MinPageSize, Paging.MaxPageSize),
             Query = string.IsNullOrWhiteSpace(request.Query) ? null : request.Query.Trim(),
         };
 

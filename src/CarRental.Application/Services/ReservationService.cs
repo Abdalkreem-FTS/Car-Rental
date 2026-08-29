@@ -117,16 +117,13 @@ public sealed class ReservationService(
         ReservationQuery query,
         CancellationToken cancellationToken = default)
     {
-        var page = query.Page < Paging.FirstPage ? Paging.FirstPage : query.Page;
-        var pageSize = Math.Clamp(query.PageSize, Paging.MinPageSize, Paging.MaxPageSize);
-
         var (items, totalCount) = await reservations.GetForUserAsync(
-            userId, query.Scope, Today, page, pageSize, cancellationToken);
+            userId, query.Scope, Today, query.Page, query.PageSize, cancellationToken);
 
         return new PagedResponse<ReservationResponse>(
             [.. items.Select(reservation => reservation.ToResponse())],
-            page,
-            pageSize,
+            query.Page,
+            query.PageSize,
             totalCount);
     }
 

@@ -20,5 +20,20 @@ public sealed class CarQueryRequestValidator : AbstractValidator<CarQueryRequest
             .GreaterThanOrEqualTo(x => x.PickupDate!.Value)
             .When(x => x.PickupDate.HasValue && x.ReturnDate.HasValue)
             .WithMessage("The return date must be on or after the pickup date.");
+
+        RuleFor(x => x.PickupDate)
+            .GreaterThanOrEqualTo(_ => DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime))
+            .When(x => x.PickupDate.HasValue)
+            .WithMessage("The pickup date cannot be in the past.");
+
+        RuleFor(x => x.ReturnDate)
+            .NotNull()
+            .When(x => x.PickupDate.HasValue)
+            .WithMessage("Give a return date as well, or availability cannot be worked out.");
+
+        RuleFor(x => x.PickupDate)
+            .NotNull()
+            .When(x => x.ReturnDate.HasValue)
+            .WithMessage("Give a pickup date as well, or availability cannot be worked out.");
     }
 }

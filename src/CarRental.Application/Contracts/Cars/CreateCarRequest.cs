@@ -14,4 +14,4 @@ public sealed record CreateCarRequest(
     TransmissionType Transmission,
     FuelType Fuel,
     string? ImageUrl,
-    string? Description);
+    string? Description) : ICarDetails;
