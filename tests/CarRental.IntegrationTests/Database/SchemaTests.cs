@@ -21,6 +21,7 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
             "AspNetUsers",
             "Cars",
             "IdempotentRequests",
+            "OutboxEmails",
             "RefreshTokens",
             "Reservations",
             "__EFMigrationsHistory",

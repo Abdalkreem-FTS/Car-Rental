@@ -183,7 +183,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
         var auth = await SignUpAsync();
 
         (await Api.Auth.ForgotPasswordAsync(auth.User.Email)).ShouldBeAccepted();
-        var resetToken = Factory.Emails.TokenFor(auth.User.Email);
+        var resetToken = (await Factory.DeliveredEmailsAsync()).TokenFor(auth.User.Email);
 
         (await Api.Profile.ChangePasswordAsync(Password, NewPassword)).ShouldBeNoContent();
 

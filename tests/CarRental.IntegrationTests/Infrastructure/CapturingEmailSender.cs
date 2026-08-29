@@ -25,6 +25,11 @@ public sealed class CapturingEmailSender : IEmailSender
 
     public Task SendPasswordResetAsync(string email, string firstName, string resetLink, CancellationToken cancellationToken = default)
     {
+        if (_failure is { } reason)
+        {
+            throw new InvalidOperationException(reason);
+        }
+
         _sent.Enqueue(new SentEmail(EmailKind.PasswordReset, email, firstName, resetLink));
 
         return Task.CompletedTask;
@@ -37,7 +42,17 @@ public sealed class CapturingEmailSender : IEmailSender
         return Task.CompletedTask;
     }
 
-    public void Clear() => _sent.Clear();
+    public void Clear()
+    {
+        _sent.Clear();
+        _failure = null;
+    }
+
+    private string? _failure;
+
+    public void FailWith(string reason) => _failure = reason;
+
+    public void Recover() => _failure = null;
 
     private SentEmail LastFor(string email, EmailKind kind) =>
         _sent.LastOrDefault(sent => sent.Kind == kind && string.Equals(sent.Email, email, StringComparison.OrdinalIgnoreCase))

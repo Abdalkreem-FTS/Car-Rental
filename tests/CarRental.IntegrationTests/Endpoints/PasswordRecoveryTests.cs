@@ -21,7 +21,7 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
         unknown.ShouldBeAccepted();
         unknown.RawBody.ShouldBe(known.RawBody);
 
-        Factory.Emails.Resets.ShouldHaveSingleItem().Email.ShouldBe(auth.User.Email);
+        (await Factory.DeliveredEmailsAsync()).Resets.ShouldHaveSingleItem().Email.ShouldBe(auth.User.Email);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
 
         (await Api.Auth.ForgotPasswordAsync(auth.User.Email)).ShouldBeAccepted();
 
-        var link = Factory.Emails.LinkFor(auth.User.Email);
+        var link = (await Factory.DeliveredEmailsAsync()).LinkFor(auth.User.Email);
         
         link.ShouldStartWith("https://rentals.example.test/reset-password.html#");
         link.ShouldContain($"email={Uri.EscapeDataString(auth.User.Email)}");
@@ -153,6 +153,6 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
     {
         (await Api.Auth.ForgotPasswordAsync(email)).ShouldBeAccepted();
 
-        return Factory.Emails.TokenFor(email);
+        return (await Factory.DeliveredEmailsAsync()).TokenFor(email);
     }
 }

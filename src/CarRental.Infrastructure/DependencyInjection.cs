@@ -76,6 +76,15 @@ public static class DependencyInjection
 
             services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
+            services.AddOptions<EmailDeliveryOptions>()
+                .Bind(configuration.GetSection(EmailDeliveryOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            services.AddScoped<IEmailOutbox, EmailOutbox>();
+            services.AddScoped<EmailDispatcher>();
+            services.AddHostedService<EmailDeliveryWorker>();
+
             services.AddEmailSender();
 
             services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");

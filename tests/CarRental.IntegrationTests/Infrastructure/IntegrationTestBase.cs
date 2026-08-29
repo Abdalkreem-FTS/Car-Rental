@@ -46,7 +46,7 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
 
     protected async Task ConfirmEmailAsync(string email)
     {
-        var token = Factory.Emails.ConfirmationTokenFor(email);
+        var token = (await Factory.DeliveredEmailsAsync()).ConfirmationTokenFor(email);
 
         (await Api.Auth.ConfirmEmailAsync(email, token)).ShouldBeNoContent();
     }

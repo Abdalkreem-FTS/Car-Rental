@@ -15,7 +15,7 @@ public sealed class CredentialLinkTests(CarRentalApiFactory factory) : Integrati
 
         (await Api.Auth.ForgotPasswordAsync(auth.User.Email)).ShouldBeAccepted();
 
-        AssertCredentialIsInTheFragment(Factory.Emails.LinkFor(auth.User.Email));
+        AssertCredentialIsInTheFragment((await Factory.DeliveredEmailsAsync()).LinkFor(auth.User.Email));
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public sealed class CredentialLinkTests(CarRentalApiFactory factory) : Integrati
 
         await SignUpAsync(registration, confirmEmail: false);
 
-        var sent = Factory.Emails.Sent.Single(email => email.Kind == EmailKind.EmailConfirmation);
+        var sent = (await Factory.DeliveredEmailsAsync()).Sent.Single(email => email.Kind == EmailKind.EmailConfirmation);
 
         AssertCredentialIsInTheFragment(sent.Link);
     }
@@ -38,7 +38,7 @@ public sealed class CredentialLinkTests(CarRentalApiFactory factory) : Integrati
 
         (await Api.Auth.ForgotPasswordAsync(auth.User.Email)).ShouldBeAccepted();
 
-        var link = new Uri(Factory.Emails.LinkFor(auth.User.Email));
+        var link = new Uri((await Factory.DeliveredEmailsAsync()).LinkFor(auth.User.Email));
 
         link.IsAbsoluteUri.ShouldBeTrue();
         link.Host.ShouldBe("rentals.example.test");

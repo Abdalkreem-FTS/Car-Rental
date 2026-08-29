@@ -14,6 +14,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<IdempotentRequest> IdempotentRequests => Set<IdempotentRequest>();
+
+    public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
     
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {

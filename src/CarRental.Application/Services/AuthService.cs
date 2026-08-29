@@ -6,6 +6,7 @@ using CarRental.Application.Mapping;
 using CarRental.Application.Options;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
+using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ public sealed class AuthService(
     IJwtTokenGenerator tokenGenerator,
     IRefreshTokenRepository refreshTokens,
     IUnitOfWork unitOfWork,
-    IEmailSender emailSender,
+    IEmailOutbox emailOutbox,
     IOptions<ClientAppOptions> clientApp,
     ILogger<AuthService> logger) : IAuthService
 {
@@ -229,7 +230,9 @@ public sealed class AuthService(
 
         var link = _clientApp.LinkTo(_clientApp.ConfirmEmailPath, user.Email!, Encode(token));
 
-        await emailSender.SendEmailConfirmationAsync(user.Email!, user.FirstName, link.ToString(), cancellationToken);
+        emailOutbox.Enqueue(OutboxEmailKind.EmailConfirmation, user.Email!, user.FirstName, link.ToString());
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Result<Success>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
@@ -248,7 +251,9 @@ public sealed class AuthService(
 
         var link = _clientApp.LinkTo(_clientApp.ResetPasswordPath, user.Email!, Encode(token));
 
-        await emailSender.SendPasswordResetAsync(user.Email!, user.FirstName, link.ToString(), cancellationToken);
+        emailOutbox.Enqueue(OutboxEmailKind.PasswordReset, user.Email!, user.FirstName, link.ToString());
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success;
     }

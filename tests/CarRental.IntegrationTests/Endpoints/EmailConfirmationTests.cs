@@ -16,7 +16,7 @@ public sealed class EmailConfirmationTests(CarRentalApiFactory factory) : Integr
 
         await SignUpAsync(registration, confirmEmail: false);
 
-        var sent = Factory.Emails.Sent.ShouldHaveSingleItem();
+        var sent = (await Factory.DeliveredEmailsAsync()).Sent.ShouldHaveSingleItem();
 
         sent.Kind.ShouldBe(EmailKind.EmailConfirmation);
         sent.Email.ShouldBe(registration.Email);
@@ -86,7 +86,7 @@ public sealed class EmailConfirmationTests(CarRentalApiFactory factory) : Integr
     {
         var mine = TestData.Registration();
         await SignUpAsync(mine, confirmEmail: false);
-        var myToken = Factory.Emails.ConfirmationTokenFor(mine.Email);
+        var myToken = (await Factory.DeliveredEmailsAsync()).ConfirmationTokenFor(mine.Email);
 
         var theirs = TestData.Registration();
         await SignUpAsync(theirs, confirmEmail: false);
@@ -102,7 +102,7 @@ public sealed class EmailConfirmationTests(CarRentalApiFactory factory) : Integr
 
         await ConfirmEmailAsync(registration.Email);
 
-        var token = Factory.Emails.ConfirmationTokenFor(registration.Email);
+        var token = (await Factory.DeliveredEmailsAsync()).ConfirmationTokenFor(registration.Email);
 
         (await Api.Auth.ConfirmEmailAsync(registration.Email, token)).ShouldBeNoContent();
     }
@@ -115,7 +115,7 @@ public sealed class EmailConfirmationTests(CarRentalApiFactory factory) : Integr
 
         (await Api.Auth.ResendConfirmationAsync(registration.Email)).ShouldBeAccepted();
 
-        Factory.Emails.Sent.Count(sent => sent.Kind == EmailKind.EmailConfirmation).ShouldBe(2);
+        (await Factory.DeliveredEmailsAsync()).Sent.Count(sent => sent.Kind == EmailKind.EmailConfirmation).ShouldBe(2);
 
         await ConfirmEmailAsync(registration.Email);
     }

@@ -1,4 +1,5 @@
 using CarRental.Application.Abstractions;
+using CarRental.Infrastructure.Email;
 using CarRental.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -63,6 +64,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
                 ["Jwt:RefreshReuseLeewaySeconds"] = "1",
                 ["ClientApp:BaseUrl"] = "https://rentals.example.test",
                 ["RateLimiting:Enabled"] = "false",
+                ["EmailDelivery:BackgroundDelivery"] = "false",
                 ["Seed:Enabled"] = "true",
                 ["Seed:AdminEmail"] = TestData.AdminEmail,
                 ["Seed:AdminPassword"] = TestData.AdminPassword,
@@ -84,6 +86,20 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
 
         await using var scope = Services.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
+    }
+
+    public async Task<CapturingEmailSender> DeliveredEmailsAsync()
+    {
+        await DeliverQueuedEmailAsync();
+
+        return Emails;
+    }
+
+    public async Task<int> DeliverQueuedEmailAsync()
+    {
+        await using var scope = Services.CreateAsyncScope();
+
+        return await scope.ServiceProvider.GetRequiredService<EmailDispatcher>().DispatchDueAsync();
     }
 
     public async Task<T> WithDbAsync<T>(Func<AppDbContext, Task<T>> work)

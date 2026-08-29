@@ -20,6 +20,10 @@ form.addEventListener('submit', async (event) => {
           If an account exists for <strong>${escapeHtml(email)}</strong>, a reset link is on its way.
           The link expires shortly, so use it soon.
         </div>
+        <p class="form-foot">
+          Nothing after five minutes? Check your spam folder, then
+          <a href="/forgot-password.html">ask for another link</a>.
+        </p>
         <p class="form-foot"><a href="/signin.html">Back to sign in</a></p>`;
     } catch (error) {
       showApiError(form, error);

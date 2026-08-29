@@ -46,7 +46,7 @@ resendForm.addEventListener('submit', async (event) => {
 
       resendForm.hidden = true;
       heading.textContent = 'Check your inbox';
-      sub.textContent = 'If that address needs confirming, a new link is on its way.';
+      sub.textContent = 'If that address needs confirming, a new link is on its way. Nothing after five minutes? Check your spam folder, then ask for another.';
     } catch (error) {
       showApiError(resendForm, error);
     }
