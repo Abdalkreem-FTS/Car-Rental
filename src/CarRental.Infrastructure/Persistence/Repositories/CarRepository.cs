@@ -2,7 +2,6 @@ using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
-using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
 using Microsoft.EntityFrameworkCore;
 using Sieve.Exceptions;
@@ -78,14 +77,13 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
         Guid? excludeReservationId = null,
         CancellationToken cancellationToken = default)
     {
-        var hasOverlap = await context.Reservations.AnyAsync(
-            reservation =>
-                reservation.CarId == carId &&
-                reservation.Status == ReservationStatus.Confirmed &&
-                (excludeReservationId == null || reservation.Id != excludeReservationId) &&
-                reservation.StartDate <= end &&
-                reservation.EndDate >= start,
-            cancellationToken);
+        var hasOverlap = await context.Reservations
+            .Where(Reservation.BlocksTheWindow(start, end))
+            .AnyAsync(
+                reservation =>
+                    reservation.CarId == carId &&
+                    (excludeReservationId == null || reservation.Id != excludeReservationId),
+                cancellationToken);
 
         return !hasOverlap;
     }
@@ -108,10 +106,11 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
 
         if (pickupDate is { } pickup && returnDate is { } dropOff)
         {
-            query = query.Where(car => !car.Reservations.Any(reservation =>
-                reservation.Status == ReservationStatus.Confirmed &&
-                reservation.StartDate <= dropOff &&
-                reservation.EndDate >= pickup));
+            var blocked = context.Reservations
+                .Where(Reservation.BlocksTheWindow(pickup, dropOff))
+                .Select(reservation => reservation.CarId);
+
+            query = query.Where(car => !blocked.Contains(car.Id));
         }
 
         return query;

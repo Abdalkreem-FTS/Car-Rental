@@ -152,6 +152,32 @@ public sealed class CarQueryEndpointTests(CarRentalApiFactory factory) : Integra
     }
 
     [Fact]
+    public async Task Query_WithADateSpan_StillOffersCarsWhoseBookingWasCancelled()
+    {
+        await SignUpAsync();
+
+        var car = await FindCarAsync("RAV4");
+        var reservation = (await Api.Reservations.CreateAsync(TestData.Booking(car.Id, 5, 9))).ShouldBeCreated();
+
+        var whileBooked = (await Api.Cars.QueryAsync(EveryCar with
+        {
+            PickupDate = TestData.In(6),
+            ReturnDate = TestData.In(7),
+        })).ShouldBeOk();
+
+        (await Api.Reservations.CancelAsync(reservation.Id)).ShouldBeNoContent();
+
+        var afterCancelling = (await Api.Cars.QueryAsync(EveryCar with
+        {
+            PickupDate = TestData.In(6),
+            ReturnDate = TestData.In(7),
+        })).ShouldBeOk();
+
+        whileBooked.Items.ShouldNotContain(candidate => candidate.Id == car.Id);
+        afterCancelling.Items.ShouldContain(candidate => candidate.Id == car.Id);
+    }
+
+    [Fact]
     public async Task Query_WithFiltersThatMatchNothing_ReturnsAnEmptyPage()
     {
         await SignUpAsync();

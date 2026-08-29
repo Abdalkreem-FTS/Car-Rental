@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using CarRental.Domain.Enums;
 
 namespace CarRental.Domain.Entities;
@@ -35,4 +36,10 @@ public sealed class Reservation
     public int TotalDays => DaysBetween(StartDate, EndDate);
 
     public static int DaysBetween(DateOnly start, DateOnly end) => end.DayNumber - start.DayNumber + 1;
+
+    public static Expression<Func<Reservation, bool>> BlocksTheWindow(DateOnly start, DateOnly end) =>
+        reservation =>
+            reservation.Status == ReservationStatus.Confirmed &&
+            reservation.StartDate <= end &&
+            reservation.EndDate >= start;
 }
