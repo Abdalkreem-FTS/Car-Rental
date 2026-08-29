@@ -26,6 +26,8 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
             .HasForeignKey(x => x.CarId)
             .OnDelete(DeleteBehavior.Restrict);
         
+        builder.Property(x => x.Version).HasColumnName("xmin").IsRowVersion().ValueGeneratedOnAddOrUpdate();
+
         builder.HasIndex(x => new { x.CarId, x.Status, x.StartDate, x.EndDate });
         builder.HasIndex(x => x.UserId);
     }

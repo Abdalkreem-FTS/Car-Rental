@@ -1,4 +1,5 @@
 using System.Net;
+using CarRental.Application.Contracts.Reservations;
 using CarRental.Domain.Errors;
 using CarRental.IntegrationTests.Api;
 using CarRental.IntegrationTests.Infrastructure;
@@ -56,21 +57,19 @@ public sealed class BookingConcurrencyTests(CarRentalApiFactory factory) : Integ
         var accessToken = (await SignUpAsync()).AccessToken;
         var car = await FindCarAsync("Corolla");
 
-        var reservations = new List<Guid>();
+        var reservations = new List<ReservationResponse>();
 
         for (var i = 0; i < Racers; i++)
         {
-            var created = (await Api.Reservations.CreateAsync(Booking(car.Id, 100 + (i * 3), 101 + (i * 3))))
-                .ShouldBeCreated();
-
-            reservations.Add(created.Id);
+            reservations.Add((await Api.Reservations.CreateAsync(Booking(car.Id, 100 + (i * 3), 101 + (i * 3))))
+                .ShouldBeCreated());
         }
 
-        var responses = await Task.WhenAll(reservations.Select(async id =>
+        var responses = await Task.WhenAll(reservations.Select(async reservation =>
         {
             using var api = AuthenticatedClient(accessToken);
 
-            return await api.Reservations.UpdateAsync(id, BookingChange(200, 205));
+            return await api.Reservations.UpdateAsync(reservation, BookingChange(200, 205));
         }));
 
         responses.Count(r => r.StatusCode == HttpStatusCode.OK).ShouldBe(1);

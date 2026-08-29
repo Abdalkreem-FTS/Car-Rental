@@ -93,6 +93,7 @@ public sealed class ReservationService(
     public async Task<Result<ReservationResponse>> UpdateAsync(
         Guid userId,
         Guid reservationId,
+        string expectedVersion,
         UpdateReservationRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -123,6 +124,13 @@ public sealed class ReservationService(
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         await reservations.LockForBookingAsync(car.Id, cancellationToken);
+
+        await reservations.ReloadAsync(reservation, cancellationToken);
+
+        if (!string.Equals(reservation.Version.ToString(), expectedVersion, StringComparison.Ordinal))
+        {
+            return ReservationErrors.VersionStale;
+        }
 
         if (!await cars.IsAvailableAsync(car.Id, request.StartDate, request.EndDate, reservation.Id, cancellationToken))
         {

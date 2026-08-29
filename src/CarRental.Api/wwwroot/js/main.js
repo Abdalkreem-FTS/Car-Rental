@@ -357,7 +357,7 @@ modifyForm.addEventListener('submit', async (event) => {
 
   await withBusy($('#modify-confirm'), 'Saving…', async () => {
     try {
-      const updated = await api.updateReservation(modifying.id, data);
+      const updated = await api.updateReservation(modifying.id, data, modifying.version);
       modifyDialog.close();
       toast(`Moved to ${formatDate(updated.startDate)} — ${money(updated.totalPrice)}.`);
 

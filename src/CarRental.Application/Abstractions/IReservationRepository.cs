@@ -14,5 +14,7 @@ public interface IReservationRepository
 
     Task LockForBookingAsync(Guid carId, CancellationToken cancellationToken = default);
 
+    Task ReloadAsync(Reservation reservation, CancellationToken cancellationToken = default);
+
     void Add(Reservation reservation);
 }

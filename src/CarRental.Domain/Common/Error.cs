@@ -42,6 +42,12 @@ public readonly record struct Error
     public static Error Timeout(string code = nameof(Timeout), string description = "The operation timed out.")
         => new(code, description, ErrorType.Timeout);
 
+    public static Error PreconditionRequired(string code = nameof(PreconditionRequired), string description = "A precondition header is required.")
+        => new(code, description, ErrorType.PreconditionRequired);
+
+    public static Error PreconditionFailed(string code = nameof(PreconditionFailed), string description = "A precondition failed.")
+        => new(code, description, ErrorType.PreconditionFailed);
+
     public static Error Create(int type, string code, string description)
         => new(code, description, (ErrorType)type);
 }

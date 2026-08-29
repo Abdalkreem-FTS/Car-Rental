@@ -48,5 +48,8 @@ public sealed class ReservationRepository(AppDbContext context) : IReservationRe
             $"SELECT pg_advisory_xact_lock(hashtextextended({carId.ToString()}, 0))",
             cancellationToken);
 
+    public Task ReloadAsync(Reservation reservation, CancellationToken cancellationToken = default) =>
+        context.Entry(reservation).ReloadAsync(cancellationToken);
+
     public void Add(Reservation reservation) => context.Reservations.Add(reservation);
 }

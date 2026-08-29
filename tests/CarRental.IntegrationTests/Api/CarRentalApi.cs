@@ -141,8 +141,14 @@ public sealed class ReservationsApi(HttpClient http)
     public Task<ApiResponse<ReservationResponse>> GetAsync(Guid id) =>
         http.GetAsAsync<ReservationResponse>(Routes.Reservations.ById(id));
 
-    public Task<ApiResponse<ReservationResponse>> UpdateAsync(Guid id, UpdateReservationRequest request) =>
-        http.PutAsAsync<ReservationResponse>(Routes.Reservations.ById(id), request);
+    public Task<ApiResponse<ReservationResponse>> UpdateAsync(Guid id, UpdateReservationRequest request, string ifMatch) =>
+        http.PutAsAsync<ReservationResponse>(Routes.Reservations.ById(id), request, ifMatch);
+
+    public Task<ApiResponse<ReservationResponse>> UpdateAsync(ReservationResponse reservation, UpdateReservationRequest request) =>
+        UpdateAsync(reservation.Id, request, reservation.Version);
+
+    public Task<ApiResponse<ReservationResponse>> UpdateWithoutVersionAsync(Guid id, UpdateReservationRequest request) =>
+        http.PutAsAsync<ReservationResponse>(Routes.Reservations.ById(id), request, ifMatch: null);
 
     public Task<ApiResponse> CancelAsync(Guid id) => http.PostAsAsync(Routes.Reservations.Cancel(id), content: null);
 }
@@ -198,6 +204,21 @@ internal static class HttpClientExtensions
 
         internal async Task<ApiResponse<T>> PutAsAsync<T>(string route, object body) =>
             await (await http.PutAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();
+
+        internal async Task<ApiResponse<T>> PutAsAsync<T>(string route, object body, string? ifMatch)
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Put, route)
+            {
+                Content = JsonContent.Create(body, options: CarRentalApi.Json),
+            };
+
+            if (ifMatch is not null)
+            {
+                message.Headers.TryAddWithoutValidation("If-Match", $"\"{ifMatch}\"");
+            }
+
+            return await (await http.SendAsync(message)).ReadAsync<T>();
+        }
 
         internal async Task<ApiResponse> PutAsAsync(string route, object body) =>
             await (await http.PutAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync();

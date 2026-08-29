@@ -11,4 +11,6 @@ public enum ErrorType
     Forbidden,
     Unavailable,
     Timeout,
+    PreconditionRequired,
+    PreconditionFailed,
 }

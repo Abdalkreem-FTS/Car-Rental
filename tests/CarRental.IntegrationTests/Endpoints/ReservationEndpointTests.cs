@@ -283,7 +283,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         var car = await FindCarAsync("RAV4");
         var reservation = (await Api.Reservations.CreateAsync(Booking(car.Id, 10, 12))).ShouldBeCreated();
 
-        var moved = (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(20, 24))).ShouldBeOk();
+        var moved = (await Api.Reservations.UpdateAsync(reservation, BookingChange(20, 24))).ShouldBeOk();
 
         moved.Id.ShouldBe(reservation.Id);
         moved.StartDate.ShouldBe(In(20));
@@ -299,7 +299,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         var car = await FindCarAsync("RAV4");
         var reservation = (await Api.Reservations.CreateAsync(Booking(car.Id, 10, 15))).ShouldBeCreated();
 
-        (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(10, 16))).ShouldBeOk();
+        (await Api.Reservations.UpdateAsync(reservation, BookingChange(10, 16))).ShouldBeOk();
     }
 
     [Fact]
@@ -310,7 +310,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         var mine = (await Api.Reservations.CreateAsync(Booking(car.Id, 5, 7))).ShouldBeCreated();
         (await Api.Reservations.CreateAsync(Booking(car.Id, 20, 25))).ShouldBeCreated();
 
-        var response = await Api.Reservations.UpdateAsync(mine.Id, BookingChange(22, 23));
+        var response = await Api.Reservations.UpdateAsync(mine, BookingChange(22, 23));
 
         response.ShouldBeConflict(CarErrors.Unavailable);
     }
@@ -322,7 +322,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         var car = await FindCarAsync("RAV4");
         var reservation = (await Api.Reservations.CreateAsync(Booking(car.Id, 10, 15))).ShouldBeCreated();
 
-        (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(30, 32))).ShouldBeOk();
+        (await Api.Reservations.UpdateAsync(reservation, BookingChange(30, 32))).ShouldBeOk();
 
         (await Api.Reservations.CreateAsync(Booking(car.Id, 11, 14))).ShouldBeCreated();
     }
@@ -335,7 +335,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         await SignUpAsync();
 
-        (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(20, 22)))
+        (await Api.Reservations.UpdateAsync(reservation, BookingChange(20, 22)))
             .ShouldBeNotFound(ReservationErrors.NotFound);
     }
 
@@ -346,7 +346,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         var reservation = (await Api.Reservations.CreateAsync(Booking((await FindCarAsync("RAV4")).Id, 10, 12))).ShouldBeCreated();
         (await Api.Reservations.CancelAsync(reservation.Id)).ShouldBeNoContent();
 
-        (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(20, 22)))
+        (await Api.Reservations.UpdateAsync(reservation, BookingChange(20, 22)))
             .ShouldBeConflict(ReservationErrors.AlreadyCancelled);
     }
 
@@ -358,7 +358,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         await BackdateAsync(reservation.Id);
 
-        (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(20, 22)))
+        (await Api.Reservations.UpdateAsync(reservation, BookingChange(20, 22)))
             .ShouldBeConflict(ReservationErrors.AlreadyStarted);
     }
 
@@ -367,7 +367,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
     {
         await SignUpAsync();
 
-        (await Api.Reservations.UpdateAsync(Guid.NewGuid(), BookingChange(20, 22)))
+        (await Api.Reservations.UpdateAsync(Guid.NewGuid(), BookingChange(20, 22), ifMatch: "1"))
             .ShouldBeNotFound(ReservationErrors.NotFound);
     }
 
@@ -377,7 +377,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         await SignUpAsync();
         var reservation = (await Api.Reservations.CreateAsync(Booking((await FindCarAsync("RAV4")).Id, 10, 12))).ShouldBeCreated();
 
-        (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(-2, 5))).ShouldFailValidationOn("startDate");
+        (await Api.Reservations.UpdateAsync(reservation, BookingChange(-2, 5))).ShouldFailValidationOn("startDate");
     }
     
     [Fact]

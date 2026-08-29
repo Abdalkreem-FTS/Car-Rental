@@ -16,4 +16,5 @@ public sealed record ReservationResponse(
     decimal TotalPrice,
     ReservationStatus Status,
     string? PickupLocation,
-    DateTimeOffset CreatedAtUtc);
+    DateTimeOffset CreatedAtUtc,
+    string Version);

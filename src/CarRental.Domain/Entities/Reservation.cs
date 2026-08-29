@@ -28,5 +28,7 @@ public sealed class Reservation
 
     public Car? Car { get; set; }
 
+    public uint Version { get; set; }
+
     public int TotalDays => EndDate.DayNumber - StartDate.DayNumber + 1;
 }

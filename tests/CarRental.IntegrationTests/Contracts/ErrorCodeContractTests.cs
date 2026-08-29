@@ -22,6 +22,8 @@ public sealed class ErrorCodeContractTests
         ("reservation.not_found", ReservationErrors.NotFound),
         ("reservation.already_cancelled", ReservationErrors.AlreadyCancelled),
         ("reservation.already_started", ReservationErrors.AlreadyStarted),
+        ("reservation.version_required", ReservationErrors.VersionRequired),
+        ("reservation.version_stale", ReservationErrors.VersionStale),
         ("idempotency.key_reused", IdempotencyErrors.KeyReused),
         ("idempotency.in_progress", IdempotencyErrors.InProgress),
     ];

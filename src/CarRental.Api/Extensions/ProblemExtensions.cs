@@ -1,5 +1,4 @@
 using CarRental.Domain.Common;
-using Microsoft.AspNetCore.Mvc;
 using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace CarRental.Api.Extensions;
@@ -46,6 +45,8 @@ public static class ProblemExtensions
             ErrorType.Unexpected => StatusCodes.Status500InternalServerError,
             ErrorType.Unavailable => StatusCodes.Status503ServiceUnavailable,
             ErrorType.Timeout => StatusCodes.Status504GatewayTimeout,
+            ErrorType.PreconditionRequired => StatusCodes.Status428PreconditionRequired,
+            ErrorType.PreconditionFailed => StatusCodes.Status412PreconditionFailed,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -70,6 +71,8 @@ public static class ProblemExtensions
         ErrorType.Unexpected => "Internal Server Error",
         ErrorType.Unavailable => "Service Unavailable",
         ErrorType.Timeout => "Gateway Timeout",
+        ErrorType.PreconditionRequired => "Precondition Required",
+        ErrorType.PreconditionFailed => "Precondition Failed",
         _ => "An error occurred"
     };
 

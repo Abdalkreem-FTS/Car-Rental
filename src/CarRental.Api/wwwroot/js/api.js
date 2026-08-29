@@ -70,7 +70,7 @@ async function refreshTokens() {
   return refreshInFlight;
 }
 
-async function send(method, path, { body, auth = true, retry = true, idempotencyKey } = {}) {
+async function send(method, path, { body, auth = true, retry = true, idempotencyKey, ifMatch } = {}) {
   // After a reload the access token is gone but the cookie is not, so mint a new one first
   // rather than spending a guaranteed 401 to discover the same thing.
   if (auth && !session.accessToken && session.isSignedIn) {
@@ -81,6 +81,7 @@ async function send(method, path, { body, auth = true, retry = true, idempotency
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth && session.accessToken) headers.Authorization = `Bearer ${session.accessToken}`;
   if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+  if (ifMatch) headers['If-Match'] = `"${ifMatch}"`;
 
   const response = await fetch(path, {
     method,
@@ -91,7 +92,7 @@ async function send(method, path, { body, auth = true, retry = true, idempotency
   // An expired access token is normal — spend the refresh token and replay the request once.
   if (response.status === 401 && auth && retry && session.isSignedIn) {
     if (await refreshTokens()) {
-      return send(method, path, { body, auth, retry: false, idempotencyKey });
+      return send(method, path, { body, auth, retry: false, idempotencyKey, ifMatch });
     }
     session.clear();
     redirectToSignIn();
@@ -131,7 +132,8 @@ export const api = {
   createReservation: (payload, idempotencyKey) =>
     send('POST', '/api/reservations', { body: payload, idempotencyKey }),
   myReservations: () => send('GET', '/api/reservations'),
-  updateReservation: (id, payload) => send('PUT', `/api/reservations/${id}`, { body: payload }),
+  updateReservation: (id, payload, version) =>
+    send('PUT', `/api/reservations/${id}`, { body: payload, ifMatch: version }),
   cancelReservation: (id) => send('POST', `/api/reservations/${id}/cancel`),
 
   profile: () => send('GET', '/api/profile'),

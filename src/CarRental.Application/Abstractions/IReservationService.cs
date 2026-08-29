@@ -14,6 +14,7 @@ public interface IReservationService
     Task<Result<ReservationResponse>> UpdateAsync(
         Guid userId,
         Guid reservationId,
+        string expectedVersion,
         UpdateReservationRequest request,
         CancellationToken cancellationToken = default);
 

@@ -18,11 +18,12 @@ public static class ReservationEndpoints
                 CreateReservationRequest request,
                 ClaimsPrincipal user,
                 IReservationService reservationService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await reservationService.CreateAsync(user.GetUserId(), request, cancellationToken);
 
-                return result.ToCreated(reservation => $"/api/reservations/{reservation.Id}");
+                return result.ToCreatedWithETag(context);
             })
             .WithValidation<CreateReservationRequest>()
             .WithIdempotency<CreateReservationRequest>()
@@ -47,11 +48,12 @@ public static class ReservationEndpoints
                 Guid id,
                 ClaimsPrincipal user,
                 IReservationService reservationService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
                 var result = await reservationService.GetByIdAsync(user.GetUserId(), id, cancellationToken);
 
-                return result.ToOk();
+                return result.ToOkWithETag(context);
             })
             .Produces<ReservationResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -62,12 +64,20 @@ public static class ReservationEndpoints
                 UpdateReservationRequest request,
                 ClaimsPrincipal user,
                 IReservationService reservationService,
+                HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await reservationService.UpdateAsync(user.GetUserId(), id, request, cancellationToken);
+                if (!ETags.TryReadIfMatch(context, out var expectedVersion))
+                {
+                    return ETags.VersionRequired();
+                }
 
-                return result.ToOk();
+                var result = await reservationService.UpdateAsync(user.GetUserId(), id, expectedVersion, request, cancellationToken);
+
+                return result.ToOkWithETag(context);
             })
+            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
+            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
             .WithValidation<UpdateReservationRequest>()
             .Produces<ReservationResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
