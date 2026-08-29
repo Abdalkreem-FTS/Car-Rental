@@ -34,7 +34,7 @@ public sealed class Result<TValue> : IResult<TValue>
         {
             if (errors == null || errors.Count == 0)
             {
-                throw new ArgumentException("Provide at least one error.", nameof(errors));
+                throw new ArgumentException("A failed Result needs at least one error.", nameof(errors));
             }
 
             _errors = errors;
@@ -52,7 +52,7 @@ public sealed class Result<TValue> : IResult<TValue>
     {
         if (errors is null || errors.Count == 0)
         {
-            throw new ArgumentException("Cannot create an ErrorOr<TValue> from an empty collection of errors. Provide at least one error.", nameof(errors));
+            throw new ArgumentException("A failed Result needs at least one error.", nameof(errors));
         }
 
         _errors = errors;

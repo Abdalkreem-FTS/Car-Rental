@@ -46,7 +46,10 @@ platform, like `DateTimeOffset`. Everything that touches EF Core, Npgsql, JWT or
 behind an interface.
 
 **No exceptions for control flow.** Every service method returns `Result<TValue>` holding either
-a value or a list of `Error`s. Implicit conversions keep the call sites clean:
+a value or a list of `Error`s. `Result`, `Error` and `ErrorType` are adapted from
+[ErrorOr](https://github.com/amantinband/error-or) by Amichai Mantinband (MIT), vendored rather
+than referenced so the shape could be trimmed to what this project uses — see
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). Implicit conversions keep the call sites clean:
 
 ```csharp
 if (car is null)   return CarErrors.NotFound;   // Error   -> Result<T>
