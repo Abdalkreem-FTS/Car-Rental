@@ -146,6 +146,11 @@ public sealed class ReservationService(
         {
             return CarErrors.NotFound;
         }
+
+        if (!car.IsActive)
+        {
+            return CarErrors.NoLongerInTheFleet;
+        }
         
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 

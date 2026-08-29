@@ -36,4 +36,8 @@ public static class CarErrors
         "car.pickup_location_not_offered",
         "pickupLocation",
         $"This car is in {carLocation} and we do not move cars between cities, so it cannot be collected from {requested}.");
+
+    public static Error NoLongerInTheFleet => Error.Conflict(
+        "car.no_longer_in_the_fleet",
+        "This car has been taken out of the fleet, so its booking cannot be moved. Please cancel it and book another car.");
 }

@@ -30,7 +30,8 @@ public static class ApiAssertions
 
     extension(ApiResponse response)
     {
-        public void ShouldBeNoContent() => response.ShouldHaveStatus(HttpStatusCode.NoContent);
+        public void ShouldBeNoContent(string? why = null) =>
+            response.StatusCode.ShouldBe(HttpStatusCode.NoContent, why ?? $"body was: {response.RawBody}");
 
         public void ShouldBeAccepted() => response.ShouldHaveStatus(HttpStatusCode.Accepted);
 

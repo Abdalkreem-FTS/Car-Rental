@@ -48,6 +48,7 @@ public sealed class ErrorCodeContractTests
         ("car.invalid_filters", CarErrors.InvalidFilters("because")),
         ("car.invalid_sorts", CarErrors.InvalidSorts("because")),
         ("car.pickup_location_not_offered", CarErrors.PickupLocationNotOffered("Amman", "Aqaba")),
+        ("car.no_longer_in_the_fleet", CarErrors.NoLongerInTheFleet),
     ];
 
     public static TheoryData<string, string, string> PublishedErrors
