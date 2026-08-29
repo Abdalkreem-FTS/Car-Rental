@@ -7,11 +7,13 @@ namespace CarRental.Infrastructure.Persistence.Repositories;
 
 public sealed class ReservationRepository(AppDbContext context) : IReservationRepository
 {
-    public Task<Reservation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+    public Task<Reservation?> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default) =>
         context.Reservations
             .IgnoreQueryFilters()
             .Include(reservation => reservation.Car)
-            .FirstOrDefaultAsync(reservation => reservation.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(
+                reservation => reservation.Id == id && reservation.UserId == userId,
+                cancellationToken);
 
     public Task<List<Reservation>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
         context.Reservations

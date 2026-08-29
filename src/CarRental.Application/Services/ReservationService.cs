@@ -80,16 +80,14 @@ public sealed class ReservationService(
 
     public async Task<Result<ReservationResponse>> GetByIdAsync(Guid userId, Guid reservationId, CancellationToken cancellationToken = default)
     {
-        var reservation = await reservations.GetByIdAsync(reservationId, cancellationToken);
+        var reservation = await reservations.GetByIdAsync(reservationId, userId, cancellationToken);
 
         if (reservation is null)
         {
             return ReservationErrors.NotFound;
         }
 
-        return reservation.UserId != userId
-            ? ReservationErrors.NotYours
-            : reservation.ToResponse();
+        return reservation.ToResponse();
     }
 
     public async Task<Result<ReservationResponse>> UpdateAsync(
@@ -98,16 +96,11 @@ public sealed class ReservationService(
         UpdateReservationRequest request,
         CancellationToken cancellationToken = default)
     {
-        var reservation = await reservations.GetByIdAsync(reservationId, cancellationToken);
+        var reservation = await reservations.GetByIdAsync(reservationId, userId, cancellationToken);
 
         if (reservation is null)
         {
             return ReservationErrors.NotFound;
-        }
-
-        if (reservation.UserId != userId)
-        {
-            return ReservationErrors.NotYours;
         }
 
         if (reservation.Status == ReservationStatus.Cancelled)
@@ -159,16 +152,11 @@ public sealed class ReservationService(
 
     public async Task<Result<Updated>> CancelAsync(Guid userId, Guid reservationId, CancellationToken cancellationToken = default)
     {
-        var reservation = await reservations.GetByIdAsync(reservationId, cancellationToken);
+        var reservation = await reservations.GetByIdAsync(reservationId, userId, cancellationToken);
 
         if (reservation is null)
         {
             return ReservationErrors.NotFound;
-        }
-
-        if (reservation.UserId != userId)
-        {
-            return ReservationErrors.NotYours;
         }
 
         if (reservation.Status == ReservationStatus.Cancelled)

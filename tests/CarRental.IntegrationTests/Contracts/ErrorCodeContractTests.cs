@@ -20,7 +20,6 @@ public sealed class ErrorCodeContractTests
         ("car.unavailable", CarErrors.Unavailable),
         ("car.has_active_bookings", CarErrors.HasActiveBookings(1)),
         ("reservation.not_found", ReservationErrors.NotFound),
-        ("reservation.not_yours", ReservationErrors.NotYours),
         ("reservation.already_cancelled", ReservationErrors.AlreadyCancelled),
         ("reservation.already_started", ReservationErrors.AlreadyStarted),
     ];

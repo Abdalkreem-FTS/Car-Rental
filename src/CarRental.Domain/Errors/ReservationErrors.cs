@@ -8,10 +8,6 @@ public static class ReservationErrors
         "reservation.not_found",
         "We could not find that reservation.");
 
-    public static Error NotYours => Error.Forbidden(
-        "reservation.not_yours",
-        "This reservation belongs to another account.");
-
     public static Error AlreadyCancelled => Error.Conflict(
         "reservation.already_cancelled",
         "This reservation has already been cancelled.");

@@ -235,15 +235,21 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
     }
 
     [Fact]
-    public async Task GetReservation_ForAnotherUsersBooking_ReportsForbiddenRatherThanNotFound()
+    public async Task GetReservation_ForAnotherUsersBooking_IsIndistinguishableFromOneThatDoesNotExist()
     {
         await SignUpAsync();
         var reservation = (await Api.Reservations.CreateAsync(Booking((await FindCarAsync("RAV4")).Id, 10, 12))).ShouldBeCreated();
 
         await SignUpAsync();
 
-        (await Api.Reservations.GetAsync(reservation.Id)).ShouldBeForbidden(ReservationErrors.NotYours);
-        (await Api.Reservations.CancelAsync(reservation.Id)).ShouldBeForbidden(ReservationErrors.NotYours);
+        var someoneElses = await Api.Reservations.GetAsync(reservation.Id);
+        var neverExisted = await Api.Reservations.GetAsync(Guid.NewGuid());
+
+        someoneElses.ShouldBeNotFound(ReservationErrors.NotFound);
+        someoneElses.StatusCode.ShouldBe(neverExisted.StatusCode);
+        someoneElses.Problem!.ErrorCode.ShouldBe(neverExisted.Problem!.ErrorCode);
+
+        (await Api.Reservations.CancelAsync(reservation.Id)).ShouldBeNotFound(ReservationErrors.NotFound);
     }
 
     [Fact]
@@ -330,7 +336,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         await SignUpAsync();
 
         (await Api.Reservations.UpdateAsync(reservation.Id, BookingChange(20, 22)))
-            .ShouldBeForbidden(ReservationErrors.NotYours);
+            .ShouldBeNotFound(ReservationErrors.NotFound);
     }
 
     [Fact]

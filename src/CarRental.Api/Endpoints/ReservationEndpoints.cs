@@ -53,7 +53,6 @@ public static class ReservationEndpoints
                 return result.ToOk();
             })
             .Produces<ReservationResponse>()
-            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Fetch one of the signed-in user's reservations.");
 
@@ -70,7 +69,6 @@ public static class ReservationEndpoints
             })
             .WithValidation<UpdateReservationRequest>()
             .Produces<ReservationResponse>()
-            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Move a reservation that has not started yet to new dates, repriced.");
@@ -86,7 +84,6 @@ public static class ReservationEndpoints
                 return result.ToNoContent();
             })
             .Produces(StatusCodes.Status204NoContent)
-            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Cancel a reservation that has not started yet.");
