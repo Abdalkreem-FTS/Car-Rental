@@ -64,7 +64,7 @@ public sealed class AuthService(
 
         if (!created.Value.Succeeded)
         {
-            return MapIdentityErrors(created.Value);
+            return Failed(created.Value, "password", UserErrors.RegistrationFailed);
         }
 
         var role = await userManager.AddToRoleAsync(user, Roles.Customer);
@@ -271,9 +271,9 @@ public sealed class AuthService(
 
         if (!reset.Succeeded)
         {
-            return reset.Errors.Any(error => error.Code == "InvalidToken")
+            return reset.Contains(IdentityErrors.InvalidToken)
                 ? AuthErrors.InvalidResetToken
-                : MapIdentityErrors(reset);
+                : Failed(reset, "password", UserErrors.UpdateFailed);
         }
 
         await userManager.ResetAccessFailedCountAsync(user);
@@ -337,6 +337,15 @@ public sealed class AuthService(
             user.ToResponse(roles));
     }
     
+    private List<Error> Failed(IdentityResult result, string passwordField, Error fallback)
+    {
+        logger.LogWarning(
+            "Identity refused the operation: {Errors}",
+            string.Join("; ", result.Errors.Select(error => $"{error.Code}: {error.Description}")));
+
+        return IdentityErrors.Map(result, passwordField, fallback);
+    }
+
     private static readonly ApplicationUser Nobody = new()
     {
         FirstName = string.Empty,
@@ -356,17 +365,4 @@ public sealed class AuthService(
         userManager.PasswordHasher.VerifyHashedPassword(Nobody, _nobodysHash, password);
     }
 
-    private static List<Error> MapIdentityErrors(IdentityResult result) =>
-    [
-        .. result.Errors.Select(error => error.Code switch
-        {
-            "DuplicateEmail" or "DuplicateUserName" => UserErrors.EmailAlreadyInUse(),
-            var code when code.Contains("Password", StringComparison.OrdinalIgnoreCase)
-                => Error.Validation("password", error.Description),
-            var code when code.Contains("Email", StringComparison.OrdinalIgnoreCase)
-                || code.Contains("UserName", StringComparison.OrdinalIgnoreCase)
-                => Error.Validation("email", error.Description),
-            _ => Error.Failure("user.registration_failed", error.Description),
-        }),
-    ];
 }

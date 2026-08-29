@@ -46,7 +46,7 @@ public sealed class ProfileService(
 
         if (!updated.Value.Succeeded)
         {
-            return MapIdentityErrors(updated.Value);
+            return IdentityErrors.Map(updated.Value, "newPassword", UserErrors.UpdateFailed);
         }
 
         return user.ToProfileResponse((await userManager.GetRolesAsync(user)).ToList());
@@ -65,9 +65,7 @@ public sealed class ProfileService(
 
         if (!changed.Succeeded)
         {
-            return changed.Errors.Any(error => error.Code == "PasswordMismatch")
-                ? UserErrors.IncorrectPassword
-                : MapIdentityErrors(changed);
+            return IdentityErrors.Map(changed, "newPassword", UserErrors.UpdateFailed);
         }
         
         await refreshTokens.RevokeAllForUserAsync(user.Id, cancellationToken);
@@ -75,11 +73,4 @@ public sealed class ProfileService(
 
         return Result.Updated;
     }
-
-    private static List<Error> MapIdentityErrors(IdentityResult result) =>
-    [
-        .. result.Errors.Select(error => error.Code.Contains("Password", StringComparison.OrdinalIgnoreCase)
-            ? Error.Validation("newPassword", error.Description)
-            : Error.Failure("user.update_failed", error.Description)),
-    ];
 }

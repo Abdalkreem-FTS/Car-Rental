@@ -42,4 +42,12 @@ public static class UserErrors
     public static Error RegistrationIncomplete => Error.Failure(
         "user.registration_incomplete",
         "We could not finish setting up the account. Nothing was saved. Please try again.");
+
+    public static Error RegistrationFailed => Error.Failure(
+        "user.registration_failed",
+        "We could not create the account. Please try again.");
+
+    public static Error UpdateFailed => Error.Failure(
+        "user.update_failed",
+        "We could not save your details. Please try again.");
 }
