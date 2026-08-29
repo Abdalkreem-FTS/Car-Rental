@@ -93,7 +93,7 @@ public static class ProblemExtensions
     private static IResult ValidationProblem(List<Error> errors)
     {
         var errorsDict = errors
-            .GroupBy(e => e.Code)
+            .GroupBy(e => e.Field ?? e.Code)
             .ToDictionary(
                 g => g.Key,
                 g => g.Select(e => e.Description).ToArray());

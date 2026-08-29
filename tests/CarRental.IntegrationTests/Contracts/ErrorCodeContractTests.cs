@@ -32,6 +32,12 @@ public sealed class ErrorCodeContractTests
         ("reservation.version_stale", ReservationErrors.VersionStale),
         ("idempotency.key_reused", IdempotencyErrors.KeyReused),
         ("idempotency.in_progress", IdempotencyErrors.InProgress),
+        ("idempotency.key_required", IdempotencyErrors.KeyRequired("Idempotency-Key", 128)),
+        ("auth.invalid_reset_token", AuthErrors.InvalidResetToken),
+        ("auth.invalid_confirmation_token", AuthErrors.InvalidConfirmationToken),
+        ("user.incorrect_password", UserErrors.IncorrectPassword),
+        ("car.invalid_filters", CarErrors.InvalidFilters("because")),
+        ("car.invalid_sorts", CarErrors.InvalidSorts("because")),
     ];
 
     public static TheoryData<string, string, string> PublishedErrors
@@ -49,10 +55,14 @@ public sealed class ErrorCodeContractTests
         }
     }
 
-    public static TheoryData<string, string, ErrorType> FieldKeyedErrors => new()
+    public static TheoryData<Error, string> ValidationErrors => new()
     {
-        { "currentPassword", UserErrors.IncorrectPassword.Code, UserErrors.IncorrectPassword.Type },
-        { "token", AuthErrors.InvalidResetToken.Code, AuthErrors.InvalidResetToken.Type },
+        { UserErrors.IncorrectPassword, "currentPassword" },
+        { AuthErrors.InvalidResetToken, "token" },
+        { AuthErrors.InvalidConfirmationToken, "token" },
+        { CarErrors.InvalidFilters("because"), "filters" },
+        { CarErrors.InvalidSorts("because"), "sorts" },
+        { Error.Validation("newPassword", "too short"), "newPassword" },
     };
 
     [Theory]
@@ -75,11 +85,21 @@ public sealed class ErrorCodeContractTests
     }
     
     [Theory]
-    [MemberData(nameof(FieldKeyedErrors))]
-    public void ValidationError_UsesAFieldNameRatherThanADottedCode(string field, string code, ErrorType type)
+    [MemberData(nameof(ValidationErrors))]
+    public void ValidationError_KeepsTheFieldSeparateFromTheCode(Error error, string field)
     {
-        type.ShouldBe(ErrorType.Validation);
-        code.ShouldBe(field);
-        code.ShouldNotContain(".");
+        error.Type.ShouldBe(ErrorType.Validation);
+        error.Field.ShouldBe(field, "the field names the input the client must correct");
+        error.Field.ShouldNotContain(".", Case.Sensitive);
+        error.Code.ShouldContain(".", Case.Sensitive, "the code stays a dotted domain code, whatever the type");
+    }
+
+    [Fact]
+    public void Error_ForAnythingButValidation_NamesNoField()
+    {
+        foreach (var (_, error) in Catalog.Where(entry => entry.Error.Type != ErrorType.Validation))
+        {
+            error.Field.ShouldBeNull($"{error.Code} is not about a field the client can correct");
+        }
     }
 }

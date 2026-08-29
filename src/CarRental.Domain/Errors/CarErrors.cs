@@ -19,10 +19,12 @@ public static class CarErrors
         "This car is already booked for one or more of the days you selected.");
 
     public static Error InvalidFilters(string reason) => Error.Validation(
+        "car.invalid_filters",
         "filters",
         reason);
 
     public static Error InvalidSorts(string reason) => Error.Validation(
+        "car.invalid_sorts",
         "sorts",
         reason);
 

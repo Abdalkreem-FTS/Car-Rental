@@ -9,6 +9,7 @@ public static class AuthErrors
         "Your session has expired. Please sign in again.");
 
     public static Error InvalidResetToken => Error.Validation(
+        "auth.invalid_reset_token",
         "token",
         "This password reset link is invalid or has expired. Please request a new one.");
 
@@ -17,6 +18,7 @@ public static class AuthErrors
         "You must be signed in to do that.");
 
     public static Error InvalidConfirmationToken => Error.Validation(
+        "auth.invalid_confirmation_token",
         "token",
         "This confirmation link is invalid or has expired. Please request a new one.");
 }

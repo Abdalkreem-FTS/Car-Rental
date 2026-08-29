@@ -5,6 +5,7 @@ namespace CarRental.Domain.Errors;
 public static class IdempotencyErrors
 {
     public static Error KeyRequired(string header, int maxLength) => Error.Validation(
+        "idempotency.key_required",
         header,
         $"This endpoint needs an '{header}' header of 1 to {maxLength} characters, unique to the attempt.");
 

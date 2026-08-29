@@ -31,6 +31,7 @@ public static class UserErrors
         "This account is temporarily locked after too many failed sign-in attempts. Please try again later.");
 
     public static Error IncorrectPassword => Error.Validation(
+        "user.incorrect_password",
         "currentPassword",
         "Your current password is incorrect.");
 
