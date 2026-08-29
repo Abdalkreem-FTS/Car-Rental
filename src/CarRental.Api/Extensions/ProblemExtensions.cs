@@ -43,34 +43,32 @@ public static class ProblemExtensions
         }
     }
 
-    private static IResult Problem(Error error)
+    public static int StatusFor(ErrorType type) => type switch
     {
-        var statusCode = error.Type switch
-        {
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            ErrorType.BadRequest => StatusCodes.Status400BadRequest,
-            ErrorType.Failure => StatusCodes.Status500InternalServerError,
-            ErrorType.Unexpected => StatusCodes.Status500InternalServerError,
-            ErrorType.Unavailable => StatusCodes.Status503ServiceUnavailable,
-            ErrorType.Timeout => StatusCodes.Status504GatewayTimeout,
-            ErrorType.PreconditionRequired => StatusCodes.Status428PreconditionRequired,
-            ErrorType.PreconditionFailed => StatusCodes.Status412PreconditionFailed,
-            _ => StatusCodes.Status500InternalServerError
-        };
+        ErrorType.Conflict => StatusCodes.Status409Conflict,
+        ErrorType.Validation => StatusCodes.Status400BadRequest,
+        ErrorType.NotFound => StatusCodes.Status404NotFound,
+        ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+        ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+        ErrorType.BadRequest => StatusCodes.Status400BadRequest,
+        ErrorType.Failure => StatusCodes.Status500InternalServerError,
+        ErrorType.Unexpected => StatusCodes.Status500InternalServerError,
+        ErrorType.Unavailable => StatusCodes.Status503ServiceUnavailable,
+        ErrorType.Timeout => StatusCodes.Status504GatewayTimeout,
+        ErrorType.PreconditionRequired => StatusCodes.Status428PreconditionRequired,
+        ErrorType.PreconditionFailed => StatusCodes.Status412PreconditionFailed,
+        _ => StatusCodes.Status500InternalServerError,
+    };
 
-        return Results.Problem(
-            statusCode: statusCode,
+    private static IResult Problem(Error error) =>
+        Results.Problem(
+            statusCode: StatusFor(error.Type),
             title: GetTitle(error.Type),
             detail: error.Description,
             extensions: new Dictionary<string, object?>
             {
                 ["errorCode"] = error.Code
             });
-    }
 
     private static string GetTitle(ErrorType type) => type switch
     {

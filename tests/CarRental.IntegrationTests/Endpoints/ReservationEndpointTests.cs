@@ -184,6 +184,23 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
     }
 
     [Fact]
+    public async Task UpdateReservation_AfterTheCarIsRetired_IsRefusedRatherThanMovingTheBooking()
+    {
+        await SignUpAsync();
+        var car = await FindCarAsync("Clio");
+        var reservation = (await Api.Reservations.CreateAsync(Booking(car.Id, 4, 6))).ShouldBeCreated();
+
+        await Factory.WithDbAsync(async db => await db.Cars
+            .IgnoreQueryFilters()
+            .Where(row => row.Id == car.Id)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(row => row.IsActive, false)));
+
+        var moved = await Api.Reservations.UpdateAsync(reservation, new(In(9), In(11), null));
+
+        moved.ShouldBeConflict(CarErrors.NoLongerInTheFleet);
+    }
+
+    [Fact]
     public async Task CreateReservation_WithAPickupDateInThePast_ReportsAValidationError()
     {
         await SignUpAsync();

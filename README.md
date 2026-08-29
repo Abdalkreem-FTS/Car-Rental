@@ -25,7 +25,12 @@ handing out an account whose credentials are in this file. Set it before the fir
 ```bash
 dotnet user-secrets set "Seed:AdminPassword" "<a password you choose>" \
   --project src/CarRental.Api
+dotnet user-secrets set "Jwt:Key" "$(openssl rand -base64 48)" \
+  --project src/CarRental.Api
 ```
+
+Neither the signing key nor the administrator password ships in this repository, and startup
+fails without them. A signing key committed to source is a signing key anyone can forge with.
 
 The account is then `admin@carrental.local` with that password. Create a customer account
 from the sign-up page.
