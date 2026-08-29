@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CarRental.Api.Extensions;
 using CarRental.Application.Abstractions;
+using CarRental.Application.Contracts.Common;
 using CarRental.Application.Contracts.Reservations;
 
 namespace CarRental.Api.Endpoints;
@@ -33,15 +34,17 @@ public static class ReservationEndpoints
             .WithSummary("Book a car for a date range.");
 
         group.MapGet("/", async (
+                [AsParameters] ReservationQuery query,
                 ClaimsPrincipal user,
                 IReservationService reservationService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await reservationService.GetForUserAsync(user.GetUserId(), cancellationToken);
+                var result = await reservationService.GetForUserAsync(user.GetUserId(), query, cancellationToken);
 
                 return result.ToOk();
             })
-            .Produces<List<ReservationResponse>>()
+            .WithValidation<ReservationQuery>()
+            .Produces<PagedResponse<ReservationResponse>>()
             .WithSummary("List the signed-in user's reservations, newest pickup first.");
 
         group.MapGet("/{id:guid}", async (

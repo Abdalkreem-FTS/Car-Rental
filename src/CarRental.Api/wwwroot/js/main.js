@@ -3,7 +3,7 @@ import {
   $, $$, clearErrors, dayCount, debounce, formatDate, money, readForm,
   showAlert, showApiError, showFieldError, toast, todayIso, withBusy,
 } from './ui.js';
-import { carCard, emptyState, isUpcoming, reservationCard, skeletonGrid } from './render.js';
+import { carCard, emptyState, reservationCard, skeletonGrid } from './render.js';
 import { fillCountrySelect } from './countries.js';
 import { attachStrengthMeter, scorePassword } from './password-strength.js';
 
@@ -247,13 +247,16 @@ async function loadReservations() {
   historyResults.innerHTML = skeletonGrid(2);
 
   try {
-    const reservations = await api.myReservations();
-    state.reservationsLoaded = true;
-    state.reservations = new Map(reservations.map((reservation) => [reservation.id, reservation]));
+    const [ahead, done] = await Promise.all([
+      api.myReservations('Upcoming'),
+      api.myReservations('Past'),
+    ]);
 
-    // One fetch, split two ways: what is still ahead, and what is done or called off.
-    const upcoming = reservations.filter(isUpcoming);
-    const history = reservations.filter((reservation) => !isUpcoming(reservation));
+    state.reservationsLoaded = true;
+    state.reservations = new Map([...ahead.items, ...done.items].map((reservation) => [reservation.id, reservation]));
+
+    const upcoming = ahead.items;
+    const history = done.items;
 
     reservationResults.innerHTML = upcoming.length
       ? `<div class="res-list">${upcoming.map(reservationCard).join('')}</div>`

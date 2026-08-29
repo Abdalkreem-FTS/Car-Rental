@@ -47,9 +47,6 @@ export function carCard(car) {
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** Still ahead of the renter: confirmed, and not yet returned. */
-export const isUpcoming = (reservation) =>
-  reservation.status === 'Confirmed' && reservation.endDate >= today();
-
 export function reservationCard(reservation) {
   // A rental can only be changed or called off before the day it starts.
   const isChangeable = reservation.status === 'Confirmed' && reservation.startDate > today();

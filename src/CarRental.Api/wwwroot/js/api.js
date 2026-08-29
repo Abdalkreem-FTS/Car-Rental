@@ -131,7 +131,8 @@ export const api = {
 
   createReservation: (payload, idempotencyKey) =>
     send('POST', '/api/reservations', { body: payload, idempotencyKey }),
-  myReservations: () => send('GET', '/api/reservations'),
+  myReservations: (scope = 'All', page = 1, pageSize = 12) =>
+    send('GET', `/api/reservations?scope=${scope}&page=${page}&pageSize=${pageSize}`),
   updateReservation: (id, payload, version) =>
     send('PUT', `/api/reservations/${id}`, { body: payload, ifMatch: version }),
   cancelReservation: (id) => send('POST', `/api/reservations/${id}/cancel`),

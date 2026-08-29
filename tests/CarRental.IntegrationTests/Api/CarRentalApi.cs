@@ -9,6 +9,7 @@ using CarRental.Application.Contracts.Cars;
 using CarRental.Application.Contracts.Common;
 using CarRental.Application.Contracts.Profile;
 using CarRental.Application.Contracts.Reservations;
+using CarRental.Domain.Enums;
 
 namespace CarRental.IntegrationTests.Api;
 
@@ -135,8 +136,25 @@ public sealed class ReservationsApi(HttpClient http)
     public Task<ApiResponse<ReservationResponse>> CreateWithoutIdempotencyKeyAsync(CreateReservationRequest request) =>
         http.PostAsAsync<ReservationResponse>(Routes.Reservations.Base, request);
 
-    public Task<ApiResponse<List<ReservationResponse>>> ListAsync() =>
-        http.GetAsAsync<List<ReservationResponse>>(Routes.Reservations.Base);
+    public Task<ApiResponse<PagedResponse<ReservationResponse>>> ListAsync(
+        ReservationScope scope = ReservationScope.All,
+        int? page = null,
+        int? pageSize = null)
+    {
+        var parts = new List<string> { $"scope={scope}" };
+
+        if (page is { } requested)
+        {
+            parts.Add($"page={requested}");
+        }
+
+        if (pageSize is { } size)
+        {
+            parts.Add($"pageSize={size}");
+        }
+
+        return http.GetAsAsync<PagedResponse<ReservationResponse>>($"{Routes.Reservations.Base}?{string.Join('&', parts)}");
+    }
 
     public Task<ApiResponse<ReservationResponse>> GetAsync(Guid id) =>
         http.GetAsAsync<ReservationResponse>(Routes.Reservations.ById(id));

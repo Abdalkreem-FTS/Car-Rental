@@ -1,4 +1,5 @@
 using CarRental.Domain.Entities;
+using CarRental.Domain.Enums;
 
 namespace CarRental.Application.Abstractions;
 
@@ -6,7 +7,13 @@ public interface IReservationRepository
 {
     Task<Reservation?> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
-    Task<List<Reservation>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<(List<Reservation> Items, int TotalCount)> GetForUserAsync(
+        Guid userId,
+        ReservationScope scope,
+        DateOnly today,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
 
     Task<List<Reservation>> GetForCarAsync(Guid carId, CancellationToken cancellationToken = default);
 

@@ -15,15 +15,41 @@ public sealed class ReservationRepository(AppDbContext context) : IReservationRe
                 reservation => reservation.Id == id && reservation.UserId == userId,
                 cancellationToken);
 
-    public Task<List<Reservation>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
-        context.Reservations
+    public async Task<(List<Reservation> Items, int TotalCount)> GetForUserAsync(
+        Guid userId,
+        ReservationScope scope,
+        DateOnly today,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = context.Reservations
             .AsNoTracking()
             .IgnoreQueryFilters()
             .Include(reservation => reservation.Car)
-            .Where(reservation => reservation.UserId == userId)
+            .Where(reservation => reservation.UserId == userId);
+
+        query = scope switch
+        {
+            ReservationScope.Upcoming => query.Where(reservation =>
+                reservation.Status == ReservationStatus.Confirmed && reservation.EndDate >= today),
+            ReservationScope.Past => query.Where(reservation =>
+                reservation.Status != ReservationStatus.Confirmed || reservation.EndDate < today),
+            _ => query,
+        };
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderByDescending(reservation => reservation.StartDate)
             .ThenByDescending(reservation => reservation.CreatedAtUtc)
+            .ThenBy(reservation => reservation.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
 
     public Task<List<Reservation>> GetForCarAsync(Guid carId, CancellationToken cancellationToken = default) =>
         context.Reservations

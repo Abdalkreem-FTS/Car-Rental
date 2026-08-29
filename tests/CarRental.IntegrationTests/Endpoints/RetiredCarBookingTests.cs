@@ -59,7 +59,7 @@ public sealed class RetiredCarBookingTests(CarRentalApiFactory factory) : Integr
 
         await RetireOutsideTheApiAsync(car.Id);
 
-        (await Api.Reservations.ListAsync()).ShouldBeOk().ShouldHaveSingleItem().CarMake.ShouldBe(car.Make);
+        (await Api.Reservations.ListAsync()).ShouldBeOk().Items.ShouldHaveSingleItem().CarMake.ShouldBe(car.Make);
     }
 
     private Task RetireOutsideTheApiAsync(Guid carId) => Factory.WithDbAsync(async db =>

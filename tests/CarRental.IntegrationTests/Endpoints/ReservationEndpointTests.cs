@@ -164,7 +164,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         await SignInAsync(registration.Email, TestData.Password);
 
-        var mine = (await Api.Reservations.ListAsync()).ShouldBeOk().ShouldHaveSingleItem();
+        var mine = (await Api.Reservations.ListAsync()).ShouldBeOk().Items.ShouldHaveSingleItem();
 
         mine.CarMake.ShouldBe(car.Make, "retiring a car must not blank out the bookings that reference it");
         mine.CarModel.ShouldBe(car.Model);
@@ -229,7 +229,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         var theirs = (await Api.Reservations.ListAsync()).ShouldBeOk();
 
-        theirs.ShouldHaveSingleItem().Id.ShouldNotBe(mine.Id);
+        theirs.Items.ShouldHaveSingleItem().Id.ShouldNotBe(mine.Id);
 
         (await Factory.WithDbAsync(db => db.Reservations.CountAsync())).ShouldBe(2);
     }
@@ -273,7 +273,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         var reservations = (await Api.Reservations.ListAsync()).ShouldBeOk();
 
-        reservations.Select(r => r.StartDate).ShouldBe(reservations.Select(r => r.StartDate).OrderDescending());
+        reservations.Items.Select(r => r.StartDate).ShouldBe(reservations.Items.Select(r => r.StartDate).OrderDescending());
     }
     
     [Fact]

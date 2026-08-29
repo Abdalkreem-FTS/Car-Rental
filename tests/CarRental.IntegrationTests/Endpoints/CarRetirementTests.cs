@@ -55,7 +55,7 @@ public sealed class CarRetirementTests(CarRentalApiFactory factory) : Integratio
 
         await SignInAsync(customer.Email, Password);
 
-        (await Api.Reservations.ListAsync()).ShouldBeOk()
+        (await Api.Reservations.ListAsync()).ShouldBeOk().Items
             .ShouldAllBe(reservation => reservation.Status == ReservationStatus.Cancelled);
     }
 

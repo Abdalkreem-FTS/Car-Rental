@@ -1,4 +1,6 @@
 using CarRental.Application.Abstractions;
+using CarRental.Application.Common;
+using CarRental.Application.Contracts.Common;
 using CarRental.Application.Contracts.Reservations;
 using CarRental.Application.Mapping;
 using CarRental.Domain;
@@ -110,13 +112,22 @@ public sealed class ReservationService(
         return reservation.ToResponse();
     }
 
-    public async Task<Result<List<ReservationResponse>>> GetForUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Result<PagedResponse<ReservationResponse>>> GetForUserAsync(
+        Guid userId,
+        ReservationQuery query,
+        CancellationToken cancellationToken = default)
     {
-        var items = await reservations.GetForUserAsync(userId, cancellationToken);
+        var page = query.Page < Paging.FirstPage ? Paging.FirstPage : query.Page;
+        var pageSize = Math.Clamp(query.PageSize, Paging.MinPageSize, Paging.MaxPageSize);
 
-        List<ReservationResponse> responses = [.. items.Select(reservation => reservation.ToResponse())];
+        var (items, totalCount) = await reservations.GetForUserAsync(
+            userId, query.Scope, Today, page, pageSize, cancellationToken);
 
-        return responses;
+        return new PagedResponse<ReservationResponse>(
+            [.. items.Select(reservation => reservation.ToResponse())],
+            page,
+            pageSize,
+            totalCount);
     }
 
     public async Task<Result<ReservationResponse>> GetByIdAsync(Guid userId, Guid reservationId, CancellationToken cancellationToken = default)
