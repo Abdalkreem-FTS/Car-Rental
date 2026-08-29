@@ -68,12 +68,22 @@ async function loadLocations() {
   }
 }
 
+const minimumSearchTermLength = 3;
+
+function tooShortToSearch(value) {
+  const term = value.trim();
+
+  return term.length > 0 && term.length < minimumSearchTermLength;
+}
+
 function searchQuery() {
   const query = { page: state.page, pageSize: 12 };
 
   for (const [key, value] of new FormData(searchForm).entries()) {
     if (value !== '') query[key] = value;
   }
+
+  if (query.query !== undefined && tooShortToSearch(query.query)) delete query.query;
 
   return query;
 }
@@ -124,6 +134,10 @@ $$('select, input[type="date"]', searchForm).forEach((input) => {
 // Typed filters fire on every keystroke instead, debounced. Waiting for `change` here would
 // mean nothing happened until the field lost focus, which reads as a broken filter.
 const rerunSearchSoon = debounce(rerunSearch);
+
+$('#query').addEventListener('input', (event) => {
+  $('#query-hint').hidden = !tooShortToSearch(event.target.value);
+});
 $$('#query, #maxDailyRate', searchForm).forEach((input) => {
   input.addEventListener('input', rerunSearchSoon);
 });

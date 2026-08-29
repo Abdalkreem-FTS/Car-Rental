@@ -8,6 +8,8 @@ public sealed class CarQueryRequestValidator : AbstractValidator<CarQueryRequest
 {
     public CarQueryRequestValidator()
     {
+        RuleFor(x => x.Query).ValidSearchTerm();
+
         RuleFor(x => x.Page)
             .GreaterThanOrEqualTo(Paging.FirstPage)
             .WithMessage($"Page must be {Paging.FirstPage} or greater.");

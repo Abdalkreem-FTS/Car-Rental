@@ -28,6 +28,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
     {
         base.OnModelCreating(builder);
 
+        builder.HasPostgresExtension("pg_trgm");
+
         builder.ApplyConfigurationsFromAssembly(typeof(DependencyInjection).Assembly);
     }
 }

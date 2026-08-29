@@ -130,4 +130,25 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
         primaryKey.ShouldBe("UserId,RoleId");
     }
 
+    [Fact]
+    public async Task Migrate_WhenApplied_EnablesTheExtensionsTheSchemaDependsOn()
+    {
+        var extensions = await Factory.Database.ExtensionsAsync();
+
+        extensions.ShouldContain("btree_gist");
+        extensions.ShouldContain("pg_trgm");
+    }
+
+    [Fact]
+    public async Task Migrate_WhenApplied_IndexesEverySearchedColumnForTrigramMatching()
+    {
+        var definitions = await Factory.Database.IndexDefinitionsAsync("Cars");
+
+        foreach (var column in new[] { "Make", "Model", "Location" })
+        {
+            definitions.ShouldContain(
+                definition => definition.Contains($"""USING gin ("{column}" gin_trgm_ops)"""),
+                $"ILIKE '%term%' on {column} cannot use a btree index, so it needs a trigram one.");
+        }
+    }
 }

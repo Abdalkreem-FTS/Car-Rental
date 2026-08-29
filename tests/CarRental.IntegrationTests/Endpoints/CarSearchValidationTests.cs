@@ -1,3 +1,4 @@
+using CarRental.Application.Contracts.Cars;
 using CarRental.IntegrationTests.Api;
 using CarRental.IntegrationTests.Infrastructure;
 using Shouldly;
@@ -76,5 +77,36 @@ public sealed class CarSearchValidationTests(CarRentalApiFactory factory) : Inte
         var response = await Api.Cars.SearchRawAsync("pageSize=500");
 
         response.ShouldFailValidationOn("pageSize");
+    }
+
+    [Theory]
+    [InlineData("a")]
+    [InlineData("bm")]
+    [InlineData("  b  ")]
+    public async Task Search_ForATermTooShortToFormATrigram_IsRefused(string term)
+    {
+        await SignUpAsync();
+
+        var response = await Api.Cars.SearchAsync(CarQuery.All with { Query = term });
+
+        response.ShouldFailValidationOn("query");
+    }
+
+    [Fact]
+    public async Task Search_ForATermLongEnoughToUseTheIndex_IsAnswered()
+    {
+        await SignUpAsync();
+
+        (await Api.Cars.SearchAsync(CarQuery.All with { Query = "civ" })).ShouldBeOk();
+    }
+
+    [Fact]
+    public async Task Query_ForATermTooShortToFormATrigram_IsRefused()
+    {
+        await SignUpAsync();
+
+        var response = await Api.Cars.QueryAsync(new CarQueryRequest(Query: "bm"));
+
+        response.ShouldFailValidationOn("query");
     }
 }

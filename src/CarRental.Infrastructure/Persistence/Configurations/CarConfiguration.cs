@@ -26,5 +26,9 @@ public sealed class CarConfiguration : IEntityTypeConfiguration<Car>
 
         builder.HasIndex(x => x.PlateNumber).IsUnique();
         builder.HasIndex(x => new { x.IsActive, x.Location });
+
+        builder.HasIndex(x => x.Make).HasMethod("gin").HasOperators("gin_trgm_ops");
+        builder.HasIndex(x => x.Model).HasMethod("gin").HasOperators("gin_trgm_ops");
+        builder.HasIndex(x => x.Location).HasMethod("gin").HasOperators("gin_trgm_ops");
     }
 }

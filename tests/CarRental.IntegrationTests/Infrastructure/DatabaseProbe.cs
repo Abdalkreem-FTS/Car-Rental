@@ -67,6 +67,16 @@ public sealed class DatabaseProbe(string connectionString)
         ORDER BY table_name
         """);
 
+    public Task<List<string>> ExtensionsAsync() => QueryAsync<string>(
+        "SELECT extname FROM pg_extension ORDER BY extname");
+
+    public Task<List<string>> IndexDefinitionsAsync(string table) => QueryAsync<string>(
+        $"""
+        SELECT indexdef FROM pg_indexes
+        WHERE schemaname = 'public' AND tablename = '{table}'
+        ORDER BY indexname
+        """);
+
     public Task<List<string>> ForeignKeyDeleteRulesAsync() => QueryAsync<string>(
         """
         SELECT tc.table_name || '.' || kcu.column_name || ' -> ' || rc.delete_rule
