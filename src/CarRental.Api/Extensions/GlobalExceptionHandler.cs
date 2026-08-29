@@ -14,9 +14,12 @@ public sealed class GlobalExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var statusCode = exception is BadHttpRequestException badRequest
-            ? badRequest.StatusCode
-            : StatusCodes.Status500InternalServerError;
+        var statusCode = exception switch
+        {
+            UnauthenticatedException => StatusCodes.Status401Unauthorized,
+            BadHttpRequestException badRequest => badRequest.StatusCode,
+            _ => StatusCodes.Status500InternalServerError,
+        };
 
         var isClientError = statusCode < StatusCodes.Status500InternalServerError;
 
@@ -39,14 +42,24 @@ public sealed class GlobalExceptionHandler(
             {
                 Status = statusCode,
 
-                Title = isClientError ? null : "An unexpected error occurred.",
-                Detail = ExceptionDetail(exception, isClientError, environment.IsDevelopment())
+                Title = exception is UnauthenticatedException
+                    ? "Unauthorized"
+                    : isClientError ? null : "An unexpected error occurred.",
+                Detail = ExceptionDetail(exception, isClientError, environment.IsDevelopment()),
+                Extensions = exception is UnauthenticatedException unauthenticated
+                    ? new Dictionary<string, object?> { ["errorCode"] = unauthenticated.Error.Code }
+                    : new Dictionary<string, object?>(),
             }
         });
     }
 
     private static string ExceptionDetail(Exception exception, bool isClientError, bool isDevelopment)
     {
+        if (exception is UnauthenticatedException unauthenticated)
+        {
+            return unauthenticated.Error.Description;
+        }
+
         if (isDevelopment)
         {
             return exception.Message;
