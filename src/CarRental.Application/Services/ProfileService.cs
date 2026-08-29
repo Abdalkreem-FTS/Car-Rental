@@ -22,14 +22,12 @@ public sealed class ProfileService(
 
     public async Task<Result<ProfileResponse>> GetAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user is null)
+        if (await userAccounts.GetWithRolesAsync(userId, cancellationToken) is not { } profile)
         {
             return UserErrors.NotFound;
         }
 
-        return user.ToProfileResponse((await userManager.GetRolesAsync(user)).ToList());
+        return profile.User.ToProfileResponse(profile.Roles);
     }
 
     public async Task<Result<ProfileResponse>> UpdateAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)

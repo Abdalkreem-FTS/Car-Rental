@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
@@ -30,6 +33,8 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
 
     public TestClock Clock { get; } = new();
 
+    public CommandCounter Commands { get; } = new();
+
     public DatabaseProbe Database => field ??= new DatabaseProbe(ConnectionString);
 
     public async Task InitializeAsync()
@@ -52,6 +57,12 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+
+        builder.ConfigureLogging(logging =>
+        {
+            logging.AddProvider(Commands);
+            logging.AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information);
+        });
 
         builder.ConfigureAppConfiguration((_, configuration) =>
         {
@@ -80,6 +91,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
 
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Clock);
+
         });
     }
     
