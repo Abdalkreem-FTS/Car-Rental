@@ -21,6 +21,9 @@ public readonly record struct Error
     public static Error Failure(string code = nameof(Failure), string description = "General failure.")
         => new(code, description, ErrorType.Failure);
 
+    public static Error BadRequest(string code = nameof(BadRequest), string description = "The request could not be accepted.")
+        => new(code, description, ErrorType.BadRequest);
+
     public static Error Unexpected(string code = nameof(Unexpected), string description = "Unexpected error.")
         => new(code, description, ErrorType.Unexpected);
 

@@ -13,4 +13,5 @@ public enum ErrorType
     Timeout,
     PreconditionRequired,
     PreconditionFailed,
+    BadRequest,
 }

@@ -1,5 +1,7 @@
 using CarRental.Domain.Common;
+using CarRental.Api.Extensions;
 using CarRental.Domain.Errors;
+using Microsoft.AspNetCore.Http;
 using Shouldly;
 
 namespace CarRental.IntegrationTests.Contracts;
@@ -75,6 +77,45 @@ public sealed class ErrorCodeContractTests
         description.ShouldNotBeNullOrWhiteSpace();
     }
 
+
+    public static TheoryData<ErrorType, int> StatusForType => new()
+    {
+        { ErrorType.Validation, 400 },
+        { ErrorType.BadRequest, 400 },
+        { ErrorType.Unauthorized, 401 },
+        { ErrorType.Forbidden, 403 },
+        { ErrorType.NotFound, 404 },
+        { ErrorType.Conflict, 409 },
+        { ErrorType.PreconditionFailed, 412 },
+        { ErrorType.PreconditionRequired, 428 },
+        { ErrorType.Failure, 500 },
+        { ErrorType.Unexpected, 500 },
+    };
+
+    [Theory]
+    [MemberData(nameof(StatusForType))]
+    public void ErrorType_MapsToTheStatusItClaims(ErrorType type, int expectedStatus)
+    {
+        var problem = Error.Create((int)type, "some.code", "Something went wrong.").ToProblem();
+
+        problem.ShouldBeAssignableTo<IStatusCodeHttpResult>()!.StatusCode.ShouldBe(expectedStatus);
+    }
+
+    [Fact]
+    public void UnclassifiedFailure_IsNotBlamedOnTheCaller()
+    {
+        Error.Failure("user.registration_failed", "Identity refused.")
+            .ToProblem()
+            .ShouldBeAssignableTo<IStatusCodeHttpResult>()!
+            .StatusCode
+            .ShouldBe(500, "a failure we cannot classify is ours until proven otherwise");
+    }
+
+    [Fact]
+    public void ToProblem_WithNoErrors_FailsLoudlyRatherThanInventingAProblem()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => new List<Error>().ToProblem());
+    }
 
     [Fact]
     public void PublishedCodes_AcrossTheWholeCatalog_AreUnique()

@@ -8,10 +8,7 @@ public static class ProblemExtensions
 {
     public static IResult ToProblem(this List<Error> errors)
     {
-        if (errors.Count == 0)
-        {
-            return Results.Problem();
-        }
+        ArgumentOutOfRangeException.ThrowIfZero(errors.Count, nameof(errors));
 
         return errors.All(error => error.Type == ErrorType.Validation) ? ValidationProblem(errors) : Problem(errors[0]);
     }
@@ -55,7 +52,8 @@ public static class ProblemExtensions
             ErrorType.NotFound => StatusCodes.Status404NotFound,
             ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
             ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            ErrorType.Failure => StatusCodes.Status400BadRequest,
+            ErrorType.BadRequest => StatusCodes.Status400BadRequest,
+            ErrorType.Failure => StatusCodes.Status500InternalServerError,
             ErrorType.Unexpected => StatusCodes.Status500InternalServerError,
             ErrorType.Unavailable => StatusCodes.Status503ServiceUnavailable,
             ErrorType.Timeout => StatusCodes.Status504GatewayTimeout,
@@ -81,7 +79,8 @@ public static class ProblemExtensions
         ErrorType.NotFound => "Not Found",
         ErrorType.Unauthorized => "Unauthorized",
         ErrorType.Forbidden => "Forbidden",
-        ErrorType.Failure => "Bad Request",
+        ErrorType.BadRequest => "Bad Request",
+        ErrorType.Failure => "Internal Server Error",
         ErrorType.Unexpected => "Internal Server Error",
         ErrorType.Unavailable => "Service Unavailable",
         ErrorType.Timeout => "Gateway Timeout",
