@@ -15,6 +15,8 @@ public sealed class ProfileQueryCountTests(CarRentalApiFactory factory) : Integr
 
         (await Api.Profile.GetAsync()).ShouldBeOk();
 
-        Factory.Commands.Count.ShouldBe(1, "the user and their roles come back in one query");
+        Factory.Commands.Count.ShouldBe(
+            2,
+            "one query for the user and their roles, and one to check the token's security stamp is current");
     }
 }

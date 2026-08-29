@@ -14,6 +14,8 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options, TimeProvider
 {
     public const string RoleClaimType = "role";
 
+    public const string SecurityStampClaimType = "sstamp";
+
     private static readonly JsonWebTokenHandler Handler = new();
 
     private readonly JwtOptions _options = options.Value;
@@ -35,9 +37,10 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options, TimeProvider
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Email, Required(user.Email, user.Id)),
+            new(JwtRegisteredClaimNames.Email, Required(user.Email, user.Id, "email address")),
             new(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
+            new(SecurityStampClaimType, Required(user.SecurityStamp, user.Id, "security stamp")),
         };
 
         claims.AddRange(roles.Select(role => new Claim(RoleClaimType, role)));
@@ -58,8 +61,8 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options, TimeProvider
 
     public string GenerateRefreshToken() => Base64Url.EncodeToString(RandomNumberGenerator.GetBytes(64));
 
-    private static string Required(string? email, Guid userId) =>
-        string.IsNullOrWhiteSpace(email)
-            ? throw new InvalidOperationException($"User {userId} has no email address to put in a token.")
-            : email;
+    private static string Required(string? value, Guid userId, string field) =>
+        string.IsNullOrWhiteSpace(value)
+            ? throw new InvalidOperationException($"User {userId} has no {field} to put in a token.")
+            : value;
 }

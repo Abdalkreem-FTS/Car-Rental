@@ -42,6 +42,13 @@ public sealed class UserAccountStore(
                     .ToList()))
             .FirstOrDefaultAsync(cancellationToken);
 
+    public Task<string?> CurrentSecurityStampAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        context.Users
+            .AsNoTracking()
+            .Where(user => user.Id == userId)
+            .Select(user => user.SecurityStamp)
+            .FirstOrDefaultAsync(cancellationToken);
+
     private async Task<Result<IdentityResult>> WithoutConflictsAsync(Func<Task<IdentityResult>> write)
     {
         try

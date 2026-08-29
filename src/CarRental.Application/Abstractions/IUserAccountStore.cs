@@ -17,4 +17,6 @@ public interface IUserAccountStore
     Task<Renter?> GetRenterAsync(Guid userId, CancellationToken cancellationToken = default);
 
     Task<UserWithRoles?> GetWithRolesAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    Task<string?> CurrentSecurityStampAsync(Guid userId, CancellationToken cancellationToken = default);
 }

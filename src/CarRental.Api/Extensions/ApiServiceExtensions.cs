@@ -58,6 +58,11 @@ public static class ApiServiceExtensions
 
                     bearer.MapInboundClaims = false;
 
+                    bearer.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = SecurityStampGuard.RejectStaleTokensAsync,
+                    };
+
                     bearer.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
