@@ -1,11 +1,13 @@
 using CarRental.Application.Contracts.Auth;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 namespace CarRental.Application.Validators.Auth;
 
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator()
+    public RegisterRequestValidator(IOptions<IdentityOptions> identity)
     {
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("First name is required.")
@@ -20,7 +22,7 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .EmailAddress().WithMessage("Enter a valid email address.")
             .MaximumLength(256).WithMessage("Email address cannot exceed 256 characters.");
 
-        RuleFor(x => x.Password).ValidPassword();
+        RuleFor(x => x.Password).ValidPassword(identity.Value.Password);
 
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty().WithMessage("Please confirm your password.")

@@ -1,5 +1,7 @@
 using CarRental.Application.Contracts.Auth;
 using CarRental.Application.Validators;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using CarRental.Application.Validators.Auth;
 using Shouldly;
 
@@ -7,7 +9,19 @@ namespace CarRental.UnitTests;
 
 public sealed class ValidatorTests
 {
-    private readonly RegisterRequestValidator _validator = new();
+    private static readonly IdentityOptions Identity = new()
+    {
+        Password =
+        {
+            RequiredLength = 8,
+            RequireDigit = true,
+            RequireLowercase = true,
+            RequireUppercase = true,
+            RequireNonAlphanumeric = true,
+        },
+    };
+
+    private readonly RegisterRequestValidator _validator = new(Options.Create(Identity));
 
     [Theory]
     [InlineData("Str0ng#Pass1")]
@@ -67,11 +81,24 @@ public sealed class ValidatorTests
 
     [Theory]
     [InlineData("+962791234567")]
-    [InlineData("0791234567")]
     [InlineData("+1 (555) 123-4567")]
-    public void Validate_WithACommonPhoneFormat_ReportsNoPhoneNumberError(string phoneNumber)
+    [InlineData("+962 (7) 9000-0000")]
+    [InlineData("  +962-79-123-4567  ")]
+    public void Validate_WithAnInternationalPhoneFormat_ReportsNoPhoneNumberError(string phoneNumber)
     {
         ErrorsFor(phoneNumber: phoneNumber).ShouldNotContain(e => e.PropertyName == "PhoneNumber");
+    }
+
+    [Theory]
+    [InlineData("0791234567")]
+    [InlineData("+((((((((")]
+    [InlineData("+")]
+    [InlineData("+12")]
+    [InlineData("+1234567890123456")]
+    [InlineData("+962 79 abc 4567")]
+    public void Validate_WithANumberWeCouldNotDial_ReportsAPhoneNumberError(string phoneNumber)
+    {
+        ErrorsFor(phoneNumber: phoneNumber).ShouldContain(e => e.PropertyName == "PhoneNumber");
     }
 
     [Theory]

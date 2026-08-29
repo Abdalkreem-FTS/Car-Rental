@@ -38,7 +38,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
             AddressLine1 = "",
             City = "",
             Country = "",
-            DriverLicenseNumber = "a",
+            DriverLicenseNumber = "",
         });
 
         response.ShouldFailValidation(

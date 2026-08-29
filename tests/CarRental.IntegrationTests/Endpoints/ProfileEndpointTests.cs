@@ -143,7 +143,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
             AddressLine1 = "",
             City = "",
             Country = "",
-            DriverLicenseNumber = "!",
+            DriverLicenseNumber = "",
         });
 
         response.ShouldFailValidation(

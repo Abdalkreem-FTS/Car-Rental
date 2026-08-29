@@ -1,5 +1,6 @@
 using CarRental.Domain;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 
 namespace CarRental.Application.Validators;
 
@@ -7,24 +8,49 @@ public static class SharedRules
 {
     public const int MinimumRenterAge = RenterRules.MinimumAge;
 
-    public static IRuleBuilderOptions<T, string> ValidPassword<T>(this IRuleBuilder<T, string> rule) =>
-        rule.NotEmpty().WithMessage("Password is required.")
-            .MinimumLength(8).WithMessage("Password must be at least 8 characters long.")
-            .MaximumLength(128).WithMessage("Password cannot exceed 128 characters.")
-            .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
-            .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter.")
-            .Matches("[0-9]").WithMessage("Password must contain at least one digit.")
-            .Matches("[^a-zA-Z0-9]").WithMessage("Password must contain at least one special character.");
+    public const int MaximumPasswordLength = 128;
+
+    public static IRuleBuilderOptions<T, string> ValidPassword<T>(
+        this IRuleBuilder<T, string> rule,
+        PasswordOptions policy)
+    {
+        var built = rule.NotEmpty().WithMessage("Password is required.")
+            .MinimumLength(policy.RequiredLength)
+            .WithMessage($"Password must be at least {policy.RequiredLength} characters long.")
+            .MaximumLength(MaximumPasswordLength)
+            .WithMessage($"Password cannot exceed {MaximumPasswordLength} characters.");
+
+        if (policy.RequireUppercase)
+        {
+            built = built.Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.");
+        }
+
+        if (policy.RequireLowercase)
+        {
+            built = built.Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter.");
+        }
+
+        if (policy.RequireDigit)
+        {
+            built = built.Matches("[0-9]").WithMessage("Password must contain at least one digit.");
+        }
+
+        if (policy.RequireNonAlphanumeric)
+        {
+            built = built.Matches("[^a-zA-Z0-9]").WithMessage("Password must contain at least one special character.");
+        }
+
+        return built;
+    }
 
     public static IRuleBuilderOptions<T, string> ValidPhoneNumber<T>(this IRuleBuilder<T, string> rule) =>
         rule.NotEmpty().WithMessage("Phone number is required.")
-            .Matches(@"^\+?[0-9\s\-()]{7,20}$")
-            .WithMessage("Enter a valid phone number (7-20 digits, optionally starting with +).");
+            .Must(number => PhoneNumbers.TryNormalise(number, out _))
+            .WithMessage("Enter a phone number in international format, like +962791234567.");
 
     public static IRuleBuilderOptions<T, string> ValidDriverLicense<T>(this IRuleBuilder<T, string> rule) =>
         rule.NotEmpty().WithMessage("Driver's license number is required.")
-            .Matches("^[a-zA-Z0-9-]{5,30}$")
-            .WithMessage("Enter a valid driver's license number (5-30 letters, digits or hyphens).");
+            .MaximumLength(30).WithMessage("Driver's license number cannot exceed 30 characters.");
 
     public static IRuleBuilderOptions<T, DateOnly?> ValidDateOfBirth<T>(this IRuleBuilder<T, DateOnly?> rule) =>
         rule.Must(date => date is null || date.Value < DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime))

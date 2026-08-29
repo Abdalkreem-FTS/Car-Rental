@@ -78,7 +78,7 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     {
         FirstName = Required(firstName, nameof(firstName));
         LastName = Required(lastName, nameof(lastName));
-        PhoneNumber = Required(phoneNumber, nameof(phoneNumber));
+        PhoneNumber = PhoneNumbers.Normalise(Required(phoneNumber, nameof(phoneNumber)));
         AddressLine1 = Required(addressLine1, nameof(addressLine1));
         City = Required(city, nameof(city));
         Country = Required(country, nameof(country));
