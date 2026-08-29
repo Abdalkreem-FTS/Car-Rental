@@ -87,6 +87,16 @@ public sealed class StartupMigrationTests(CarRentalApiFactory factory)
         failure.Message.ShouldContain("Smtp:Host");
     }
 
+    [Fact]
+    public void Startup_WithNoConnectionString_SaysSoRatherThanFailingInsideNpgsql()
+    {
+        using var host = new HostOn(connectionString: string.Empty, seed: false);
+
+        var failure = Should.Throw<InvalidOperationException>(() => host.CreateClient());
+
+        failure.Message.ShouldContain("ConnectionStrings:Default");
+    }
+
     private async Task<string> FreshDatabaseAsync(string name)
     {
         var builder = new NpgsqlConnectionStringBuilder(factory.ConnectionString);

@@ -22,7 +22,9 @@ public static class DependencyInjection
         public IServiceCollection AddInfrastructure(IConfiguration configuration)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("Default")));
+                options.UseNpgsql(
+                    ConnectionString(configuration),
+                    npgsql => npgsql.CommandTimeout(DatabaseOptions.DefaultCommandTimeoutSeconds)));
 
             services.AddIdentityCore<ApplicationUser>(options =>
                 {
@@ -106,8 +108,14 @@ public static class DependencyInjection
             return services;
         }
         
+        private static string ConnectionString(IConfiguration configuration) =>
+            configuration.GetConnectionString("Default") is { Length: > 0 } connectionString
+                ? connectionString
+                : throw new InvalidOperationException(
+                    "ConnectionStrings:Default is missing. Set it before starting the application.");
+
         private IServiceCollection AddEmailSender() =>
-            services.AddScoped<IEmailSender>(provider =>
+            services.AddSingleton<IEmailSender>(provider =>
             {
                 if (provider.GetRequiredService<IOptions<SmtpOptions>>().Value.IsConfigured)
                 {
