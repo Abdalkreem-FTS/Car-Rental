@@ -16,7 +16,10 @@ public sealed class ReservationTests
     {
         var reservation = NewReservation(DateOnly.Parse(start), DateOnly.Parse(end));
 
-        reservation.TotalDays.ShouldBe(expectedDays);
+        reservation.TotalDays.ShouldBe(
+            expectedDays,
+            "both ends are billed, so Monday to Friday is five days where the industry charges four. "
+            + "Changing that needs pickup and return times, and this is the test that should fail when it moves.");
     }
 
 
