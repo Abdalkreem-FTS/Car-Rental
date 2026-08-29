@@ -13,11 +13,22 @@ docker compose up -d                     # PostgreSQL on localhost:5432
 dotnet run --project src/CarRental.Api   # http://localhost:5080
 ```
 
-First run migrates the database and seeds two roles, an admin account and a 16-car demo fleet.
-It is idempotent, so restarting changes nothing.
+Two independent startup steps, each with its own switch. `Database:MigrateOnStartup` applies
+migrations; `Seed:Enabled` seeds two roles, an admin account and a 16-car demo fleet. Both are
+idempotent, so restarting changes nothing, and turning off the demo data leaves migrations
+running. Past a demo, apply migrations as a deployment step rather than at startup: instances
+race each other, and a failed migration should not look like a crashed app.
 
-**Seeded admin:** `admin@carrental.local` / `Admin#12345` — change it before the app is
-reachable by anyone else. Create a customer account from the sign-up page.
+Seeding has no default administrator password — startup fails without one, rather than
+handing out an account whose credentials are in this file. Set it before the first run:
+
+```bash
+dotnet user-secrets set "Seed:AdminPassword" "<a password you choose>" \
+  --project src/CarRental.Api
+```
+
+The account is then `admin@carrental.local` with that password. Create a customer account
+from the sign-up page.
 
 API docs (Development only): <http://localhost:5080/scalar/v1>
 

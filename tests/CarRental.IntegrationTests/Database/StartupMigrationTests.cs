@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using Shouldly;
 
@@ -46,6 +47,34 @@ public sealed class StartupMigrationTests(CarRentalApiFactory factory)
         tables.ShouldBe(0, "migrating on startup is its own decision, and it was declined");
     }
 
+    [Fact]
+    public async Task Startup_WhenSeedingIsOnWithNoAdminPassword_RefusesToStartRatherThanInventOne()
+    {
+        var connectionString = await FreshDatabaseAsync("seed_without_a_password");
+
+        await using var host = new HostOn(connectionString, seed: true, adminPassword: null);
+
+        var failure = Should.Throw<OptionsValidationException>(() => host.CreateClient());
+
+        failure.Message.ShouldContain("Seed:AdminPassword");
+    }
+
+    [Fact]
+    public async Task Startup_WhenTheAdminCannotBeCreated_FailsRatherThanRunWithoutOne()
+    {
+        var connectionString = await FreshDatabaseAsync("seed_with_a_rejected_password");
+
+        await using var host = new HostOn(connectionString, seed: true, adminPassword: "short");
+
+        Should.Throw<InvalidOperationException>(() => host.CreateClient())
+            .Message.ShouldContain("create the administrator");
+
+        var probe = new DatabaseProbe(connectionString);
+
+        (await probe.QuerySingleAsync<long>("""SELECT count(*) FROM "AspNetUsers" """))
+            .ShouldBe(0, "an app that cannot create its own administrator has not started");
+    }
+
     private async Task<string> FreshDatabaseAsync(string name)
     {
         var builder = new NpgsqlConnectionStringBuilder(factory.ConnectionString);
@@ -67,7 +96,11 @@ public sealed class StartupMigrationTests(CarRentalApiFactory factory)
         return builder.ConnectionString;
     }
 
-    private sealed class HostOn(string connectionString, bool seed, bool migrate = true) : WebApplicationFactory<Program>
+    private sealed class HostOn(
+        string connectionString,
+        bool seed,
+        bool migrate = true,
+        string? adminPassword = TestData.AdminPassword) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
@@ -83,6 +116,8 @@ public sealed class StartupMigrationTests(CarRentalApiFactory factory)
                     ["ClientApp:BaseUrl"] = "https://rentals.example.test",
                     ["Database:MigrateOnStartup"] = migrate ? "true" : "false",
                     ["Seed:Enabled"] = seed ? "true" : "false",
+                    ["Seed:AdminEmail"] = TestData.AdminEmail,
+                    ["Seed:AdminPassword"] = adminPassword,
                 }));
 
             builder.ConfigureTestServices(services =>

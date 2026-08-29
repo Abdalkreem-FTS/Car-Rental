@@ -6,7 +6,7 @@ public sealed class SeedOptions
 
     public bool Enabled { get; set; } = true;
 
-    public string AdminEmail { get; set; } = "admin@carrental.local";
+    public string AdminEmail { get; set; } = string.Empty;
 
-    public string AdminPassword { get; set; } = "Admin#12345";
+    public string AdminPassword { get; set; } = string.Empty;
 }

@@ -54,7 +54,15 @@ public static class DependencyInjection
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
+            services.AddOptions<SeedOptions>()
+                .Bind(configuration.GetSection(SeedOptions.SectionName))
+                .Validate(
+                    options => !options.Enabled || !string.IsNullOrWhiteSpace(options.AdminEmail),
+                    "Seed:AdminEmail is required while seeding is enabled.")
+                .Validate(
+                    options => !options.Enabled || !string.IsNullOrWhiteSpace(options.AdminPassword),
+                    "Seed:AdminPassword is required while seeding is enabled. Set it with user-secrets or an environment variable; there is no default.")
+                .ValidateOnStart();
             services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
 
             // Sieve rejects an unknown property instead of quietly dropping that part of the

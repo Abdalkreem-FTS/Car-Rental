@@ -31,8 +31,8 @@ public sealed class DatabaseSeeder(
             {
                 continue;
             }
-            
-            await roleManager.CreateAsync(new ApplicationRole(role));
+
+            MustSucceed(await roleManager.CreateAsync(new ApplicationRole(role)), $"create the role {role}");
             logger.LogInformation("Seeded role {Role}", role);
         }
     }
@@ -58,19 +58,19 @@ public sealed class DatabaseSeeder(
 
         admin.EmailConfirmed = true;
 
-        var created = await userManager.CreateAsync(admin, _options.AdminPassword);
+        MustSucceed(await userManager.CreateAsync(admin, _options.AdminPassword), "create the administrator");
+        MustSucceed(await userManager.AddToRolesAsync(admin, [Roles.Admin, Roles.Customer]), "give the administrator its roles");
 
-        if (!created.Succeeded)
-        {
-            logger.LogError(
-                "Could not seed the admin account: {Errors}",
-                string.Join("; ", created.Errors.Select(error => error.Description)));
-
-            return;
-        }
-
-        await userManager.AddToRolesAsync(admin, [Roles.Admin, Roles.Customer]);
         logger.LogInformation("Seeded admin account {Email}", _options.AdminEmail);
+    }
+
+    private static void MustSucceed(IdentityResult result, string attempt)
+    {
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"Seeding could not {attempt}: {string.Join("; ", result.Errors.Select(error => error.Description))}");
+        }
     }
 
     private async Task SeedCarsAsync(CancellationToken cancellationToken)
