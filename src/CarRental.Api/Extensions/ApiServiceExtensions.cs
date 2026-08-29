@@ -6,6 +6,7 @@ using CarRental.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CarRental.Api.Extensions;
@@ -67,6 +68,8 @@ public static class ApiServiceExtensions
                         ValidAudience = jwt.Audience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
                         ClockSkew = TimeSpan.FromSeconds(30),
+                        RoleClaimType = JwtTokenGenerator.RoleClaimType,
+                        NameClaimType = JwtRegisteredClaimNames.Sub,
                     };
                 });
 

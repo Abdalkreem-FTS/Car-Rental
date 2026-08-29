@@ -11,10 +11,11 @@ public sealed class CreatedAtStampTests(CarRentalApiFactory factory) : Integrati
     [Fact]
     public async Task CreatedAtUtc_ComesFromTheDatabase_NotWhicheverMachineBuiltTheObject()
     {
-        Factory.Clock.Advance(TimeSpan.FromDays(3650));
-
         await SignUpAsync();
         var car = await FindCarAsync("Corolla");
+
+        Factory.Clock.Advance(TimeSpan.FromDays(3650));
+
         var reservation = (await Api.Reservations.CreateAsync(Booking(car.Id, 5, 7))).ShouldBeCreated();
 
         var stamped = await Factory.WithDbAsync(db => db.Reservations
