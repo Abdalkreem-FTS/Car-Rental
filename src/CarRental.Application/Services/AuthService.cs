@@ -227,10 +227,9 @@ public sealed class AuthService(
     {
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
-        var link = $"{_clientApp.BaseUrl.TrimEnd('/')}{_clientApp.ConfirmEmailPath}"
-                   + $"?email={Uri.EscapeDataString(user.Email!)}&token={Encode(token)}";
+        var link = _clientApp.LinkTo(_clientApp.ConfirmEmailPath, user.Email!, Encode(token));
 
-        await emailSender.SendEmailConfirmationAsync(user.Email!, user.FirstName, link, cancellationToken);
+        await emailSender.SendEmailConfirmationAsync(user.Email!, user.FirstName, link.ToString(), cancellationToken);
     }
 
     public async Task<Result<Success>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
@@ -247,9 +246,9 @@ public sealed class AuthService(
         
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-        var link = $"{_clientApp.BaseUrl.TrimEnd('/')}{_clientApp.ResetPasswordPath}" + $"?email={Uri.EscapeDataString(user.Email!)}&token={Encode(token)}";
+        var link = _clientApp.LinkTo(_clientApp.ResetPasswordPath, user.Email!, Encode(token));
 
-        await emailSender.SendPasswordResetAsync(user.Email!, user.FirstName, link, cancellationToken);
+        await emailSender.SendPasswordResetAsync(user.Email!, user.FirstName, link.ToString(), cancellationToken);
 
         return Result.Success;
     }

@@ -6,9 +6,11 @@ const resendForm = $('#resend-form');
 const heading = $('#confirm-heading');
 const sub = $('#confirm-sub');
 
-const params = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.hash.slice(1));
 const email = params.get('email');
 const token = params.get('token');
+
+history.replaceState(null, '', window.location.pathname);
 
 function offerResend(message) {
   heading.textContent = 'We could not confirm that link';

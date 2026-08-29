@@ -51,7 +51,7 @@ public sealed class CapturingEmailSender : IEmailSender
 
     private static string TokenIn(string link, string email)
     {
-        var query = HttpUtility.ParseQueryString(new Uri(link).Query);
+        var query = HttpUtility.ParseQueryString(new Uri(link).Fragment.TrimStart('#'));
 
         var linkedEmail = query["email"] ?? throw new InvalidOperationException($"No 'email' in link: {link}");
         var token = query["token"] ?? throw new InvalidOperationException($"No 'token' in link: {link}");

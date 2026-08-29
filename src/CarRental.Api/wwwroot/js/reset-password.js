@@ -3,9 +3,11 @@ import { $, $$, clearErrors, readForm, showAlert, showApiError, showFieldError, 
 import { attachStrengthMeter, scorePassword } from './password-strength.js';
 
 const form = $('#reset-form');
-const params = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.hash.slice(1));
 const email = params.get('email');
 const token = params.get('token');
+
+history.replaceState(null, '', window.location.pathname);
 
 attachStrengthMeter(form.elements.password, $('#strength'), $('#strength-label'));
 

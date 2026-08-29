@@ -44,8 +44,10 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
 
         var link = Factory.Emails.LinkFor(auth.User.Email);
         
-        link.ShouldStartWith("https://rentals.example.test/reset-password.html?");
+        link.ShouldStartWith("https://rentals.example.test/reset-password.html#");
         link.ShouldContain($"email={Uri.EscapeDataString(auth.User.Email)}");
+
+        new Uri(link).Query.ShouldBeEmpty("a live credential must not travel where a server can log it");
     }
 
     [Fact]

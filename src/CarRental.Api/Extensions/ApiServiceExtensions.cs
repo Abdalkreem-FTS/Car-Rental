@@ -16,7 +16,14 @@ public static class ApiServiceExtensions
     {
         public IServiceCollection AddApiServices(IConfiguration configuration)
         {
-            services.Configure<ClientAppOptions>(configuration.GetSection(ClientAppOptions.SectionName));
+            services.AddOptions<ClientAppOptions>()
+            .Bind(configuration.GetSection(ClientAppOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(
+                options => Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var baseUrl)
+                    && baseUrl.Scheme is "http" or "https",
+                "ClientApp:BaseUrl must be an absolute http or https URL.")
+            .ValidateOnStart();
 
             services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemExtensions.Customize);
             services.AddExceptionHandler<GlobalExceptionHandler>();
