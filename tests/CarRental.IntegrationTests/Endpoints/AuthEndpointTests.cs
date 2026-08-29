@@ -185,7 +185,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
 
         (await RefreshWithAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
 
-        (await RefreshWithAsync(rotated)).ShouldBeOk();
+        (await RefreshWithAsync(rotated)).ShouldBeOk("the replacement is the live token now");
     }
 
     [Fact]

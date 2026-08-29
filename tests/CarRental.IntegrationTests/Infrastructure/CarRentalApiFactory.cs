@@ -60,6 +60,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
                 ["Jwt:Audience"] = "CarRental.Client",
                 ["Jwt:AccessTokenMinutes"] = "15",
                 ["Jwt:RefreshTokenDays"] = "7",
+                ["Jwt:RefreshReuseLeewaySeconds"] = "1",
                 ["ClientApp:BaseUrl"] = "https://rentals.example.test",
                 ["RateLimiting:Enabled"] = "false",
                 ["Seed:Enabled"] = "true",

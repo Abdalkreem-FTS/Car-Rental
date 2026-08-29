@@ -16,6 +16,7 @@ public sealed class ErrorCodeContractTests
         ("user.invalid_credentials", UserErrors.InvalidCredentials),
         ("user.locked_out", UserErrors.LockedOut),
         ("auth.invalid_refresh_token", AuthErrors.InvalidRefreshToken),
+        ("auth.refresh_token_reused", AuthErrors.RefreshTokenReused),
         ("auth.not_authenticated", AuthErrors.NotAuthenticated),
         ("request.malformed", RequestErrors.Malformed),
         ("request.no_such_endpoint", RequestErrors.NoSuchEndpoint),

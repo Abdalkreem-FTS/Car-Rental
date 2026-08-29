@@ -9,4 +9,6 @@ public interface IJwtTokenGenerator
     string GenerateRefreshToken();
 
     TimeSpan RefreshTokenLifetime { get; }
+
+    TimeSpan RefreshReuseLeeway { get; }
 }

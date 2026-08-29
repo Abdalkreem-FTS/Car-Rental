@@ -21,4 +21,8 @@ public static class AuthErrors
         "auth.invalid_confirmation_token",
         "token",
         "This confirmation link is invalid or has expired. Please request a new one.");
+
+    public static Error RefreshTokenReused => Error.Unauthorized(
+        "auth.refresh_token_reused",
+        "This session has been signed out because a refresh token was presented twice. Please sign in again.");
 }

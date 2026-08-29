@@ -17,6 +17,8 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options) : IJwtTokenG
 
     public TimeSpan RefreshTokenLifetime => TimeSpan.FromDays(_options.RefreshTokenDays);
 
+    public TimeSpan RefreshReuseLeeway => TimeSpan.FromSeconds(_options.RefreshReuseLeewaySeconds);
+
     public (string Token, DateTimeOffset ExpiresAtUtc) GenerateAccessToken(ApplicationUser user, IEnumerable<string> roles)
     {
         var expiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(_options.AccessTokenMinutes);

@@ -8,8 +8,37 @@ public sealed class RefreshTokenRepository(AppDbContext context) : IRefreshToken
 {
     public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default) =>
         context.RefreshTokens
+            .AsNoTracking()
             .Include(refreshToken => refreshToken.User)
             .FirstOrDefaultAsync(refreshToken => refreshToken.Token == token, cancellationToken);
+
+    public async Task<bool> TrySpendAsync(string token, Guid replacedByTokenId, CancellationToken cancellationToken = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        var spent = await context.RefreshTokens
+            .Where(refreshToken =>
+                refreshToken.Token == token &&
+                refreshToken.RevokedAtUtc == null &&
+                refreshToken.ExpiresAtUtc > now)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(refreshToken => refreshToken.RevokedAtUtc, now)
+                    .SetProperty(refreshToken => refreshToken.ReplacedByTokenId, replacedByTokenId),
+                cancellationToken);
+
+        return spent == 1;
+    }
+
+    public Task RevokeAsync(string token, Guid userId, CancellationToken cancellationToken = default) =>
+        context.RefreshTokens
+            .Where(refreshToken =>
+                refreshToken.Token == token &&
+                refreshToken.UserId == userId &&
+                refreshToken.RevokedAtUtc == null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(refreshToken => refreshToken.RevokedAtUtc, DateTimeOffset.UtcNow),
+                cancellationToken);
 
     public void Add(RefreshToken refreshToken) => context.RefreshTokens.Add(refreshToken);
 

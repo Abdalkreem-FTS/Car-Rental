@@ -127,14 +127,37 @@ public sealed class AuthService(
     {
         var stored = await refreshTokens.GetByTokenAsync(request.RefreshToken, cancellationToken);
 
-        if (stored?.User is null || !stored.IsActive(DateTimeOffset.UtcNow))
+        if (stored?.User is null)
         {
             return AuthErrors.InvalidRefreshToken;
         }
-        
-        stored.RevokedAtUtc = DateTimeOffset.UtcNow;
 
-        return await IssueTokensAsync(stored.User, cancellationToken);
+        var replacement = NewRefreshToken(stored.UserId);
+
+        if (await refreshTokens.TrySpendAsync(request.RefreshToken, replacement.Id, cancellationToken))
+        {
+            return await IssueTokensAsync(stored.User, replacement, cancellationToken);
+        }
+
+        return await RefusalFor(request.RefreshToken, stored.UserId, cancellationToken);
+    }
+
+    private async Task<Result<AuthResponse>> RefusalFor(string token, Guid userId, CancellationToken cancellationToken)
+    {
+        var current = await refreshTokens.GetByTokenAsync(token, cancellationToken);
+
+        if (current is not { WasSpent: true }
+            || DateTimeOffset.UtcNow - current.RevokedAtUtc!.Value <= tokenGenerator.RefreshReuseLeeway)
+        {
+            return AuthErrors.InvalidRefreshToken;
+        }
+
+        logger.LogWarning("Refresh token replayed for {UserId}. Revoking every session.", userId);
+
+        await refreshTokens.RevokeAllForUserAsync(userId, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return AuthErrors.RefreshTokenReused;
     }
 
     public async Task<Result<Success>> LogoutAsync(Guid userId, string? refreshToken, CancellationToken cancellationToken = default)
@@ -144,15 +167,7 @@ public sealed class AuthService(
             return Result.Success;
         }
 
-        var stored = await refreshTokens.GetByTokenAsync(refreshToken, cancellationToken);
-
-        if (stored is null || stored.UserId != userId || stored.RevokedAtUtc is not null)
-        {
-            return Result.Success;
-        }
-
-        stored.RevokedAtUtc = DateTimeOffset.UtcNow;
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await refreshTokens.RevokeAsync(refreshToken, userId, cancellationToken);
 
         return Result.Success;
     }
@@ -276,17 +291,23 @@ public sealed class AuthService(
         }
     }
 
-    private async Task<Result<AuthResponse>> IssueTokensAsync(ApplicationUser user, CancellationToken cancellationToken)
+    private RefreshToken NewRefreshToken(Guid userId) => new()
+    {
+        UserId = userId,
+        Token = tokenGenerator.GenerateRefreshToken(),
+        ExpiresAtUtc = DateTimeOffset.UtcNow.Add(tokenGenerator.RefreshTokenLifetime),
+    };
+
+    private Task<Result<AuthResponse>> IssueTokensAsync(ApplicationUser user, CancellationToken cancellationToken) =>
+        IssueTokensAsync(user, NewRefreshToken(user.Id), cancellationToken);
+
+    private async Task<Result<AuthResponse>> IssueTokensAsync(
+        ApplicationUser user,
+        RefreshToken refreshToken,
+        CancellationToken cancellationToken)
     {
         var roles = (await userManager.GetRolesAsync(user)).ToList();
         var (accessToken, expiresAtUtc) = tokenGenerator.GenerateAccessToken(user, roles);
-
-        var refreshToken = new RefreshToken
-        {
-            UserId = user.Id,
-            Token = tokenGenerator.GenerateRefreshToken(),
-            ExpiresAtUtc = DateTimeOffset.UtcNow.Add(tokenGenerator.RefreshTokenLifetime),
-        };
 
         refreshTokens.Add(refreshToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

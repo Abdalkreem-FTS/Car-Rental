@@ -21,4 +21,7 @@ public sealed class JwtOptions
 
     [Range(1, 365)]
     public int RefreshTokenDays { get; set; } = 7;
+
+    [Range(0, 300)]
+    public int RefreshReuseLeewaySeconds { get; set; } = 5;
 }

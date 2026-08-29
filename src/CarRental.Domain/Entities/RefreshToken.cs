@@ -14,7 +14,11 @@ public sealed class RefreshToken
 
     public DateTimeOffset? RevokedAtUtc { get; set; }
 
+    public Guid? ReplacedByTokenId { get; set; }
+
     public ApplicationUser? User { get; set; }
 
     public bool IsActive(DateTimeOffset utcNow) => RevokedAtUtc is null && ExpiresAtUtc > utcNow;
+
+    public bool WasSpent => RevokedAtUtc is not null && ReplacedByTokenId is not null;
 }

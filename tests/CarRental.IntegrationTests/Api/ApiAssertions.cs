@@ -40,7 +40,8 @@ public static class ApiAssertions
 
         public void ShouldBeForbidden(Error expected) => response.ShouldFail(HttpStatusCode.Forbidden, expected);
 
-        public void ShouldBeUnauthorized(Error expected) => response.ShouldFail(HttpStatusCode.Unauthorized, expected);
+        public void ShouldBeUnauthorized(Error expected, string? why = null) =>
+            response.ShouldFail(HttpStatusCode.Unauthorized, expected, why);
 
         public void ShouldRequireAuthentication() => response.ShouldHaveStatus(HttpStatusCode.Unauthorized);
 
@@ -58,9 +59,9 @@ public static class ApiAssertions
             return problem;
         }
 
-        private void ShouldFail(HttpStatusCode expectedStatus, Error expected)
+        private void ShouldFail(HttpStatusCode expectedStatus, Error expected, string? why = null)
         {
-            response.ShouldHaveStatus(expectedStatus);
+            response.StatusCode.ShouldBe(expectedStatus, why ?? $"body was: {response.RawBody}");
 
             var problem = response.Problem.ShouldNotBeNull();
 
