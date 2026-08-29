@@ -19,7 +19,7 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
         builder.HasOne(x => x.User)
             .WithMany(x => x.Reservations)
             .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.Car)
             .WithMany(x => x.Reservations)

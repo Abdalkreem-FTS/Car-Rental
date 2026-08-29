@@ -111,13 +111,15 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
     }
 
     [Fact]
-    public async Task Migrate_ForForeignKeys_CascadesFromUsersAndRestrictsFromCars()
+    public async Task Migrate_ForForeignKeys_CascadesCredentialsButHoldsOntoRentalHistory()
     {
         var deleteRules = await Factory.Database.ForeignKeyDeleteRulesAsync();
 
         deleteRules.ShouldContain("RefreshTokens.UserId -> CASCADE");
         deleteRules.ShouldContain("AspNetUserRoles.UserId -> CASCADE");
-        deleteRules.ShouldContain("Reservations.UserId -> CASCADE");
+        deleteRules.ShouldContain(
+            "Reservations.UserId -> RESTRICT",
+            "a closed account must not take the record of who held which car with it");
 
         deleteRules.ShouldContain("Reservations.CarId -> RESTRICT");
     }

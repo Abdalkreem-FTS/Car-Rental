@@ -137,11 +137,35 @@ public sealed class PersistenceTests(CarRentalApiFactory factory) : IntegrationT
     }
 
     [Fact]
-    public async Task SaveChanges_WhenDeletingAUser_CascadesToTheirTokensRolesAndReservations()
+    public async Task SaveChanges_WhenDeletingACustomerWhoHasRented_IsRefusedSoTheHistorySurvives()
     {
         var auth = await SignUpAsync();
         var car = await FindCarAsync("Corolla");
         (await Api.Reservations.CreateAsync(Booking(car.Id, 5, 7))).ShouldBeCreated();
+
+        await ShouldViolateAsync(
+            () => Factory.WithDbAsync(async db =>
+            {
+                db.Users.Remove(await db.Users.SingleAsync(u => u.Id == auth.User.Id));
+
+                return await db.SaveChangesAsync();
+            }),
+            PostgresErrorCodes.ForeignKeyViolation);
+
+        var survivors = await Factory.WithDbAsync(async db => new
+        {
+            Users = await db.Users.CountAsync(u => u.Id == auth.User.Id),
+            Reservations = await db.Reservations.CountAsync(r => r.UserId == auth.User.Id),
+        });
+
+        survivors.Users.ShouldBe(1);
+        survivors.Reservations.ShouldBe(1, "who held which car on which days is the record of the rental");
+    }
+
+    [Fact]
+    public async Task SaveChanges_WhenDeletingACustomerWhoNeverRented_StillClearsTheirCredentials()
+    {
+        var auth = await SignUpAsync();
 
         await Factory.WithDbAsync(async db =>
         {
@@ -154,13 +178,11 @@ public sealed class PersistenceTests(CarRentalApiFactory factory) : IntegrationT
         {
             RefreshTokens = await db.RefreshTokens.CountAsync(t => t.UserId == auth.User.Id),
             Roles = await db.UserRoles.CountAsync(r => r.UserId == auth.User.Id),
-            Reservations = await db.Reservations.CountAsync(r => r.UserId == auth.User.Id),
             Cars = await db.Cars.CountAsync(),
         });
 
         leftovers.RefreshTokens.ShouldBe(0);
         leftovers.Roles.ShouldBe(0);
-        leftovers.Reservations.ShouldBe(0);
         leftovers.Cars.ShouldBe(FleetSize, "the fleet is not owned by any one customer");
     }
 
