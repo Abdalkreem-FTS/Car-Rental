@@ -1,6 +1,7 @@
 using CarRental.Application.Abstractions;
 using CarRental.Application.Contracts.Reservations;
 using CarRental.Application.Mapping;
+using CarRental.Domain;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
@@ -19,9 +20,24 @@ public sealed class ReservationService(
         CreateReservationRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!await users.HasConfirmedEmailAsync(userId, cancellationToken))
+        if (await users.GetRenterAsync(userId, cancellationToken) is not { } renter)
+        {
+            return UserErrors.NotFound;
+        }
+
+        if (!renter.EmailConfirmed)
         {
             return UserErrors.EmailNotConfirmed;
+        }
+
+        if (renter.DateOfBirth is not { } dateOfBirth)
+        {
+            return UserErrors.DateOfBirthMissing;
+        }
+
+        if (!RenterRules.IsOldEnough(dateOfBirth, DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)))
+        {
+            return UserErrors.TooYoungToRent(RenterRules.MinimumAge);
         }
 
         var car = await cars.GetByIdAsync(request.CarId, cancellationToken);

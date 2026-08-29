@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Identity;
 
 namespace CarRental.Application.Abstractions;
 
+public sealed record Renter(bool EmailConfirmed, DateOnly? DateOfBirth);
+
 public interface IUserAccountStore
 {
     Task<Result<IdentityResult>> CreateAsync(ApplicationUser user, string password, CancellationToken cancellationToken = default);
 
     Task<Result<IdentityResult>> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken = default);
 
-    Task<bool> HasConfirmedEmailAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<Renter?> GetRenterAsync(Guid userId, CancellationToken cancellationToken = default);
 }

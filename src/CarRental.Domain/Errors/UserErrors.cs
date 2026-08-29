@@ -50,4 +50,12 @@ public static class UserErrors
     public static Error UpdateFailed => Error.Failure(
         "user.update_failed",
         "We could not save your details. Please try again.");
+
+    public static Error DateOfBirthMissing => Error.Forbidden(
+        "user.date_of_birth_missing",
+        "We need your date of birth on your profile before you can book a car.");
+
+    public static Error TooYoungToRent(int minimumAge) => Error.Forbidden(
+        "user.too_young_to_rent",
+        $"You must be at least {minimumAge} years old to book a car.");
 }
