@@ -3,10 +3,14 @@ using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CarRental.Infrastructure.Persistence;
 
-public sealed class UserAccountStore(UserManager<ApplicationUser> userManager, AppDbContext context) : IUserAccountStore
+public sealed class UserAccountStore(
+    UserManager<ApplicationUser> userManager,
+    AppDbContext context,
+    ILogger<UserAccountStore> logger) : IUserAccountStore
 {
     public Task<Result<IdentityResult>> CreateAsync(
         ApplicationUser user,
@@ -38,15 +42,15 @@ public sealed class UserAccountStore(UserManager<ApplicationUser> userManager, A
                     .ToList()))
             .FirstOrDefaultAsync(cancellationToken);
 
-    private static async Task<Result<IdentityResult>> WithoutConflictsAsync(Func<Task<IdentityResult>> write)
+    private async Task<Result<IdentityResult>> WithoutConflictsAsync(Func<Task<IdentityResult>> write)
     {
         try
         {
             return await write();
         }
-        catch (DbUpdateException exception) when (DatabaseConflicts.ErrorFor(exception) is { } conflict)
+        catch (DbUpdateException exception) when (DatabaseConflicts.ConflictFor(exception) is { } conflict)
         {
-            return conflict;
+            return logger.Report(conflict, exception);
         }
     }
 }

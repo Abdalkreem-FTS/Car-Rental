@@ -1,10 +1,11 @@
 using CarRental.Application.Abstractions;
 using CarRental.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CarRental.Infrastructure.Persistence;
 
-public sealed class UnitOfWork(AppDbContext context) : IUnitOfWork
+public sealed class UnitOfWork(AppDbContext context, ILogger<UnitOfWork> logger) : IUnitOfWork
 {
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => context.SaveChangesAsync(cancellationToken);
 
@@ -16,9 +17,9 @@ public sealed class UnitOfWork(AppDbContext context) : IUnitOfWork
 
             return Result.Success;
         }
-        catch (DbUpdateException exception) when (DatabaseConflicts.ErrorFor(exception) is { } conflict)
+        catch (DbUpdateException exception) when (DatabaseConflicts.ConflictFor(exception) is { } conflict)
         {
-            return conflict;
+            return logger.Report(conflict, exception);
         }
     }
 

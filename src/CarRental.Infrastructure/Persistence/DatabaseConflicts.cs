@@ -1,6 +1,7 @@
 using CarRental.Domain.Common;
 using CarRental.Domain.Errors;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace CarRental.Infrastructure.Persistence;
@@ -15,7 +16,7 @@ internal static class DatabaseConflicts
         ["IX_Cars_PlateNumber"] = CarErrors.PlateAlreadyInUse(),
     };
     
-    internal static Error? ErrorFor(DbUpdateException exception)
+    internal static DatabaseConflict? ConflictFor(DbUpdateException exception)
     {
         var violation = PostgresCause(exception);
 
@@ -25,10 +26,22 @@ internal static class DatabaseConflicts
         }
 
         return violation.ConstraintName is { } constraint && ByConstraint.TryGetValue(constraint, out var error)
-            ? error
+            ? new DatabaseConflict(constraint, violation.SqlState, error)
             : null;
     }
     
+    internal static Error Report(this ILogger logger, DatabaseConflict conflict, DbUpdateException exception)
+    {
+        logger.LogWarning(
+            exception,
+            "The database refused a write: constraint {Constraint} ({SqlState}) reported to the caller as {ErrorCode}.",
+            conflict.Constraint,
+            conflict.SqlState,
+            conflict.Error.Code);
+
+        return conflict.Error;
+    }
+
     private static PostgresException? PostgresCause(Exception? exception)
     {
         for (; exception is not null; exception = exception.InnerException)

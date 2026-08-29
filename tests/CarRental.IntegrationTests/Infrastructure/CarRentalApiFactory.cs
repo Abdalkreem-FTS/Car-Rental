@@ -35,6 +35,8 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
 
     public CommandCounter Commands { get; } = new();
 
+    public LogRecorder Logs { get; } = new();
+
     public DatabaseProbe Database => field ??= new DatabaseProbe(ConnectionString);
 
     public async Task InitializeAsync()
@@ -61,6 +63,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
         builder.ConfigureLogging(logging =>
         {
             logging.AddProvider(Commands);
+            logging.AddProvider(Logs);
             logging.AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information);
         });
 
@@ -98,6 +101,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
     public async Task ResetAsync()
     {
         Emails.Clear();
+        Logs.Reset();
         Clock.ResetToRealTime();
 
         await _respawner.ResetAsync(_resetConnection);
