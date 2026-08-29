@@ -14,7 +14,7 @@ public static class ReservationErrors
 
     public static Error AlreadyStarted => Error.Conflict(
         "reservation.already_started",
-        "A rental that has already started cannot be cancelled.");
+        "This rental has already started, so it can no longer be changed or cancelled.");
 
     public static Error VersionRequired => Error.PreconditionRequired(
         "reservation.version_required",
