@@ -99,24 +99,24 @@ public sealed class AuthService(
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
-        
+
         if (user is null)
         {
+            VerifyAgainstNobody(request.Password);
+
+            return UserErrors.InvalidCredentials;
+        }
+
+        if (!await userManager.CheckPasswordAsync(user, request.Password))
+        {
+            await userManager.AccessFailedAsync(user);
+
             return UserErrors.InvalidCredentials;
         }
 
         if (await userManager.IsLockedOutAsync(user))
         {
             return UserErrors.LockedOut;
-        }
-        
-        if (!await userManager.CheckPasswordAsync(user, request.Password))
-        {
-            await userManager.AccessFailedAsync(user);
-
-            return await userManager.IsLockedOutAsync(user)
-                ? UserErrors.LockedOut
-                : UserErrors.InvalidCredentials;
         }
 
         await userManager.ResetAccessFailedCountAsync(user);
@@ -337,6 +337,25 @@ public sealed class AuthService(
             user.ToResponse(roles));
     }
     
+    private static readonly ApplicationUser Nobody = new()
+    {
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        AddressLine1 = string.Empty,
+        City = string.Empty,
+        Country = string.Empty,
+        DriverLicenseNumber = string.Empty,
+    };
+
+    private static string? _nobodysHash;
+
+    private void VerifyAgainstNobody(string password)
+    {
+        _nobodysHash ??= userManager.PasswordHasher.HashPassword(Nobody, Guid.NewGuid().ToString());
+
+        userManager.PasswordHasher.VerifyHashedPassword(Nobody, _nobodysHash, password);
+    }
+
     private static List<Error> MapIdentityErrors(IdentityResult result) =>
     [
         .. result.Errors.Select(error => error.Code switch

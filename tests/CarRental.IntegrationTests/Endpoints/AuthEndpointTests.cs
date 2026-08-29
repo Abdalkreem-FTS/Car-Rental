@@ -148,7 +148,8 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
             failure.ShouldBeUnauthorized(UserErrors.InvalidCredentials);
         }
 
-        (await Api.Auth.LoginAsync(auth.User.Email, "Wr0ng#Pass1")).ShouldBeForbidden(UserErrors.LockedOut);
+        (await Api.Auth.LoginAsync(auth.User.Email, "Wr0ng#Pass1")).ShouldBeUnauthorized(UserErrors.InvalidCredentials);
+
         (await Api.Auth.LoginAsync(auth.User.Email, TestData.Password)).ShouldBeForbidden(UserErrors.LockedOut);
 
         var user = await StoredUserAsync(auth.User.Email);
