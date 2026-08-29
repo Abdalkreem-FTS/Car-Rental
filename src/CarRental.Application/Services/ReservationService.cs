@@ -31,6 +31,15 @@ public sealed class ReservationService(
             return CarErrors.NotFound;
         }
 
+        // Both of these are load-bearing, and neither is decorative.
+        //
+        // The lock and the check below settle every booking that arrives through this service:
+        // the lock serialises requests for one car, and the check then reads a state nobody can
+        // change until this transaction ends. That is what produces the 409.
+        //
+        // ck_reservations_no_overlapping_confirmed_bookings, in the migration, is what makes the
+        // rule true for anything that reaches the table another way: a script, a future service,
+        // a bug here. Deleting either one leaves a way to sell the same car twice.
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         await reservations.LockForBookingAsync(car.Id, cancellationToken);
