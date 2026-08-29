@@ -4,12 +4,12 @@ using CarRental.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
@@ -42,7 +42,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();
-        
+
         using var _ = CreateClient();
 
         _resetConnection = new NpgsqlConnection(ConnectionString);
@@ -97,7 +97,7 @@ public sealed class CarRentalApiFactory : WebApplicationFactory<Program>, IAsync
 
         });
     }
-    
+
     public async Task ResetAsync()
     {
         Emails.Clear();

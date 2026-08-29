@@ -3,10 +3,10 @@ using CarRental.Application.Common;
 using CarRental.Application.Contracts.Cars;
 using CarRental.Application.Contracts.Common;
 using CarRental.Application.Contracts.Reservations;
-using CarRental.Domain.Enums;
 using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
+using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
 
 namespace CarRental.Application.Services;
@@ -14,7 +14,7 @@ namespace CarRental.Application.Services;
 public sealed class CarService(ICarRepository cars, IReservationRepository reservations, IUnitOfWork unitOfWork) : ICarService
 {
     private const int MaxPageSize = 50;
-    
+
     public Task<Result<PagedResponse<CarResponse>>> SearchAsync(CarSearchRequest request, CancellationToken cancellationToken = default)
     {
         var trimmedLocation = string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim();

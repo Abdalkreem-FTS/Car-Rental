@@ -59,7 +59,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
         var reservation = response.ShouldBeCreated();
         response.Location!.ToString().ShouldBe($"/api/reservations/{reservation.Id}");
     }
-    
+
     [Theory]
     [InlineData(10, 15, "identical")]
     [InlineData(8, 11, "overlaps the start")]
@@ -140,7 +140,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         (await Api.Reservations.CreateAsync(Booking(second.Id, 10, 15))).ShouldBeCreated();
     }
-    
+
     [Fact]
     public async Task CreateReservation_WithAnUnknownCar_ReportsNotFound()
     {
@@ -234,7 +234,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         (await Api.Reservations.CreateAsync(Booking(Guid.NewGuid(), 2, 3))).ShouldRequireAuthentication();
     }
-    
+
     [Fact]
     public async Task GetReservations_WhenOtherAccountsHaveBookings_ReturnsOnlyTheCallersOwn()
     {
@@ -292,7 +292,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         reservations.Items.Select(r => r.StartDate).ShouldBe(reservations.Items.Select(r => r.StartDate).OrderDescending());
     }
-    
+
     [Fact]
     public async Task UpdateReservation_WithNewDates_MovesItAndRepricesTheRental()
     {
@@ -396,7 +396,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         (await Api.Reservations.UpdateAsync(reservation, BookingChange(-2, 5))).ShouldFailValidationOn("startDate");
     }
-    
+
     [Fact]
     public async Task CancelReservation_BeforeItStarts_MarksItCancelledAndStampsTheTime()
     {
@@ -431,7 +431,7 @@ public sealed class ReservationEndpointTests(CarRentalApiFactory factory) : Inte
 
         (await Api.Reservations.CancelAsync(reservation.Id)).ShouldBeConflict(ReservationErrors.AlreadyStarted);
     }
-    
+
     private Task<int> BackdateAsync(Guid reservationId) => Factory.WithDbAsync(async db =>
     {
         var stored = await db.Reservations.SingleAsync(r => r.Id == reservationId);

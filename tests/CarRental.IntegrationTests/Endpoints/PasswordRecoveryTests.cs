@@ -43,7 +43,7 @@ public sealed class PasswordRecoveryTests(CarRentalApiFactory factory) : Integra
         (await Api.Auth.ForgotPasswordAsync(auth.User.Email)).ShouldBeAccepted();
 
         var link = (await Factory.DeliveredEmailsAsync()).LinkFor(auth.User.Email);
-        
+
         link.ShouldStartWith("https://rentals.example.test/reset-password.html#");
         link.ShouldContain($"email={Uri.EscapeDataString(auth.User.Email)}");
 

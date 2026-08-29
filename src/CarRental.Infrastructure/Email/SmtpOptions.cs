@@ -13,7 +13,7 @@ public enum SmtpSecurity
 public sealed class SmtpOptions
 {
     public const string SectionName = "Smtp";
-    
+
     public string? Host { get; set; }
 
     [Range(1, 65535)]

@@ -1,6 +1,6 @@
 using CarRental.Application.Contracts.Cars;
-using CarRental.Application.Contracts.Reservations;
 using CarRental.Application.Contracts.Common;
+using CarRental.Application.Contracts.Reservations;
 using CarRental.Domain.Common;
 
 namespace CarRental.Application.Abstractions;

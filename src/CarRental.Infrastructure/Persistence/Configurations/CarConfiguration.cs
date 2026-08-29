@@ -17,7 +17,7 @@ public sealed class CarConfiguration : IEntityTypeConfiguration<Car>
         builder.Property(x => x.ImageUrl).HasMaxLength(500);
         builder.Property(x => x.Description).HasMaxLength(1000);
         builder.Property(x => x.DailyRate).HasPrecision(10, 2);
-        
+
         builder.Property(x => x.Category).HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.Transmission).HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.Fuel).HasConversion<string>().HasMaxLength(20);

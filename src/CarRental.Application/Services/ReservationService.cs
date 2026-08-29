@@ -1,3 +1,4 @@
+using System.Globalization;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Common;
 using CarRental.Application.Contracts.Common;
@@ -174,14 +175,14 @@ public sealed class ReservationService(
         {
             return CarErrors.NoLongerInTheFleet;
         }
-        
+
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         await reservations.LockForBookingAsync(car.Id, cancellationToken);
 
         await reservations.ReloadAsync(reservation, cancellationToken);
 
-        if (!string.Equals(reservation.Version.ToString(), expectedVersion, StringComparison.Ordinal))
+        if (!string.Equals(reservation.Version.ToString(CultureInfo.InvariantCulture), expectedVersion, StringComparison.Ordinal))
         {
             return ReservationErrors.VersionStale;
         }

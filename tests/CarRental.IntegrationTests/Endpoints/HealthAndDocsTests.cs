@@ -1,10 +1,10 @@
 using System.Net;
 using CarRental.IntegrationTests.Api;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using CarRental.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using CarRental.IntegrationTests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Shouldly;
 
 namespace CarRental.IntegrationTests.Endpoints;

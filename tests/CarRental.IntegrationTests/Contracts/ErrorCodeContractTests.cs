@@ -1,5 +1,5 @@
-using CarRental.Domain.Common;
 using CarRental.Api.Extensions;
+using CarRental.Domain.Common;
 using CarRental.Domain.Errors;
 using Microsoft.AspNetCore.Http;
 using Shouldly;
@@ -134,14 +134,14 @@ public sealed class ErrorCodeContractTests
 
         codes.Distinct().Count().ShouldBe(codes.Count, "two failures sharing a code cannot be told apart");
     }
-    
+
     [Theory]
     [MemberData(nameof(ValidationErrors))]
     public void ValidationError_KeepsTheFieldSeparateFromTheCode(Error error, string field)
     {
         error.Type.ShouldBe(ErrorType.Validation);
         error.Field.ShouldBe(field, "the field names the input the client must correct");
-        error.Field.ShouldNotContain(".", Case.Sensitive);
+        error.Field.ShouldNotBeNull().ShouldNotContain(".", Case.Sensitive);
         error.Code.ShouldContain(".", Case.Sensitive, "the code stays a dotted domain code, whatever the type");
     }
 

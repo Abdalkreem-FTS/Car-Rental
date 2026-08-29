@@ -28,8 +28,9 @@ public sealed class ValidationCoverageTests(CarRentalApiFactory factory)
 
             unguarded.AddRange(
                 from parameter in handler.GetParameters()
-                    .Where(parameter => HasValidator(parameter.ParameterType)) where 
-                    !validated.Contains(parameter.ParameterType) 
+                    .Where(parameter => HasValidator(parameter.ParameterType))
+                where
+                    !validated.Contains(parameter.ParameterType)
                 select $"{endpoint.DisplayName} takes {parameter.ParameterType.Name} unvalidated");
         }
 

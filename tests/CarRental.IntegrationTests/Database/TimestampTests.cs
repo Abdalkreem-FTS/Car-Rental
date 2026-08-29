@@ -20,7 +20,7 @@ public sealed class TimestampTests(CarRentalApiFactory factory) : IntegrationTes
             (await db.RefreshTokens.FirstAsync()).CreatedAtUtc.Offset,
             (await db.RefreshTokens.FirstAsync()).ExpiresAtUtc.Offset,
         });
-        
+
         offsets.ShouldAllBe(offset => offset == TimeSpan.Zero);
     }
 
@@ -41,7 +41,7 @@ public sealed class TimestampTests(CarRentalApiFactory factory) : IntegrationTes
 
         var stored = await Factory.WithDbAsync(db =>
             db.RefreshTokens.AsNoTracking().FirstAsync(t => t.UserId == auth.User.Id));
-        
+
         stored.ExpiresAtUtc.Offset.ShouldBe(TimeSpan.Zero);
         stored.ExpiresAtUtc.ShouldBe(instant);
         stored.ExpiresAtUtc.UtcDateTime.ShouldBe(new DateTime(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc));
@@ -71,7 +71,7 @@ public sealed class TimestampTests(CarRentalApiFactory factory) : IntegrationTes
 
         using var document = JsonDocument.Parse(response.RawBody);
         var expiresAt = document.RootElement.GetProperty("expiresAtUtc").GetString();
-        
+
         expiresAt.ShouldNotBeNull();
         expiresAt.ShouldEndWith("+00:00");
         DateTimeOffset.Parse(expiresAt).Offset.ShouldBe(TimeSpan.Zero);
@@ -88,7 +88,7 @@ public sealed class TimestampTests(CarRentalApiFactory factory) : IntegrationTes
         response.ShouldBeCreated();
 
         using var document = JsonDocument.Parse(response.RawBody);
-        
+
         document.RootElement.GetProperty("startDate").GetString().ShouldBe(In(5).ToString("yyyy-MM-dd"));
         document.RootElement.GetProperty("createdAtUtc").GetString().ShouldEndWith("+00:00");
     }

@@ -1,0 +1,57 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,js,css,html}]
+indent_size = 2
+
+[*.{csproj,props,targets}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_prefer_braces = true:warning
+dotnet_sort_system_directives_first = true
+dotnet_style_namespace_match_folder = true:suggestion
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_diagnostic.IDE0055.severity = warning
+
+# Logging is not on a hot path here, and LoggerMessage delegates would cost more in
+# indirection than they save. Revisit if logging ever shows up in a profile.
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+
+# Renaming the Error type or the end parameter would only help callers writing VB.
+dotnet_diagnostic.CA1716.severity = none
+
+# Interface-typed locals read better than the concrete type they happen to be.
+dotnet_diagnostic.CA1859.severity = none
+
+[src/CarRental.Infrastructure/Persistence/Migrations/*.cs]
+# Scaffolded by EF. Reformatting them makes the next scaffold a conflict.
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.IDE0055.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+
+[tests/**/*.cs]
+# Method_Scenario_Outcome is the point: a failing test name should read as a sentence.
+dotnet_diagnostic.CA1707.severity = none
+
+# Test data is formatted for humans reading a failure, not for a user's locale.
+dotnet_diagnostic.CA1305.severity = none
+
+# xUnit names collection definitions this way; the suffix is its convention, not ours.
+dotnet_diagnostic.CA1711.severity = none

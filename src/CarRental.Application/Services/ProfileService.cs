@@ -4,8 +4,8 @@ using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Errors;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace CarRental.Application.Services;
 
@@ -90,7 +90,7 @@ public sealed class ProfileService(
         {
             return IdentityErrors.Map(changed, "newPassword", UserErrors.UpdateFailed);
         }
-        
+
         await refreshTokens.RevokeAllForUserAsync(user.Id, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

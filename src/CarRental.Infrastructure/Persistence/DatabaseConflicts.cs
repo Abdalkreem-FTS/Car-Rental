@@ -15,7 +15,7 @@ internal static class DatabaseConflicts
         ["IX_AspNetUsers_DriverLicenseNumber"] = UserErrors.LicenseAlreadyInUse,
         ["IX_Cars_PlateNumber"] = CarErrors.PlateAlreadyInUse(),
     };
-    
+
     internal static DatabaseConflict? ConflictFor(DbUpdateException exception)
     {
         var violation = PostgresCause(exception);
@@ -29,7 +29,7 @@ internal static class DatabaseConflicts
             ? new DatabaseConflict(constraint, violation.SqlState, error)
             : null;
     }
-    
+
     internal static Error Report(this ILogger logger, DatabaseConflict conflict, DbUpdateException exception)
     {
         logger.LogWarning(

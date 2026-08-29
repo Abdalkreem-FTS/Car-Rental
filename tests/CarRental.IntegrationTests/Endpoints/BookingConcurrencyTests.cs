@@ -37,7 +37,7 @@ public sealed class BookingConcurrencyTests(CarRentalApiFactory factory) : Integ
     {
         var accessToken = (await SignUpAsync()).AccessToken;
         var car = await FindCarAsync("Wrangler");
-        
+
         var windows = Enumerable.Range(0, Racers).Select(i => (From: 60 + (i * 3), To: 62 + (i * 3))).ToList();
 
         var responses = await Task.WhenAll(windows.Select(async window =>

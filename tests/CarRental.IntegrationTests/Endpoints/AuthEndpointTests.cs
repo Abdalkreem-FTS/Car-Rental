@@ -109,7 +109,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
 
         response.ShouldBeOk();
     }
-    
+
     [Fact]
     public async Task Login_WithADifferentlyCasedEmail_Succeeds()
     {
@@ -173,7 +173,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
         user.AccessFailedCount.ShouldBe(0);
         user.LockoutEnd.ShouldBeNull();
     }
-    
+
     [Fact]
     public async Task Refresh_WithAValidToken_RotatesThePairAndRevokesThePresentedToken()
     {
@@ -214,7 +214,7 @@ public sealed class AuthEndpointTests(CarRentalApiFactory factory) : Integration
 
         (await RefreshWithAsync(auth.RefreshToken)).ShouldBeUnauthorized(AuthErrors.InvalidRefreshToken);
     }
-    
+
     [Fact]
     public async Task Logout_WhenSignedIn_LeavesTheUsersOtherSessionsAlone()
     {

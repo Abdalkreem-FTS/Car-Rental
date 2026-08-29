@@ -24,7 +24,7 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
     {
         var query = OnTheFleet(request.Query, request.PickupDate, request.ReturnDate);
         var model = new SieveModel { Filters = request.Filters, Sorts = request.Sorts };
-        
+
         try
         {
             query = sieve.Apply(model, query, applyFiltering: true, applySorting: false, applyPagination: false);
@@ -44,7 +44,7 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
         {
             return CarErrors.InvalidSorts(exception.Message);
         }
-        
+
         var ordered = string.IsNullOrWhiteSpace(request.Sorts)
             ? query.OrderBy(car => car.Make).ThenBy(car => car.Model).ThenBy(car => car.Id)
             : ((IOrderedQueryable<Car>)query).ThenBy(car => car.Id);
@@ -89,7 +89,7 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
     }
 
     public void Add(Car car) => context.Cars.Add(car);
-    
+
     private IQueryable<Car> OnTheFleet(string? text, DateOnly? pickupDate, DateOnly? returnDate)
     {
         var query = context.Cars.AsNoTracking();

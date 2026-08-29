@@ -74,14 +74,14 @@ public abstract class IntegrationTestBase(CarRentalApiFactory factory) : IAsyncL
 
         return await api.Auth.RefreshAsync();
     }
-    
+
     protected async Task<CarResponse> FindCarAsync(string query)
     {
         var page = (await Api.Cars.SearchAsync(CarQuery.Matching(query))).ShouldBeOk();
 
         return page.Items.ShouldHaveSingleItem();
     }
-    
+
     protected Task<ApplicationUser> StoredUserAsync(string email)
     {
         var normalizedEmail = email.ToUpperInvariant();

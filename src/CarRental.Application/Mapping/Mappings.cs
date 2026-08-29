@@ -15,7 +15,7 @@ public static partial class Mappings
     public static partial UserResponse ToResponse(this ApplicationUser user, IReadOnlyList<string> roles);
 
     public static partial ProfileResponse ToProfileResponse(this ApplicationUser user, IReadOnlyList<string> roles);
-    
+
     [MapperIgnoreTarget(nameof(ReservationResponse.PreviousTotalPrice))]
     public static partial ReservationResponse ToResponse(this Reservation reservation);
 }

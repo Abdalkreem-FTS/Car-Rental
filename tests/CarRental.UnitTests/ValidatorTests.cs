@@ -1,8 +1,8 @@
 using CarRental.Application.Contracts.Auth;
 using CarRental.Application.Validators;
+using CarRental.Application.Validators.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using CarRental.Application.Validators.Auth;
 using Shouldly;
 
 namespace CarRental.UnitTests;

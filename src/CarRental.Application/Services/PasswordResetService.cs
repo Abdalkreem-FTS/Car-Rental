@@ -26,14 +26,14 @@ public sealed class PasswordResetService(
     {
         var email = request.Email.Trim();
         var user = await userManager.FindByEmailAsync(email);
-        
+
         if (user is null)
         {
             logger.LogInformation("Password reset requested for an address with no account.");
 
             return Result.Success;
         }
-        
+
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
         var link = _clientApp.LinkTo(_clientApp.ResetPasswordPath, user.Email!, CredentialTokens.Encode(token));

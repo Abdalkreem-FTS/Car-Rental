@@ -24,7 +24,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         (await Api.Cars.SearchAsync()).ShouldRequireAuthentication();
     }
-    
+
     [Fact]
     public async Task Search_WithNoFilters_ReturnsTheSeededFleetPaged()
     {
@@ -174,7 +174,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         response.ShouldFailValidationOn("returnDate");
     }
-    
+
     [Theory]
     [InlineData("Sharm, South")]
     [InlineData("Wadi|Rum")]
@@ -212,7 +212,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         (await Api.Cars.LocationsAsync()).ShouldBeOk().ShouldNotContain("Zarqa");
     }
-    
+
     [Fact]
     public async Task GetCar_WithAKnownId_ReturnsTheCar()
     {
@@ -233,7 +233,7 @@ public sealed class CarEndpointTests(CarRentalApiFactory factory) : IntegrationT
 
         (await Api.Cars.GetAsync(Guid.NewGuid())).ShouldBeNotFound(CarErrors.NotFound);
     }
-    
+
     [Fact]
     public async Task ManageFleet_AsACustomer_ReportsForbidden()
     {

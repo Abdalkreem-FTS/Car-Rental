@@ -16,12 +16,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
     public DbSet<IdempotentRequest> IdempotentRequests => Set<IdempotentRequest>();
 
     public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
-    
-    protected override void ConfigureConventions(ModelConfigurationBuilder builder)
-    {
-        base.ConfigureConventions(builder);
 
-        builder.Properties<DateTimeOffset>().HaveConversion<UtcDateTimeOffsetConverter>();
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<UtcDateTimeOffsetConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder builder)

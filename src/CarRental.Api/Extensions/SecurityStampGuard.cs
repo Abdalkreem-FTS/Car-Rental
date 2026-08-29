@@ -1,9 +1,9 @@
+using System.Security.Claims;
 using CarRental.Application.Abstractions;
 using CarRental.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
-using System.Security.Claims;
 
 namespace CarRental.Api.Extensions;
 

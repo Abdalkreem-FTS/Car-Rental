@@ -40,14 +40,14 @@ public sealed class CarRentalApi(HttpClient http) : IDisposable
     public void SignOut() => Http.DefaultRequestHeaders.Authorization = null;
 
     public void Dispose() => Http.Dispose();
-    
+
     public async Task<ApiResponse> PostRawAsync(string route, string body)
     {
         var response = await Http.PostAsync(route, new StringContent(body, Encoding.UTF8, "application/json"));
 
         return await response.ReadAsync();
     }
-    
+
     public Task<ApiResponse<T>> PutOffContractAsync<T>(string route, object body) =>
         Http.PutAsAsync<T>(route, body);
 

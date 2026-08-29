@@ -25,7 +25,7 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
             .WithMany(x => x.Reservations)
             .HasForeignKey(x => x.CarId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         builder.Property(x => x.CreatedAtUtc).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder.Property(x => x.DailyRate).HasPrecision(10, 2);

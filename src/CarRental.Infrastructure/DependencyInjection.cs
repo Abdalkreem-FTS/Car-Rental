@@ -43,7 +43,7 @@ public static class DependencyInjection
                 .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
-            
+
             services.Configure<DataProtectionTokenProviderOptions>(options =>
                 options.TokenLifespan = TimeSpan.FromHours(1));
 
@@ -107,7 +107,7 @@ public static class DependencyInjection
 
             return services;
         }
-        
+
         private static string ConnectionString(IConfiguration configuration) =>
             configuration.GetConnectionString("Default") is { Length: > 0 } connectionString
                 ? connectionString

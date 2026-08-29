@@ -31,8 +31,8 @@ public sealed class SchemaTests(CarRentalApiFactory factory) : IntegrationTestBa
     [Fact]
     public async Task Migrate_WhenApplied_CreatesTheAspNetIdentitySchema()
     {
-        var identityTables = (await Factory.Database.TablesAsync()).Where(name => name.StartsWith("AspNet")).ToList();
-        
+        var identityTables = (await Factory.Database.TablesAsync()).Where(name => name.StartsWith("AspNet", StringComparison.Ordinal)).ToList();
+
         identityTables.ShouldContain("AspNetUsers");
         identityTables.ShouldContain("AspNetRoles");
         identityTables.ShouldContain("AspNetUserRoles");

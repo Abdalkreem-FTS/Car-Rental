@@ -64,7 +64,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
         var auth = await SignUpAsync();
 
         var update = ProfileUpdate();
-        
+
         var response = await Api.PutOffContractAsync<Application.Contracts.Profile.ProfileResponse>(
             Routes.Profile.Base,
             new
@@ -150,7 +150,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
             "firstName", "lastName", "phoneNumber", "dateOfBirth",
             "addressLine1", "city", "country", "driverLicenseNumber");
     }
-    
+
     [Fact]
     public async Task ChangePassword_WithTheRightCurrentPassword_SwapsWhichOneWorks()
     {
