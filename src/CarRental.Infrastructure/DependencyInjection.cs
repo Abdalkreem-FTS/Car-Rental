@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Sieve.Models;
 using Sieve.Services;
@@ -48,6 +49,8 @@ public static class DependencyInjection
                 .Bind(configuration.GetSection(JwtOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
+            services.AddSingleton<IValidateOptions<SmtpOptions>, SmtpMustBeConfiguredOutsideDevelopment>();
 
             services.AddOptions<SmtpOptions>()
                 .Bind(configuration.GetSection(SmtpOptions.SectionName))
@@ -106,11 +109,15 @@ public static class DependencyInjection
         private IServiceCollection AddEmailSender() =>
             services.AddScoped<IEmailSender>(provider =>
             {
-                var smtp = provider.GetRequiredService<IOptions<SmtpOptions>>().Value;
+                if (provider.GetRequiredService<IOptions<SmtpOptions>>().Value.IsConfigured)
+                {
+                    return ActivatorUtilities.CreateInstance<SmtpEmailSender>(provider);
+                }
 
-                return smtp.IsConfigured
-                    ? ActivatorUtilities.CreateInstance<SmtpEmailSender>(provider)
-                    : ActivatorUtilities.CreateInstance<LoggingEmailSender>(provider);
+                return provider.GetRequiredService<IHostEnvironment>().IsDevelopment()
+                    ? ActivatorUtilities.CreateInstance<LoggingEmailSender>(provider)
+                    : throw new InvalidOperationException(
+                        $"{SmtpOptions.SectionName}:Host must be set outside Development.");
             });
     }
 }

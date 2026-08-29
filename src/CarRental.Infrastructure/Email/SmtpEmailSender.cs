@@ -3,15 +3,21 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
 using MimeKit;
 
 namespace CarRental.Infrastructure.Email;
 
-public sealed class SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpEmailSender> logger) : IEmailSender
+public sealed class SmtpEmailSender(
+    IOptions<SmtpOptions> options,
+    IOptions<DataProtectionTokenProviderOptions> tokenOptions,
+    ILogger<SmtpEmailSender> logger) : IEmailSender
 {
     private readonly SmtpOptions _options = options.Value.IsConfigured
         ? options.Value
         : throw new InvalidOperationException($"{SmtpOptions.SectionName}:Host must be set to send mail over SMTP.");
+
+    private readonly TimeSpan _linkLifetime = tokenOptions.Value.TokenLifespan;
 
     public Task SendPasswordResetAsync(
         string email,
@@ -22,8 +28,8 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpE
             email,
             firstName,
             PasswordResetEmail.Subject,
-            PasswordResetEmail.Html(firstName, resetLink, TimeSpan.FromHours(1)),
-            PasswordResetEmail.Text(firstName, resetLink, TimeSpan.FromHours(1)),
+            PasswordResetEmail.Html(firstName, resetLink, _linkLifetime),
+            PasswordResetEmail.Text(firstName, resetLink, _linkLifetime),
             cancellationToken);
 
     public Task SendEmailConfirmationAsync(
@@ -56,9 +62,10 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpE
         message.From.Add(new MailboxAddress(_options.FromName, _options.FromAddress));
         message.To.Add(new MailboxAddress(firstName, email));
 
+        using var client = new SmtpClient();
+
         try
         {
-            using var client = new SmtpClient();
             client.Timeout = (int)TimeSpan.FromSeconds(_options.TimeoutSeconds).TotalMilliseconds;
 
             await client.ConnectAsync(_options.Host!, _options.Port, SocketOptions(), cancellationToken);
@@ -69,13 +76,15 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpE
             }
 
             await client.SendAsync(message, cancellationToken);
-            await client.DisconnectAsync(quit: true, cancellationToken);
 
             logger.LogInformation("Sent {Subject} via {Host}", subject, _options.Host);
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        finally
         {
-            logger.LogError(exception, "Could not send {Subject} via {Host}", subject, _options.Host);
+            if (client.IsConnected)
+            {
+                await client.DisconnectAsync(quit: true, CancellationToken.None);
+            }
         }
     }
 

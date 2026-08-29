@@ -75,6 +75,18 @@ public sealed class StartupMigrationTests(CarRentalApiFactory factory)
             .ShouldBe(0, "an app that cannot create its own administrator has not started");
     }
 
+    [Fact]
+    public async Task Startup_OutsideDevelopmentWithNoSmtpHost_RefusesToStartRatherThanLogResetLinks()
+    {
+        var connectionString = await FreshDatabaseAsync("no_smtp_outside_development");
+
+        await using var host = new HostOn(connectionString, seed: true, environment: "Production");
+
+        var failure = Should.Throw<OptionsValidationException>(() => host.CreateClient());
+
+        failure.Message.ShouldContain("Smtp:Host");
+    }
+
     private async Task<string> FreshDatabaseAsync(string name)
     {
         var builder = new NpgsqlConnectionStringBuilder(factory.ConnectionString);
@@ -100,11 +112,12 @@ public sealed class StartupMigrationTests(CarRentalApiFactory factory)
         string connectionString,
         bool seed,
         bool migrate = true,
-        string? adminPassword = TestData.AdminPassword) : WebApplicationFactory<Program>
+        string? adminPassword = TestData.AdminPassword,
+        string environment = "Development") : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseEnvironment("Development");
+            builder.UseEnvironment(environment);
 
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
                 new Dictionary<string, string?>
