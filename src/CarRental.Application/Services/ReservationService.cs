@@ -1,14 +1,15 @@
 using System.Globalization;
 using CarRental.Application.Abstractions;
 using CarRental.Application.Common;
-using CarRental.Application.Contracts.Common;
-using CarRental.Application.Contracts.Reservations;
+using CarRental.Application.Dtos.Common;
+using CarRental.Application.Dtos.Reservations;
 using CarRental.Application.Mapping;
-using CarRental.Domain;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
+using CarRental.Domain.Rules;
+using CarRental.Domain;
 using Microsoft.Extensions.Logging;
 
 namespace CarRental.Application.Services;
@@ -23,9 +24,9 @@ public sealed class ReservationService(
 {
     private DateOnly Today => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
 
-    public async Task<Result<ReservationResponse>> CreateAsync(
+    public async Task<Result<ReservationDto>> CreateAsync(
         Guid userId,
-        CreateReservationRequest request,
+        CreateReservationDto request,
         CancellationToken cancellationToken = default)
     {
         if (await users.GetRenterAsync(userId, cancellationToken) is not { } renter)
@@ -113,22 +114,22 @@ public sealed class ReservationService(
         return reservation.ToResponse();
     }
 
-    public async Task<Result<PagedResponse<ReservationResponse>>> GetForUserAsync(
+    public async Task<Result<PagedResult<ReservationDto>>> GetForUserAsync(
         Guid userId,
-        ReservationQuery query,
+        ReservationQueryDto query,
         CancellationToken cancellationToken = default)
     {
         var (items, totalCount) = await reservations.GetForUserAsync(
             userId, query.Scope, Today, query.Page, query.PageSize, cancellationToken);
 
-        return new PagedResponse<ReservationResponse>(
+        return new PagedResult<ReservationDto>(
             [.. items.Select(reservation => reservation.ToResponse())],
             query.Page,
             query.PageSize,
             totalCount);
     }
 
-    public async Task<Result<ReservationResponse>> GetByIdAsync(Guid userId, Guid reservationId, CancellationToken cancellationToken = default)
+    public async Task<Result<ReservationDto>> GetByIdAsync(Guid userId, Guid reservationId, CancellationToken cancellationToken = default)
     {
         var reservation = await reservations.GetByIdAsync(reservationId, userId, cancellationToken);
 
@@ -140,11 +141,11 @@ public sealed class ReservationService(
         return reservation.ToResponse();
     }
 
-    public async Task<Result<ReservationResponse>> UpdateAsync(
+    public async Task<Result<ReservationDto>> UpdateAsync(
         Guid userId,
         Guid reservationId,
         string expectedVersion,
-        UpdateReservationRequest request,
+        UpdateReservationDto request,
         CancellationToken cancellationToken = default)
     {
         var reservation = await reservations.GetByIdAsync(reservationId, userId, cancellationToken);

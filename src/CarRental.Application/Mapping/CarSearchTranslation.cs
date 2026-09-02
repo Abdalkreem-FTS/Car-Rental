@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text;
-using CarRental.Application.Contracts.Cars;
+using CarRental.Application.Dtos.Cars;
 
 namespace CarRental.Application.Mapping;
 
@@ -11,7 +11,7 @@ namespace CarRental.Application.Mapping;
 /// </summary>
 public static class CarSearchTranslation
 {
-    public static CarQueryRequest ToQuery(this CarSearchRequest request) => new(
+    public static CarQueryDto ToQuery(this CarSearchDto request) => new(
         Query: request.Query,
         PickupDate: request.PickupDate,
         ReturnDate: request.ReturnDate,
@@ -20,7 +20,7 @@ public static class CarSearchTranslation
         Page: request.Page,
         PageSize: request.PageSize);
 
-    private static string? BuildFilters(CarSearchRequest request)
+    private static string? BuildFilters(CarSearchDto request)
     {
         var filters = new List<string>();
 

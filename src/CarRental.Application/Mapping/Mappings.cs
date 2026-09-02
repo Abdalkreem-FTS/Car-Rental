@@ -1,7 +1,7 @@
-using CarRental.Application.Contracts.Auth;
-using CarRental.Application.Contracts.Cars;
-using CarRental.Application.Contracts.Profile;
-using CarRental.Application.Contracts.Reservations;
+using CarRental.Application.Dtos.Auth;
+using CarRental.Application.Dtos.Cars;
+using CarRental.Application.Dtos.Profile;
+using CarRental.Application.Dtos.Reservations;
 using CarRental.Domain.Entities;
 using Riok.Mapperly.Abstractions;
 
@@ -10,12 +10,12 @@ namespace CarRental.Application.Mapping;
 [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
 public static partial class Mappings
 {
-    public static partial CarResponse ToResponse(this Car car);
+    public static partial CarDto ToResponse(this Car car);
 
-    public static partial UserResponse ToResponse(this ApplicationUser user, IReadOnlyList<string> roles);
+    public static partial UserDto ToResponse(this ApplicationUser user, IReadOnlyList<string> roles);
 
-    public static partial ProfileResponse ToProfileResponse(this ApplicationUser user, IReadOnlyList<string> roles);
+    public static partial ProfileDto ToProfileDto(this ApplicationUser user, IReadOnlyList<string> roles);
 
-    [MapperIgnoreTarget(nameof(ReservationResponse.PreviousTotalPrice))]
-    public static partial ReservationResponse ToResponse(this Reservation reservation);
+    [MapperIgnoreTarget(nameof(ReservationDto.PreviousTotalPrice))]
+    public static partial ReservationDto ToResponse(this Reservation reservation);
 }

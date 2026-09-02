@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

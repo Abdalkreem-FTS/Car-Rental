@@ -1,5 +1,5 @@
 using System.Text.Json;
-using CarRental.Api.Extensions;
+using CarRental.Api.Errors;
 using CarRental.Domain.Common;
 using Shouldly;
 

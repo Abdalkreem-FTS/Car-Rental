@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Auth;
+using CarRental.Application.Dtos.Auth;
 using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
@@ -16,10 +16,10 @@ public sealed class TokenIssuer(
     IUnitOfWork unitOfWork,
     ILogger<TokenIssuer> logger) : ITokenIssuer
 {
-    public Task<Result<AuthResponse>> IssueAsync(ApplicationUser user, CancellationToken cancellationToken = default) =>
+    public Task<Result<AuthDto>> IssueAsync(ApplicationUser user, CancellationToken cancellationToken = default) =>
         IssueAsync(user, NewRefreshToken(user.Id), cancellationToken);
 
-    public async Task<Result<AuthResponse>> RotateAsync(string presentedToken, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthDto>> RotateAsync(string presentedToken, CancellationToken cancellationToken = default)
     {
         var stored = await refreshTokens.GetByTokenAsync(presentedToken, cancellationToken);
 
@@ -58,7 +58,7 @@ public sealed class TokenIssuer(
         return Result.Success;
     }
 
-    private async Task<Result<AuthResponse>> RefusalFor(string token, Guid userId, CancellationToken cancellationToken)
+    private async Task<Result<AuthDto>> RefusalFor(string token, Guid userId, CancellationToken cancellationToken)
     {
         var current = await refreshTokens.GetByTokenAsync(token, cancellationToken);
 
@@ -88,7 +88,7 @@ public sealed class TokenIssuer(
         }, token);
     }
 
-    private async Task<Result<AuthResponse>> IssueAsync(
+    private async Task<Result<AuthDto>> IssueAsync(
         ApplicationUser user,
         (RefreshToken Entity, string Token) refreshToken,
         CancellationToken cancellationToken)
@@ -99,7 +99,7 @@ public sealed class TokenIssuer(
         refreshTokens.Add(refreshToken.Entity);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new AuthResponse(
+        return new AuthDto(
             accessToken,
             refreshToken.Token,
             refreshToken.Entity.ExpiresAtUtc,

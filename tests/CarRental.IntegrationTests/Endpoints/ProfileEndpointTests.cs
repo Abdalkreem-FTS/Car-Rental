@@ -1,9 +1,9 @@
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
-using static CarRental.IntegrationTests.Infrastructure.TestData;
+using static CarRental.IntegrationTests.Support.TestData;
 
 namespace CarRental.IntegrationTests.Endpoints;
 
@@ -65,7 +65,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
 
         var update = ProfileUpdate();
 
-        var response = await Api.PutOffContractAsync<Application.Contracts.Profile.ProfileResponse>(
+        var response = await Api.PutOffContractAsync<Api.Contracts.Profile.ProfileResponse>(
             Routes.Profile.Base,
             new
             {
@@ -218,7 +218,7 @@ public sealed class ProfileEndpointTests(CarRentalApiFactory factory) : Integrat
         await SignUpAsync();
 
         var response = await Api.Profile.ChangePasswordAsync(
-            new Application.Contracts.Profile.ChangePasswordRequest(Password, "weak", "mismatch"));
+            new Api.Contracts.Profile.ChangePasswordRequest(Password, "weak", "mismatch"));
 
         response.ShouldFailValidation("newPassword", "confirmPassword");
     }

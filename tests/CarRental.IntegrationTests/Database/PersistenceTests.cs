@@ -1,11 +1,11 @@
 using CarRental.Domain.Entities;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Shouldly;
-using static CarRental.IntegrationTests.Infrastructure.TestData;
+using static CarRental.IntegrationTests.Support.TestData;
 
 namespace CarRental.IntegrationTests.Database;
 
@@ -267,7 +267,7 @@ public sealed class PersistenceTests(CarRentalApiFactory factory) : IntegrationT
 
         await using var scope = Factory.Services.CreateAsyncScope();
         await scope.ServiceProvider
-            .GetRequiredService<CarRental.Infrastructure.Persistence.DatabaseSeeder>()
+            .GetRequiredService<CarRental.Infrastructure.Persistence.Seeding.DatabaseSeeder>()
             .SeedAsync();
 
         (await CountsAsync()).ShouldBeEquivalentTo(before);

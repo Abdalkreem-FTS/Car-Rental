@@ -1,4 +1,4 @@
-using CarRental.Api.Extensions;
+using CarRental.Api.Errors;
 using CarRental.Domain.Common;
 using CarRental.Domain.Errors;
 using Microsoft.AspNetCore.Http;

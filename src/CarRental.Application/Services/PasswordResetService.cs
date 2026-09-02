@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Auth;
+using CarRental.Application.Dtos.Auth;
 using CarRental.Application.Mapping;
 using CarRental.Application.Options;
 using CarRental.Domain.Common;
@@ -22,7 +22,7 @@ public sealed class PasswordResetService(
 {
     private readonly ClientAppOptions _clientApp = clientApp.Value;
 
-    public async Task<Result<Success>> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<Success>> ForgotPasswordAsync(ForgotPasswordDto request, CancellationToken cancellationToken = default)
     {
         var email = request.Email.Trim();
         var user = await userManager.FindByEmailAsync(email);
@@ -45,7 +45,7 @@ public sealed class PasswordResetService(
         return Result.Success;
     }
 
-    public async Task<Result<Success>> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<Success>> ResetPasswordAsync(ResetPasswordDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
 

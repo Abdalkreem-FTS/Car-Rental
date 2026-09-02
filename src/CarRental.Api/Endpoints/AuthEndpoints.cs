@@ -1,7 +1,13 @@
 using System.Security.Claims;
-using CarRental.Api.Extensions;
+using CarRental.Api.Contracts.Auth;
+using CarRental.Api.Errors;
+using CarRental.Api.Filters;
+using CarRental.Api.Http;
+using CarRental.Api.Mapping;
+using CarRental.Api.RateLimiting;
+using CarRental.Api.Security;
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Auth;
+using CarRental.Application.Dtos.Auth;
 using CarRental.Domain.Errors;
 
 namespace CarRental.Api.Endpoints;
@@ -25,12 +31,12 @@ public static class AuthEndpoints
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await registrationService.RegisterAsync(request, cancellationToken);
+                var result = await registrationService.RegisterAsync(request.ToDto(), cancellationToken);
 
                 return result.ToOkWithRefreshCookie(context);
             })
-            .WithValidation<RegisterRequest>()
-            .RequireRateLimiting(RateLimiting.Accounts)
+            .WithValidation<RegisterRequest, RegisterDto>()
+            .RequireRateLimiting(RateLimitPolicies.Accounts)
             .Produces<AuthResponse>()
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
@@ -42,12 +48,12 @@ public static class AuthEndpoints
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await sessionService.LoginAsync(request, cancellationToken);
+                var result = await sessionService.LoginAsync(request.ToDto(), cancellationToken);
 
                 return result.ToOkWithRefreshCookie(context);
             })
-            .WithValidation<LoginRequest>()
-            .RequireRateLimiting(RateLimiting.Accounts)
+            .WithValidation<LoginRequest, LoginDto>()
+            .RequireRateLimiting(RateLimitPolicies.Accounts)
             .Produces<AuthResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
@@ -64,7 +70,7 @@ public static class AuthEndpoints
                     return AuthErrors.InvalidRefreshToken.ToProblem();
                 }
 
-                var result = await sessionService.RefreshAsync(new RefreshTokenRequest(presented), cancellationToken);
+                var result = await sessionService.RefreshAsync(new RefreshTokenRequest(presented).ToDto(), cancellationToken);
 
                 if (result.IsError)
                 {
@@ -112,12 +118,12 @@ public static class AuthEndpoints
                 IRegistrationService registrationService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await registrationService.ConfirmEmailAsync(request, cancellationToken);
+                var result = await registrationService.ConfirmEmailAsync(request.ToDto(), cancellationToken);
 
                 return result.ToNoContent();
             })
-            .WithValidation<ConfirmEmailRequest>()
-            .RequireRateLimiting(RateLimiting.Auth)
+            .WithValidation<ConfirmEmailRequest, ConfirmEmailDto>()
+            .RequireRateLimiting(RateLimitPolicies.Auth)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Confirm an email address using the token from the confirmation link.");
@@ -127,12 +133,12 @@ public static class AuthEndpoints
                 IRegistrationService registrationService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await registrationService.ResendConfirmationAsync(request, cancellationToken);
+                var result = await registrationService.ResendConfirmationAsync(request.ToDto(), cancellationToken);
 
                 return result.ToAccepted();
             })
-            .WithValidation<ResendConfirmationRequest>()
-            .RequireRateLimiting(RateLimiting.Auth)
+            .WithValidation<ResendConfirmationRequest, ResendConfirmationDto>()
+            .RequireRateLimiting(RateLimitPolicies.Auth)
             .Produces(StatusCodes.Status202Accepted)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Send the confirmation link again. Always reports success, confirmed or not.");
@@ -142,12 +148,12 @@ public static class AuthEndpoints
                 IPasswordResetService passwordResetService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await passwordResetService.ForgotPasswordAsync(request, cancellationToken);
+                var result = await passwordResetService.ForgotPasswordAsync(request.ToDto(), cancellationToken);
 
                 return result.ToAccepted();
             })
-            .WithValidation<ForgotPasswordRequest>()
-            .RequireRateLimiting(RateLimiting.Auth)
+            .WithValidation<ForgotPasswordRequest, ForgotPasswordDto>()
+            .RequireRateLimiting(RateLimitPolicies.Auth)
             .Produces(StatusCodes.Status202Accepted)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Email a password reset link. Always reports success, registered or not.");
@@ -157,12 +163,12 @@ public static class AuthEndpoints
                 IPasswordResetService passwordResetService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await passwordResetService.ResetPasswordAsync(request, cancellationToken);
+                var result = await passwordResetService.ResetPasswordAsync(request.ToDto(), cancellationToken);
 
                 return result.ToNoContent();
             })
-            .WithValidation<ResetPasswordRequest>()
-            .RequireRateLimiting(RateLimiting.Auth)
+            .WithValidation<ResetPasswordRequest, ResetPasswordDto>()
+            .RequireRateLimiting(RateLimitPolicies.Auth)
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Set a new password using the token from the reset link.");

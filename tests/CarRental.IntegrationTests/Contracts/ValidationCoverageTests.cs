@@ -1,6 +1,7 @@
 using System.Reflection;
-using CarRental.Api.Extensions;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.Api.Contracts;
+using CarRental.Api.Filters;
+using CarRental.IntegrationTests.Support;
 using FluentValidation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,7 +71,13 @@ public sealed class ValidationCoverageTests(CarRentalApiFactory factory)
     ];
 
     private bool HasValidator(Type requestType) =>
-        !requestType.IsPrimitive
+        DtoOf(requestType) is { } dto
         && factory.Services.GetRequiredService<IServiceProviderIsService>()
-            .IsService(typeof(IValidator<>).MakeGenericType(requestType));
+            .IsService(typeof(IValidator<>).MakeGenericType(dto));
+
+    private static Type? DtoOf(Type requestType) =>
+        requestType.GetInterfaces()
+            .SingleOrDefault(contract =>
+                contract.IsGenericType && contract.GetGenericTypeDefinition() == typeof(IRequestContract<>))
+            ?.GetGenericArguments()[0];
 }

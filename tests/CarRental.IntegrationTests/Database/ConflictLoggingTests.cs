@@ -2,7 +2,7 @@ using CarRental.Application.Abstractions;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Infrastructure.Persistence;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Shouldly;

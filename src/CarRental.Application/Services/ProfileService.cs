@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Profile;
+using CarRental.Application.Dtos.Profile;
 using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
@@ -20,17 +20,17 @@ public sealed class ProfileService(
 {
     private DateOnly Today => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
 
-    public async Task<Result<ProfileResponse>> GetAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Result<ProfileDto>> GetAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         if (await userAccounts.GetWithRolesAsync(userId, cancellationToken) is not { } profile)
         {
             return UserErrors.NotFound;
         }
 
-        return profile.User.ToProfileResponse(profile.Roles);
+        return profile.User.ToProfileDto(profile.Roles);
     }
 
-    public async Task<Result<ProfileResponse>> UpdateAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<ProfileDto>> UpdateAsync(Guid userId, UpdateProfileDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
 
@@ -72,10 +72,10 @@ public sealed class ProfileService(
             return IdentityErrors.Map(updated.Value, "newPassword", UserErrors.UpdateFailed);
         }
 
-        return user.ToProfileResponse((await userManager.GetRolesAsync(user)).ToList());
+        return user.ToProfileDto((await userManager.GetRolesAsync(user)).ToList());
     }
 
-    public async Task<Result<Updated>> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<Updated>> ChangePasswordAsync(Guid userId, ChangePasswordDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
 

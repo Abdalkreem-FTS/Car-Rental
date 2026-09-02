@@ -1,9 +1,12 @@
 using CarRental.Application.Abstractions;
 using CarRental.Domain.Entities;
 using CarRental.Infrastructure.Authentication;
+using CarRental.Infrastructure.Email.Delivery;
 using CarRental.Infrastructure.Email;
-using CarRental.Infrastructure.Persistence;
 using CarRental.Infrastructure.Persistence.Repositories;
+using CarRental.Infrastructure.Persistence.Seeding;
+using CarRental.Infrastructure.Persistence.Stores;
+using CarRental.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

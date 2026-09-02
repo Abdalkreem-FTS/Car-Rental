@@ -1,4 +1,4 @@
-using CarRental.Application.Contracts.Cars;
+using CarRental.Application.Dtos.Cars;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 
@@ -11,7 +11,7 @@ public interface ICarRepository
     Task<Car?> GetIncludingRetiredAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Result<(List<Car> Items, int TotalCount)>> QueryAsync(
-        CarQueryRequest request,
+        CarQueryDto request,
         CancellationToken cancellationToken = default);
 
     Task<List<string>> GetLocationsAsync(CancellationToken cancellationToken = default);

@@ -1,4 +1,4 @@
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 

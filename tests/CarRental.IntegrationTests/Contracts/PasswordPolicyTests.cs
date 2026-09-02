@@ -1,5 +1,5 @@
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

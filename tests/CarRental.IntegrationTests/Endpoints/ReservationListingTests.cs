@@ -1,8 +1,8 @@
 using CarRental.Domain.Enums;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Shouldly;
-using static CarRental.IntegrationTests.Infrastructure.TestData;
+using static CarRental.IntegrationTests.Support.TestData;
 
 namespace CarRental.IntegrationTests.Endpoints;
 
@@ -77,12 +77,12 @@ public sealed class ReservationListingTests(CarRentalApiFactory factory) : Integ
         (await Api.Reservations.ListAsync(pageSize: 999)).ShouldFailValidationOn("pageSize");
     }
 
-    private async Task<List<Application.Contracts.Reservations.ReservationResponse>> BookSeveralAsync(int count)
+    private async Task<List<Api.Contracts.Reservations.ReservationResponse>> BookSeveralAsync(int count)
     {
         await SignUpAsync();
         var car = await FindCarAsync("Hiace");
 
-        var booked = new List<Application.Contracts.Reservations.ReservationResponse>();
+        var booked = new List<Api.Contracts.Reservations.ReservationResponse>();
 
         for (var index = 0; index < count; index++)
         {

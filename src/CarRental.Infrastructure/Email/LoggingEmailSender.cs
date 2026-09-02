@@ -1,4 +1,5 @@
 using CarRental.Application.Abstractions;
+using CarRental.Infrastructure.Email.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace CarRental.Infrastructure.Email;

@@ -1,7 +1,11 @@
 using System.Security.Claims;
-using CarRental.Api.Extensions;
+using CarRental.Api.Contracts.Profile;
+using CarRental.Api.Filters;
+using CarRental.Api.Http;
+using CarRental.Api.Mapping;
+using CarRental.Api.Security;
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Profile;
+using CarRental.Application.Dtos.Profile;
 
 namespace CarRental.Api.Endpoints;
 
@@ -21,7 +25,7 @@ public static class ProfileEndpoints
             {
                 var result = await profileService.GetAsync(user.GetUserId(), cancellationToken);
 
-                return result.ToOk();
+                return result.ToOk(profile => profile.ToResponse());
             })
             .Produces<ProfileResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -33,11 +37,11 @@ public static class ProfileEndpoints
                 IProfileService profileService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await profileService.UpdateAsync(user.GetUserId(), request, cancellationToken);
+                var result = await profileService.UpdateAsync(user.GetUserId(), request.ToDto(), cancellationToken);
 
-                return result.ToOk();
+                return result.ToOk(profile => profile.ToResponse());
             })
-            .WithValidation<UpdateProfileRequest>()
+            .WithValidation<UpdateProfileRequest, UpdateProfileDto>()
             .Produces<ProfileResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -49,11 +53,11 @@ public static class ProfileEndpoints
                 IProfileService profileService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await profileService.ChangePasswordAsync(user.GetUserId(), request, cancellationToken);
+                var result = await profileService.ChangePasswordAsync(user.GetUserId(), request.ToDto(), cancellationToken);
 
                 return result.ToNoContent();
             })
-            .WithValidation<ChangePasswordRequest>()
+            .WithValidation<ChangePasswordRequest, ChangePasswordDto>()
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Change the password. Signs every other session out.");

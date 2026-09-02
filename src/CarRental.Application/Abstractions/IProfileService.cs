@@ -1,13 +1,13 @@
-using CarRental.Application.Contracts.Profile;
+using CarRental.Application.Dtos.Profile;
 using CarRental.Domain.Common;
 
 namespace CarRental.Application.Abstractions;
 
 public interface IProfileService
 {
-    Task<Result<ProfileResponse>> GetAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<Result<ProfileDto>> GetAsync(Guid userId, CancellationToken cancellationToken = default);
 
-    Task<Result<ProfileResponse>> UpdateAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken = default);
+    Task<Result<ProfileDto>> UpdateAsync(Guid userId, UpdateProfileDto request, CancellationToken cancellationToken = default);
 
-    Task<Result<Updated>> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken cancellationToken = default);
+    Task<Result<Updated>> ChangePasswordAsync(Guid userId, ChangePasswordDto request, CancellationToken cancellationToken = default);
 }

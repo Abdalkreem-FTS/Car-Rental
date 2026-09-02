@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support;
 using Shouldly;
 
 namespace CarRental.IntegrationTests.Endpoints;

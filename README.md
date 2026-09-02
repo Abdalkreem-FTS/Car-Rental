@@ -46,9 +46,9 @@ dotnet test    # starts its own database; nothing else need be running
 ```
 src/
   CarRental.Domain           entities, enums, the Result/Error types, the error catalog
-  CarRental.Application      services, contracts, validators, repository interfaces
+  CarRental.Application      services, DTOs, validators, repository interfaces
   CarRental.Infrastructure   EF Core, Identity, repositories, JWT, email
-  CarRental.Api              Minimal API endpoints, problem details, wwwroot
+  CarRental.Api              Minimal API endpoints, HTTP contracts, problem details, wwwroot
 tests/
   CarRental.IntegrationTests the real app over HTTP against a real PostgreSQL container
   CarRental.UnitTests        domain rules and validators, no I/O
@@ -59,6 +59,14 @@ References point inward only: `Application` on `Domain`, `Infrastructure` on `Ap
 without reaching through the layer that composes it. Nothing points outward, and `Domain` names
 no project at all. `ArchitectureTests` asserts exactly that, so this paragraph fails the build
 rather than going quietly stale.
+
+**The wire format stops at the edge.** The request and response records the browser sees live in
+`CarRental.Api/Contracts`, because their shape is an HTTP concern: field names, `[JsonIgnore]` on
+the refresh token, the paging envelope's computed `TotalPages`. Application services speak their
+own DTOs in `CarRental.Application/Dtos`, and each request contract implements
+`IRequestContract<TDto>` to name the DTO it maps to. That interface is not decoration: it is how
+the validation filter finds the validator to run, and how `ValidationCoverageTests` still knows
+which endpoints ought to be validated. Renaming a JSON field is now a change to one project.
 
 There is one deliberate exception, and it is about packages rather than projects: ASP.NET Core
 Identity. `ApplicationUser : IdentityUser<Guid>` lives in Domain, and the services take

@@ -1,4 +1,5 @@
 using CarRental.Application.Abstractions;
+using CarRental.Infrastructure.Email.Messages;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;

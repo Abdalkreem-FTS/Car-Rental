@@ -1,8 +1,8 @@
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Shouldly;
-using static CarRental.IntegrationTests.Infrastructure.TestData;
+using static CarRental.IntegrationTests.Support.TestData;
 
 namespace CarRental.IntegrationTests.Endpoints;
 

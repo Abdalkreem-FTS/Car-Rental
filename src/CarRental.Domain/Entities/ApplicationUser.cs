@@ -1,3 +1,4 @@
+using CarRental.Domain.Rules;
 using Microsoft.AspNetCore.Identity;
 
 namespace CarRental.Domain.Entities;

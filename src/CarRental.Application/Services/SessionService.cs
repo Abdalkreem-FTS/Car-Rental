@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Auth;
+using CarRental.Application.Dtos.Auth;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Errors;
@@ -11,7 +11,7 @@ public sealed class SessionService(
     UserManager<ApplicationUser> userManager,
     ITokenIssuer tokenIssuer) : ISessionService
 {
-    public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthDto>> LoginAsync(LoginDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
 
@@ -39,7 +39,7 @@ public sealed class SessionService(
         return await tokenIssuer.IssueAsync(user, cancellationToken);
     }
 
-    public Task<Result<AuthResponse>> RefreshAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default) =>
+    public Task<Result<AuthDto>> RefreshAsync(RefreshTokenDto request, CancellationToken cancellationToken = default) =>
         tokenIssuer.RotateAsync(request.RefreshToken, cancellationToken);
 
     public Task<Result<Success>> LogoutAsync(Guid userId, string? refreshToken, CancellationToken cancellationToken = default) =>

@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Cars;
+using CarRental.Application.Dtos.Cars;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Errors;
@@ -19,7 +19,7 @@ public sealed class CarRepository(AppDbContext context, ISieveProcessor sieve) :
         context.Cars.IgnoreQueryFilters().FirstOrDefaultAsync(car => car.Id == id, cancellationToken);
 
     public async Task<Result<(List<Car> Items, int TotalCount)>> QueryAsync(
-        CarQueryRequest request,
+        CarQueryDto request,
         CancellationToken cancellationToken = default)
     {
         var query = OnTheFleet(request.Query, request.PickupDate, request.ReturnDate);

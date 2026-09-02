@@ -1,4 +1,4 @@
-using CarRental.Api.Extensions;
+using CarRental.Api.Configuration;
 using CarRental.Application;
 using CarRental.Infrastructure;
 

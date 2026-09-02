@@ -1,5 +1,6 @@
 using CarRental.Application.Abstractions;
 using CarRental.Domain.Common;
+using CarRental.Infrastructure.Persistence.Conflicts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

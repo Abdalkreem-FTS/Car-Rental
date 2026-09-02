@@ -1,8 +1,8 @@
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Shouldly;
-using static CarRental.IntegrationTests.Infrastructure.TestData;
+using static CarRental.IntegrationTests.Support.TestData;
 
 namespace CarRental.IntegrationTests.Endpoints;
 
@@ -49,7 +49,7 @@ public sealed class RentalStartBoundaryTests(CarRentalApiFactory factory) : Inte
         (await Api.Reservations.CancelAsync(reservation.Id)).ShouldBeConflict(ReservationErrors.AlreadyStarted);
     }
 
-    private async Task<Application.Contracts.Reservations.ReservationResponse> BookStartingInAsync(int days, string model)
+    private async Task<Api.Contracts.Reservations.ReservationResponse> BookStartingInAsync(int days, string model)
     {
         await SignUpAsync();
         var car = await FindCarAsync(model);

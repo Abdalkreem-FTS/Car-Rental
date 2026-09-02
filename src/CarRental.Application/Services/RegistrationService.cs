@@ -1,5 +1,5 @@
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Auth;
+using CarRental.Application.Dtos.Auth;
 using CarRental.Application.Mapping;
 using CarRental.Application.Options;
 using CarRental.Domain.Common;
@@ -23,7 +23,7 @@ public sealed class RegistrationService(
 {
     private readonly ClientAppOptions _clientApp = clientApp.Value;
 
-    public async Task<Result<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthDto>> RegisterAsync(RegisterDto request, CancellationToken cancellationToken = default)
     {
         var email = request.Email.Trim();
 
@@ -87,7 +87,7 @@ public sealed class RegistrationService(
         return tokens;
     }
 
-    public async Task<Result<Success>> ConfirmEmailAsync(ConfirmEmailRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<Success>> ConfirmEmailAsync(ConfirmEmailDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
 
@@ -106,7 +106,7 @@ public sealed class RegistrationService(
         return confirmed.Succeeded ? Result.Success : AuthErrors.InvalidConfirmationToken;
     }
 
-    public async Task<Result<Success>> ResendConfirmationAsync(ResendConfirmationRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<Success>> ResendConfirmationAsync(ResendConfirmationDto request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
 

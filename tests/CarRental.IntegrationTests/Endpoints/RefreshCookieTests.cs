@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Shouldly;
 
 namespace CarRental.IntegrationTests.Endpoints;

@@ -3,8 +3,8 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Api;
-using CarRental.IntegrationTests.Infrastructure;
+using CarRental.IntegrationTests.Support.Api;
+using CarRental.IntegrationTests.Support;
 using Microsoft.IdentityModel.Tokens;
 using Shouldly;
 

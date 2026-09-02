@@ -1,8 +1,8 @@
 using CarRental.Application.Abstractions;
 using CarRental.Application.Common;
-using CarRental.Application.Contracts.Cars;
-using CarRental.Application.Contracts.Common;
-using CarRental.Application.Contracts.Reservations;
+using CarRental.Application.Dtos.Cars;
+using CarRental.Application.Dtos.Common;
+using CarRental.Application.Dtos.Reservations;
 using CarRental.Application.Mapping;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
@@ -15,14 +15,14 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
 {
     private const int MaxPageSize = 50;
 
-    public Task<Result<PagedResponse<CarResponse>>> SearchAsync(CarSearchRequest request, CancellationToken cancellationToken = default)
+    public Task<Result<PagedResult<CarDto>>> SearchAsync(CarSearchDto request, CancellationToken cancellationToken = default)
     {
         var trimmedLocation = string.IsNullOrWhiteSpace(request.Location) ? null : request.Location.Trim();
 
         return QueryAsync((request with { Location = trimmedLocation }).ToQuery(), cancellationToken);
     }
 
-    public async Task<Result<PagedResponse<CarResponse>>> QueryAsync(CarQueryRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<PagedResult<CarDto>>> QueryAsync(CarQueryDto request, CancellationToken cancellationToken = default)
     {
         var normalized = request with
         {
@@ -38,14 +38,14 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
 
         var (items, totalCount) = result.Value;
 
-        return new PagedResponse<CarResponse>(
+        return new PagedResult<CarDto>(
             [.. items.Select(car => car.ToResponse())],
             normalized.Page,
             normalized.PageSize,
             totalCount);
     }
 
-    public async Task<Result<CarResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<CarDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var car = await cars.GetByIdAsync(id, cancellationToken);
 
@@ -57,7 +57,7 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
         return await cars.GetLocationsAsync(cancellationToken);
     }
 
-    public async Task<Result<CarResponse>> CreateAsync(CreateCarRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<CarDto>> CreateAsync(CreateCarDto request, CancellationToken cancellationToken = default)
     {
         var plate = request.PlateNumber.Trim().ToUpperInvariant();
 
@@ -89,7 +89,7 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
         return saved.IsError ? saved.Errors : car.ToResponse();
     }
 
-    public async Task<Result<CarResponse>> UpdateAsync(Guid id, UpdateCarRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<CarDto>> UpdateAsync(Guid id, UpdateCarDto request, CancellationToken cancellationToken = default)
     {
         var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
 
@@ -122,7 +122,7 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
         return saved.IsError ? saved.Errors : car.ToResponse();
     }
 
-    public async Task<Result<CarResponse>> ReinstateAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<CarDto>> ReinstateAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
 
@@ -138,9 +138,9 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
         return saved.IsError ? saved.Errors : car.ToResponse();
     }
 
-    public async Task<Result<RetireCarResponse>> RetireAsync(
+    public async Task<Result<RetireCarResultDto>> RetireAsync(
         Guid id,
-        RetireCarRequest request,
+        RetireCarDto request,
         CancellationToken cancellationToken = default)
     {
         var car = await cars.GetIncludingRetiredAsync(id, cancellationToken);
@@ -170,10 +170,10 @@ public sealed class CarService(ICarRepository cars, IReservationRepository reser
 
         return saved.IsError
             ? saved.Errors
-            : new RetireCarResponse(car.ToResponse(), unfinished.Count);
+            : new RetireCarResultDto(car.ToResponse(), unfinished.Count);
     }
 
-    public async Task<Result<List<ReservationResponse>>> GetReservationsAsync(Guid carId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ReservationDto>>> GetReservationsAsync(Guid carId, CancellationToken cancellationToken = default)
     {
         if (await cars.GetIncludingRetiredAsync(carId, cancellationToken) is null)
         {

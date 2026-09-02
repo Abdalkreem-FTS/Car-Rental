@@ -1,8 +1,12 @@
 using System.Security.Claims;
-using CarRental.Api.Extensions;
+using CarRental.Api.Contracts.Common;
+using CarRental.Api.Contracts.Reservations;
+using CarRental.Api.Filters;
+using CarRental.Api.Http;
+using CarRental.Api.Mapping;
+using CarRental.Api.Security;
 using CarRental.Application.Abstractions;
-using CarRental.Application.Contracts.Common;
-using CarRental.Application.Contracts.Reservations;
+using CarRental.Application.Dtos.Reservations;
 
 namespace CarRental.Api.Endpoints;
 
@@ -22,11 +26,11 @@ public static class ReservationEndpoints
                 HttpContext context,
                 CancellationToken cancellationToken) =>
             {
-                var result = await reservationService.CreateAsync(user.GetUserId(), request, cancellationToken);
+                var result = await reservationService.CreateAsync(user.GetUserId(), request.ToDto(), cancellationToken);
 
                 return result.ToCreatedWithETag(context);
             })
-            .WithValidation<CreateReservationRequest>()
+            .WithValidation<CreateReservationRequest, CreateReservationDto>()
             .WithIdempotency<CreateReservationRequest>()
             .Produces<ReservationResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -39,11 +43,11 @@ public static class ReservationEndpoints
                 IReservationService reservationService,
                 CancellationToken cancellationToken) =>
             {
-                var result = await reservationService.GetForUserAsync(user.GetUserId(), query, cancellationToken);
+                var result = await reservationService.GetForUserAsync(user.GetUserId(), query.ToDto(), cancellationToken);
 
-                return result.ToOk();
+                return result.ToOk(page => page.ToResponse(reservation => reservation.ToResponse()));
             })
-            .WithValidation<ReservationQuery>()
+            .WithValidation<ReservationQuery, ReservationQueryDto>()
             .Produces<PagedResponse<ReservationResponse>>()
             .WithSummary("List the signed-in user's reservations, newest pickup first.");
 
@@ -75,13 +79,13 @@ public static class ReservationEndpoints
                     return ETags.VersionRequired();
                 }
 
-                var result = await reservationService.UpdateAsync(user.GetUserId(), id, expectedVersion, request, cancellationToken);
+                var result = await reservationService.UpdateAsync(user.GetUserId(), id, expectedVersion, request.ToDto(), cancellationToken);
 
                 return result.ToOkWithETag(context);
             })
             .ProducesProblem(StatusCodes.Status412PreconditionFailed)
             .ProducesProblem(StatusCodes.Status428PreconditionRequired)
-            .WithValidation<UpdateReservationRequest>()
+            .WithValidation<UpdateReservationRequest, UpdateReservationDto>()
             .Produces<ReservationResponse>()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
