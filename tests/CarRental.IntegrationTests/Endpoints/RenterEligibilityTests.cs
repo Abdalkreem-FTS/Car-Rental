@@ -1,8 +1,8 @@
+using CarRental.Domain;
 using CarRental.Domain.Errors;
 using CarRental.Domain.Rules;
-using CarRental.Domain;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using static CarRental.IntegrationTests.Support.TestData;

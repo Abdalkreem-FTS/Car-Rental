@@ -1,6 +1,6 @@
 using CarRental.Api.Contracts.Cars;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Shouldly;
 using static CarRental.IntegrationTests.Support.TestData;
 

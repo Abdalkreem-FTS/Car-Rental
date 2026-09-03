@@ -1,7 +1,7 @@
 using CarRental.Api.Contracts.Cars;
 using CarRental.Domain.Enums;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Shouldly;
 
 namespace CarRental.IntegrationTests.Endpoints;

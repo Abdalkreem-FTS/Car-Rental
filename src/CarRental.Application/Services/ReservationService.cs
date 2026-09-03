@@ -4,12 +4,12 @@ using CarRental.Application.Common;
 using CarRental.Application.Dtos.Common;
 using CarRental.Application.Dtos.Reservations;
 using CarRental.Application.Mapping;
+using CarRental.Domain;
 using CarRental.Domain.Common;
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
 using CarRental.Domain.Errors;
 using CarRental.Domain.Rules;
-using CarRental.Domain;
 using Microsoft.Extensions.Logging;
 
 namespace CarRental.Application.Services;

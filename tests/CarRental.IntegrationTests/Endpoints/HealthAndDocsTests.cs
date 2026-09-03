@@ -1,6 +1,6 @@
 using System.Net;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;

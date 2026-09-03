@@ -1,5 +1,5 @@
-using CarRental.Domain.Rules;
 using CarRental.Domain;
+using CarRental.Domain.Rules;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 

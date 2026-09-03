@@ -1,8 +1,8 @@
 using System.Net;
 using CarRental.Api.Contracts.Reservations;
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using static CarRental.IntegrationTests.Support.TestData;

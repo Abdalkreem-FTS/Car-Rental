@@ -1,7 +1,7 @@
 using CarRental.Domain.Entities;
 using CarRental.Domain.Enums;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Shouldly;

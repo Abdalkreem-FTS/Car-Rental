@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 using CarRental.Api.Errors;
 using CarRental.Api.Security;
 using CarRental.Application.Abstractions;

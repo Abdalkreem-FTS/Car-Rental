@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using System.Text;
+using System.Text.Json.Serialization;
 using CarRental.Api.Errors;
 using CarRental.Api.RateLimiting;
 using CarRental.Api.Security;

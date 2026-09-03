@@ -1,6 +1,6 @@
 using System.Text.Json;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using static CarRental.IntegrationTests.Support.TestData;

@@ -1,7 +1,7 @@
 using System.Net;
 using CarRental.Domain.Errors;
-using CarRental.IntegrationTests.Support.Api;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Shouldly;
 
 namespace CarRental.IntegrationTests.Contracts;

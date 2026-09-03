@@ -1,8 +1,8 @@
 using System.Net;
-using CarRental.Application.Abstractions;
 using CarRental.Api.Contracts.Auth;
-using CarRental.IntegrationTests.Support.Api;
+using CarRental.Application.Abstractions;
 using CarRental.IntegrationTests.Support;
+using CarRental.IntegrationTests.Support.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
