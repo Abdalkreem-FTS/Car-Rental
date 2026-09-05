@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Car Rental</title>
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <nav class="sidebar" aria-label="Main">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.6 6.5A2.5 2.5 0 0 1 8 4.8h8a2.5 2.5 0 0 1 2.4 1.7l1.1 3.2a2.5 2.5 0 0 1 1.6 2.3v3.6a1 1 0 0 1-1 1h-.7v.9a1.4 1.4 0 0 1-2.8 0v-.9H7.4v.9a1.4 1.4 0 0 1-2.8 0v-.9h-.7a1 1 0 0 1-1-1V12a2.5 2.5 0 0 1 1.6-2.3l1.1-3.2Zm1.9.6-1 2.9h11l-1-2.9a.6.6 0 0 0-.5-.4H8a.6.6 0 0 0-.5.4ZM7 13.9a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm10 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/></svg>
+        </span>
+        Car Rental
+      </a>
+
+      <button class="nav-link active" data-view="browse" type="button">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Browse cars
+      </button>
+      <button class="nav-link" data-view="reservations" type="button">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+        My reservations
+      </button>
+      <button class="nav-link" data-view="history" type="button">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4.5V9h4.5"/><path d="M12 8v4.5l3 1.8"/></svg>
+        Booking history
+      </button>
+      <button class="nav-link" data-view="profile" type="button">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+        Profile &amp; settings
+      </button>
+
+      <div class="nav-spacer"></div>
+
+      <div class="user-chip">
+        <span class="avatar" id="user-initials" aria-hidden="true"></span>
+        <div class="user-chip-text">
+          <div class="user-chip-name" id="user-name"></div>
+          <div class="user-chip-mail" id="user-email"></div>
+        </div>
+      </div>
+      <button class="nav-link" id="signout" type="button">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17l5-5-5-5M20 12H9M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/></svg>
+        Sign out
+      </button>
+    </nav>
+
+    <main class="main">
+      <!-- ---------- browse ---------- -->
+      <section class="view" id="view-browse">
+        <div class="page-head">
+          <h1 id="greeting">Find your car</h1>
+          <p>Pick your dates and location — you will only see cars that are actually free.</p>
+        </div>
+
+        <form class="search-card" id="search-form">
+          <div class="search-row">
+            <div class="field">
+              <label for="query">Search</label>
+              <input id="query" name="query" placeholder="Make, model or city">
+              <p class="hint" id="query-hint" hidden>Keep typing — searching starts at 3 characters.</p>
+            </div>
+            <div class="field">
+              <label for="location">Location</label>
+              <select id="location" name="location"><option value="">Anywhere</option></select>
+            </div>
+            <div class="field">
+              <label for="pickupDate">Pick-up</label>
+              <input id="pickupDate" name="pickupDate" type="date">
+            </div>
+            <div class="field">
+              <label for="returnDate">Return</label>
+              <input id="returnDate" name="returnDate" type="date">
+            </div>
+            <button class="btn btn-primary" type="submit" id="search-btn">Search</button>
+          </div>
+
+          <div class="filters">
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category" name="category">
+                <option value="">Any</option>
+                <option>Economy</option><option>Compact</option><option>Sedan</option>
+                <option>SUV</option><option>Luxury</option><option>Van</option><option>Pickup</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="transmission">Transmission</label>
+              <select id="transmission" name="transmission">
+                <option value="">Any</option><option>Automatic</option><option>Manual</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="fuel">Fuel</label>
+              <select id="fuel" name="fuel">
+                <option value="">Any</option><option>Petrol</option><option>Diesel</option>
+                <option>Hybrid</option><option>Electric</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="minSeats">Seats</label>
+              <select id="minSeats" name="minSeats">
+                <option value="">Any</option><option value="2">2+</option><option value="4">4+</option>
+                <option value="5">5+</option><option value="7">7+</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="maxDailyRate">Max per day</label>
+              <input id="maxDailyRate" name="maxDailyRate" type="number" min="0" step="5" placeholder="Any">
+            </div>
+            <div class="field">
+              <label for="sortBy">Sort by</label>
+              <select id="sortBy" name="sortBy">
+                <option value="">Make (A–Z)</option>
+                <option value="price_asc">Price: low to high</option>
+                <option value="price_desc">Price: high to low</option>
+                <option value="year_desc">Newest first</option>
+                <option value="seats_desc">Most seats</option>
+              </select>
+            </div>
+          </div>
+        </form>
+
+        <div class="result-bar">
+          <span class="result-count" id="result-count"></span>
+          <button class="btn btn-ghost btn-sm" type="button" id="reset-filters">Clear filters</button>
+        </div>
+
+        <div id="car-results"></div>
+
+        <div class="pagination" id="pagination" hidden>
+          <button class="btn btn-ghost btn-sm" type="button" id="prev-page">Previous</button>
+          <span id="page-info"></span>
+          <button class="btn btn-ghost btn-sm" type="button" id="next-page">Next</button>
+        </div>
+      </section>
+
+      <!-- ---------- reservations ---------- -->
+      <section class="view" id="view-reservations" hidden>
+        <div class="page-head">
+          <h1>My reservations</h1>
+          <p>Your upcoming rentals. Change the dates or cancel any time before one starts.</p>
+        </div>
+        <div id="reservation-results"></div>
+      </section>
+
+      <!-- ---------- booking history ---------- -->
+      <section class="view" id="view-history" hidden>
+        <div class="page-head">
+          <h1>Booking history</h1>
+          <p>Rentals you have completed, and anything you cancelled.</p>
+        </div>
+        <div id="history-results"></div>
+      </section>
+
+      <!-- ---------- profile ---------- -->
+      <section class="view" id="view-profile" hidden>
+        <div class="page-head">
+          <h1>Profile &amp; settings</h1>
+          <p>Keep your details current — we use them to prepare your rental agreement.</p>
+        </div>
+
+        <div class="panel">
+          <h2>Personal details</h2>
+          <p class="panel-sub">Your sign-in email cannot be changed here.</p>
+
+          <form id="profile-form" novalidate>
+            <div class="alert" role="alert"></div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="p-firstName">First name</label>
+                <input id="p-firstName" name="firstName" autocomplete="given-name">
+                <p class="err" data-for="firstName"></p>
+              </div>
+              <div class="field">
+                <label for="p-lastName">Last name</label>
+                <input id="p-lastName" name="lastName" autocomplete="family-name">
+                <p class="err" data-for="lastName"></p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="p-phoneNumber">Phone number</label>
+                <input id="p-phoneNumber" name="phoneNumber" type="tel" autocomplete="tel">
+                <p class="err" data-for="phoneNumber"></p>
+              </div>
+              <div class="field">
+                <label for="p-dateOfBirth">Date of birth <span class="opt">— optional</span></label>
+                <input id="p-dateOfBirth" name="dateOfBirth" type="date">
+                <p class="err" data-for="dateOfBirth"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="p-addressLine1">Address line 1</label>
+              <input id="p-addressLine1" name="addressLine1" autocomplete="address-line1">
+              <p class="err" data-for="addressLine1"></p>
+            </div>
+
+            <div class="field">
+              <label for="p-addressLine2">Address line 2 <span class="opt">— optional</span></label>
+              <input id="p-addressLine2" name="addressLine2" autocomplete="address-line2">
+              <p class="err" data-for="addressLine2"></p>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="p-city">City</label>
+                <input id="p-city" name="city" autocomplete="address-level2">
+                <p class="err" data-for="city"></p>
+              </div>
+              <div class="field">
+                <label for="p-country">Country</label>
+                <select id="p-country" name="country"><option value="">Select a country</option></select>
+                <p class="err" data-for="country"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="p-driverLicenseNumber">Driver's license number</label>
+              <input id="p-driverLicenseNumber" name="driverLicenseNumber">
+              <p class="err" data-for="driverLicenseNumber"></p>
+            </div>
+
+            <button class="btn btn-primary" type="submit" id="profile-save">Save changes</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2>Password</h2>
+          <p class="panel-sub">Changing your password signs you out of every other device.</p>
+
+          <form id="password-form" novalidate>
+            <div class="alert" role="alert"></div>
+
+            <div class="field">
+              <label for="currentPassword">Current password</label>
+              <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password">
+              <p class="err" data-for="currentPassword"></p>
+            </div>
+            <div class="field">
+              <label for="newPassword">New password</label>
+              <input id="newPassword" name="newPassword" type="password" autocomplete="new-password">
+              <div class="strength" id="pw-strength" data-score="0" hidden>
+                <div class="strength-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                <p class="strength-label" id="pw-strength-label" role="status"></p>
+              </div>
+              <p class="err" data-for="newPassword"></p>
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm new password</label>
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password">
+              <p class="err" data-for="confirmPassword"></p>
+            </div>
+
+            <button class="btn btn-primary" type="submit" id="password-save">Change password</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ---------- booking dialog ---------- -->
+  <dialog id="book-dialog">
+    <form id="book-form" method="dialog" novalidate>
+      <div class="modal-head">
+        <h2 id="book-title">Book this car</h2>
+        <p id="book-subtitle"></p>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert" role="alert"></div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="b-startDate">Pick-up date</label>
+            <input id="b-startDate" name="startDate" type="date" required>
+            <p class="err" data-for="startDate"></p>
+          </div>
+          <div class="field">
+            <label for="b-endDate">Return date</label>
+            <input id="b-endDate" name="endDate" type="date" required>
+            <p class="err" data-for="endDate"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="b-pickupLocation">Pick-up location</label>
+          <input id="b-pickupLocation" name="pickupLocation">
+          <p class="err" data-for="pickupLocation"></p>
+        </div>
+
+        <div class="summary" id="book-summary"></div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn btn-ghost" type="button" id="book-cancel">Cancel</button>
+        <button class="btn btn-primary" type="submit" id="book-confirm">Confirm booking</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ---------- change dates dialog ---------- -->
+  <dialog id="modify-dialog">
+    <form id="modify-form" method="dialog" novalidate>
+      <div class="modal-head">
+        <h2 id="modify-title">Change your dates</h2>
+        <p id="modify-subtitle"></p>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert" role="alert"></div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="m-startDate">Pick-up date</label>
+            <input id="m-startDate" name="startDate" type="date" required>
+            <p class="err" data-for="startDate"></p>
+          </div>
+          <div class="field">
+            <label for="m-endDate">Return date</label>
+            <input id="m-endDate" name="endDate" type="date" required>
+            <p class="err" data-for="endDate"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="m-pickupLocation">Pick-up location</label>
+          <input id="m-pickupLocation" name="pickupLocation">
+          <p class="err" data-for="pickupLocation"></p>
+        </div>
+
+        <div class="summary" id="modify-summary"></div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn btn-ghost" type="button" id="modify-cancel">Keep as is</button>
+        <button class="btn btn-primary" type="submit" id="modify-confirm">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

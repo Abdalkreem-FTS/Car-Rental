@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      # Directory.Build.props treats warnings as errors, so this is the gate.
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: Unit tests
+        run: dotnet test tests/CarRental.UnitTests --no-build --configuration Release --logger "trx;LogFileName=unit.trx"
+
+      # Integration tests start PostgreSQL through Testcontainers, using the
+      # Docker daemon the runner already provides.
+      - name: Integration tests
+        run: dotnet test tests/CarRental.IntegrationTests --no-build --configuration Release --logger "trx;LogFileName=integration.trx"
+
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/*.trx'
+          if-no-files-found: warn
+
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the API image
+        run: docker build --tag carrental-api:${{ github.sha }} .
+
+      - name: Check the image starts and answers
+        run: |
+          docker network create carrental-ci
+          docker run -d --name db --network carrental-ci \
+            -e POSTGRES_DB=carrental -e POSTGRES_USER=carrental -e POSTGRES_PASSWORD=carrental \
+            --health-cmd "pg_isready -U carrental -d carrental" --health-interval 3s --health-retries 20 \
+            postgres:16-alpine
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' db)" = healthy ]; do sleep 2; done
+          docker run -d --name api --network carrental-ci -p 8080:8080 \
+            -e 'ConnectionStrings__Default=Host=db;Database=carrental;Username=carrental;Password=carrental' \
+            -e 'Jwt__Key=ci-only-signing-key-at-least-32-characters-long' \
+            -e 'Seed__AdminPassword=Ci#Only12345' \
+            -e 'Smtp__Host=smtp.invalid' \
+            -e 'EmailDelivery__BackgroundDelivery=false' \
+            carrental-api:${{ github.sha }}
+          for _ in $(seq 30); do
+            if curl -fsS http://localhost:8080/api/health; then exit 0; fi
+            sleep 2
+          done
+          echo "the image never reported healthy"
+          docker logs api
+          exit 1

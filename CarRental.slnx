@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CarRental.Api/CarRental.Api.csproj" />
+    <Project Path="src/CarRental.Application/CarRental.Application.csproj" />
+    <Project Path="src/CarRental.Domain/CarRental.Domain.csproj" />
+    <Project Path="src/CarRental.Infrastructure/CarRental.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CarRental.IntegrationTests/CarRental.IntegrationTests.csproj" />
+    <Project Path="tests/CarRental.UnitTests/CarRental.UnitTests.csproj" />
+  </Folder>
+</Solution>
