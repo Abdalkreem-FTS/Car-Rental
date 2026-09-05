@@ -3,7 +3,7 @@
 
 const USER_KEY = 'cr.user';
 
-// The refresh token lives in an HttpOnly cookie the browser sends to /api/auth on its own, so no
+// The refresh token lives in an HttpOnly cookie the browser sends to /api/tokens on its own, so no
 // script here can read it. The access token is kept in memory only: a reload drops it and is
 // re-minted from the cookie. Only the user's display details survive in storage, and those are
 // not a credential.
@@ -55,7 +55,7 @@ let refreshInFlight = null;
 async function refreshTokens() {
   refreshInFlight ??= (async () => {
     try {
-      const response = await fetch('/api/auth/refresh', { method: 'POST' });
+      const response = await fetch('/api/tokens/current', { method: 'PUT' });
       if (!response.ok) return false;
       session.save(await response.json());
       return true;
@@ -114,15 +114,15 @@ function redirectToSignIn() {
 }
 
 export const api = {
-  register: (payload) => send('POST', '/api/auth/register', { body: payload, auth: false }),
-  login: (payload) => send('POST', '/api/auth/login', { body: payload, auth: false }),
-  logout: () => send('POST', '/api/auth/logout'),
-  logoutEverywhere: () => send('POST', '/api/auth/logout-all'),
-  confirmEmail: (payload) => send('POST', '/api/auth/confirm-email', { body: payload, auth: false }),
-  resendConfirmation: (payload) => send('POST', '/api/auth/resend-confirmation', { body: payload, auth: false }),
+  register: (payload) => send('POST', '/api/users', { body: payload, auth: false }),
+  login: (payload) => send('POST', '/api/tokens', { body: payload, auth: false }),
+  logout: () => send('DELETE', '/api/tokens/current'),
+  logoutEverywhere: () => send('DELETE', '/api/tokens'),
+  confirmEmail: (payload) => send('PUT', '/api/email-confirmations', { body: payload, auth: false }),
+  resendConfirmation: (payload) => send('POST', '/api/email-confirmations', { body: payload, auth: false }),
 
-  forgotPassword: (payload) => send('POST', '/api/auth/forgot-password', { body: payload, auth: false }),
-  resetPassword: (payload) => send('POST', '/api/auth/reset-password', { body: payload, auth: false }),
+  forgotPassword: (payload) => send('POST', '/api/password-resets', { body: payload, auth: false }),
+  resetPassword: (payload) => send('PUT', '/api/password-resets', { body: payload, auth: false }),
 
   countries: () => send('GET', '/api/countries', { auth: false }),
 
@@ -135,7 +135,7 @@ export const api = {
     send('GET', `/api/reservations?scope=${scope}&page=${page}&pageSize=${pageSize}`),
   updateReservation: (id, payload, version) =>
     send('PUT', `/api/reservations/${id}`, { body: payload, ifMatch: version }),
-  cancelReservation: (id) => send('POST', `/api/reservations/${id}/cancel`),
+  cancelReservation: (id) => send('PUT', `/api/reservations/${id}/cancellation`),
 
   profile: () => send('GET', '/api/profile'),
   updateProfile: (payload) => send('PUT', '/api/profile', { body: payload }),

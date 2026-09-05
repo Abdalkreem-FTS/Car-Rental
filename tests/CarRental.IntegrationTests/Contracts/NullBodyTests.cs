@@ -9,9 +9,9 @@ namespace CarRental.IntegrationTests.Contracts;
 public sealed class NullBodyTests(CarRentalApiFactory factory) : IntegrationTestBase(factory)
 {
     [Theory]
-    [InlineData("/api/auth/login")]
-    [InlineData("/api/auth/register")]
-    [InlineData("/api/auth/forgot-password")]
+    [InlineData("/api/tokens")]
+    [InlineData("/api/users")]
+    [InlineData("/api/password-resets")]
     public async Task Post_WithALiteralNullBody_IsRefusedRatherThanReachingTheService(string route)
     {
         var response = await Api.PostRawAsync(route, "null");

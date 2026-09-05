@@ -35,7 +35,7 @@ public sealed class SecurityHeaderTests(CarRentalApiFactory factory) : Integrati
     public async Task Response_WrittenByTheExceptionHandler_StillCarriesTheSecurityHeaders()
     {
         var response = await Api.Http.PostAsync(
-            "/api/auth/login",
+            "/api/tokens",
             new StringContent("{\"email\":", System.Text.Encoding.UTF8, "application/json"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);

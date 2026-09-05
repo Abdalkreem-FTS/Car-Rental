@@ -70,14 +70,14 @@ public sealed class AuthApi(HttpClient http)
         http.PostAsAsync<AuthResponse>(Routes.Auth.Login, new LoginRequest(email, password));
 
     public Task<ApiResponse<AuthResponse>> RefreshAsync() =>
-        http.PostAsAsync<AuthResponse>(Routes.Auth.Refresh, body: null);
+        http.PutAsAsync<AuthResponse>(Routes.Auth.Refresh, body: null);
 
-    public Task<ApiResponse> LogoutAsync() => http.PostAsAsync(Routes.Auth.Logout, content: null);
+    public Task<ApiResponse> LogoutAsync() => http.DeleteAsAsync(Routes.Auth.Logout);
 
-    public Task<ApiResponse> LogoutEverywhereAsync() => http.PostAsAsync(Routes.Auth.LogoutAll, content: null);
+    public Task<ApiResponse> LogoutEverywhereAsync() => http.DeleteAsAsync(Routes.Auth.LogoutAll);
 
     public Task<ApiResponse> ConfirmEmailAsync(string email, string token) =>
-        http.PostAsAsync(Routes.Auth.ConfirmEmail, new ConfirmEmailRequest(email, token));
+        http.PutAsAsync(Routes.Auth.ConfirmEmail, new ConfirmEmailRequest(email, token));
 
     public Task<ApiResponse> ResendConfirmationAsync(string email) =>
         http.PostAsAsync(Routes.Auth.ResendConfirmation, new ResendConfirmationRequest(email));
@@ -86,10 +86,10 @@ public sealed class AuthApi(HttpClient http)
         http.PostAsAsync(Routes.Auth.ForgotPassword, new ForgotPasswordRequest(email));
 
     public Task<ApiResponse> ResetPasswordAsync(string email, string token, string password) =>
-        http.PostAsAsync(Routes.Auth.ResetPassword, new ResetPasswordRequest(email, token, password, password));
+        http.PutAsAsync(Routes.Auth.ResetPassword, new ResetPasswordRequest(email, token, password, password));
 
     public Task<ApiResponse> ResetPasswordAsync(ResetPasswordRequest request) =>
-        http.PostAsAsync(Routes.Auth.ResetPassword, request);
+        http.PutAsAsync(Routes.Auth.ResetPassword, request);
 }
 
 public sealed class CarsApi(HttpClient http)
@@ -116,10 +116,10 @@ public sealed class CarsApi(HttpClient http)
         http.PutAsAsync<CarResponse>(Routes.Cars.AdminById(id), request);
 
     public Task<ApiResponse<CarResponse>> ReinstateAsync(Guid id) =>
-        http.PostAsAsync<CarResponse>(Routes.Cars.Reinstate(id), body: null);
+        http.DeleteAsAsync<CarResponse>(Routes.Cars.Retirement(id));
 
     public Task<ApiResponse<RetireCarResponse>> RetireAsync(Guid id, bool cancelActiveBookings = false) =>
-        http.PostAsAsync<RetireCarResponse>(Routes.Cars.Retire(id), new RetireCarRequest(cancelActiveBookings));
+        http.PutAsAsync<RetireCarResponse>(Routes.Cars.Retirement(id), new RetireCarRequest(cancelActiveBookings));
 
     public Task<ApiResponse<List<ReservationResponse>>> ReservationsAsync(Guid id) =>
         http.GetAsAsync<List<ReservationResponse>>(Routes.Cars.AdminReservations(id));
@@ -168,7 +168,7 @@ public sealed class ReservationsApi(HttpClient http)
     public Task<ApiResponse<ReservationResponse>> UpdateWithoutVersionAsync(Guid id, UpdateReservationRequest request) =>
         http.PutAsAsync<ReservationResponse>(Routes.Reservations.ById(id), request, ifMatch: null);
 
-    public Task<ApiResponse> CancelAsync(Guid id) => http.PostAsAsync(Routes.Reservations.Cancel(id), content: null);
+    public Task<ApiResponse> CancelAsync(Guid id) => http.PutAsAsync(Routes.Reservations.Cancellation(id), body: null);
 }
 
 public sealed class ProfileApi(HttpClient http)
@@ -220,8 +220,10 @@ internal static class HttpClientExtensions
                 ? await http.PostAsync(route, null)
                 : await http.PostAsJsonAsync(route, content, CarRentalApi.Json)).ReadAsync();
 
-        internal async Task<ApiResponse<T>> PutAsAsync<T>(string route, object body) =>
-            await (await http.PutAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();
+        internal async Task<ApiResponse<T>> PutAsAsync<T>(string route, object? body) =>
+            await (body is null
+                ? await http.PutAsync(route, null)
+                : await http.PutAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync<T>();
 
         internal async Task<ApiResponse<T>> PutAsAsync<T>(string route, object body, string? ifMatch)
         {
@@ -238,11 +240,16 @@ internal static class HttpClientExtensions
             return await (await http.SendAsync(message)).ReadAsync<T>();
         }
 
-        internal async Task<ApiResponse> PutAsAsync(string route, object body) =>
-            await (await http.PutAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync();
+        internal async Task<ApiResponse> PutAsAsync(string route, object? body) =>
+            await (body is null
+                ? await http.PutAsync(route, null)
+                : await http.PutAsJsonAsync(route, body, CarRentalApi.Json)).ReadAsync();
 
         internal async Task<ApiResponse> DeleteAsAsync(string route) =>
             await (await http.DeleteAsync(route)).ReadAsync();
+
+        internal async Task<ApiResponse<T>> DeleteAsAsync<T>(string route) =>
+            await (await http.DeleteAsync(route)).ReadAsync<T>();
     }
 
     extension(HttpResponseMessage response)

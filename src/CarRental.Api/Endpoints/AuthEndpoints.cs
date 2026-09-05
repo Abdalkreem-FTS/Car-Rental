@@ -16,16 +16,28 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/auth")
+        var users = app.MapGroup("/api/users")
             .WithTags("Authentication")
             .AllowAnonymous();
 
-        var authenticated = app.MapGroup("/api/auth")
+        var tokens = app.MapGroup("/api/tokens")
+            .WithTags("Authentication")
+            .AllowAnonymous();
+
+        var authenticatedTokens = app.MapGroup("/api/tokens")
             .WithTags("Authentication")
             .RequireAuthorization()
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
-        group.MapPost("/register", async (
+        var emailConfirmations = app.MapGroup("/api/email-confirmations")
+            .WithTags("Authentication")
+            .AllowAnonymous();
+
+        var passwordResets = app.MapGroup("/api/password-resets")
+            .WithTags("Authentication")
+            .AllowAnonymous();
+
+        users.MapPost("/", async (
                 RegisterRequest request,
                 IRegistrationService registrationService,
                 HttpContext context,
@@ -42,7 +54,7 @@ public static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Create a customer account and sign in immediately.");
 
-        group.MapPost("/login", async (
+        tokens.MapPost("/", async (
                 LoginRequest request,
                 ISessionService sessionService,
                 HttpContext context,
@@ -60,7 +72,7 @@ public static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Exchange email and password for an access token and a refresh token.");
 
-        group.MapPost("/refresh", async (
+        tokens.MapPut("/current", async (
                 ISessionService sessionService,
                 HttpContext context,
                 CancellationToken cancellationToken) =>
@@ -81,9 +93,9 @@ public static class AuthEndpoints
             })
             .Produces<AuthResponse>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .WithSummary("Trade a refresh token for a new pair. The presented token is revoked.");
+            .WithSummary("Replace the current token pair. The presented refresh token is revoked.");
 
-        authenticated.MapPost("/logout", async (
+        authenticatedTokens.MapDelete("/current", async (
                 ClaimsPrincipal user,
                 ISessionService sessionService,
                 HttpContext context,
@@ -98,7 +110,7 @@ public static class AuthEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .WithSummary("Sign out of this device. Sessions on other devices keep working.");
 
-        authenticated.MapPost("/logout-all", async (
+        authenticatedTokens.MapDelete("/", async (
                 ClaimsPrincipal user,
                 ISessionService sessionService,
                 HttpContext context,
@@ -113,7 +125,7 @@ public static class AuthEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .WithSummary("Sign out of every device. Use this if an account may be compromised.");
 
-        group.MapPost("/confirm-email", async (
+        emailConfirmations.MapPut("/", async (
                 ConfirmEmailRequest request,
                 IRegistrationService registrationService,
                 CancellationToken cancellationToken) =>
@@ -128,7 +140,7 @@ public static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Confirm an email address using the token from the confirmation link.");
 
-        group.MapPost("/resend-confirmation", async (
+        emailConfirmations.MapPost("/", async (
                 ResendConfirmationRequest request,
                 IRegistrationService registrationService,
                 CancellationToken cancellationToken) =>
@@ -143,7 +155,7 @@ public static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Send the confirmation link again. Always reports success, confirmed or not.");
 
-        group.MapPost("/forgot-password", async (
+        passwordResets.MapPost("/", async (
                 ForgotPasswordRequest request,
                 IPasswordResetService passwordResetService,
                 CancellationToken cancellationToken) =>
@@ -158,7 +170,7 @@ public static class AuthEndpoints
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
             .WithSummary("Email a password reset link. Always reports success, registered or not.");
 
-        group.MapPost("/reset-password", async (
+        passwordResets.MapPut("/", async (
                 ResetPasswordRequest request,
                 IPasswordResetService passwordResetService,
                 CancellationToken cancellationToken) =>

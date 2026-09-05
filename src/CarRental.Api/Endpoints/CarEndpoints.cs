@@ -113,7 +113,7 @@ public static class CarEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Update a car. Admin only.");
 
-        admin.MapPost("/{id:guid}/reinstate", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
+        admin.MapDelete("/{id:guid}/retirement", async (Guid id, ICarService carService, CancellationToken cancellationToken) =>
             {
                 var result = await carService.ReinstateAsync(id, cancellationToken);
 
@@ -123,7 +123,7 @@ public static class CarEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithSummary("Bring a retired car back into the fleet. Admin only.");
 
-        admin.MapPost("/{id:guid}/retire", async (
+        admin.MapPut("/{id:guid}/retirement", async (
                 Guid id,
                 RetireCarRequest? request,
                 ICarService carService,

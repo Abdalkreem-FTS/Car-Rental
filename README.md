@@ -131,20 +131,24 @@ All endpoints are under `/api`. Everything except the auth group requires a bear
 
 | Method | Route | Notes |
 | --- | --- | --- |
-| `POST` | `/auth/register` | Creates a customer and signs in. 409 if the email is taken. |
-| `POST` | `/auth/login` | Returns an access + refresh token pair. |
-| `POST` | `/auth/refresh` | Rotates the pair. The presented token is revoked. |
-| `POST` | `/auth/logout` | Revokes every refresh token for the caller. |
-| `POST` | `/auth/forgot-password` | Emails a reset link. Always 202. |
-| `POST` | `/auth/reset-password` | Sets a new password from the link's token. |
+| `POST` | `/users` | Creates a customer and signs in. 409 if the email is taken. |
+| `POST` | `/tokens` | Returns an access + refresh token pair (login). |
+| `PUT` | `/tokens/current` | Rotates the pair (refresh). The presented token is revoked. |
+| `DELETE` | `/tokens/current` | Signs out this device (logout). |
+| `DELETE` | `/tokens` | Signs out every device (logout-all). |
+| `POST` | `/email-confirmations` | Sends the confirmation link again. Always 202. |
+| `PUT` | `/email-confirmations` | Confirms an address using the link's token. |
+| `POST` | `/password-resets` | Emails a reset link. Always 202. |
+| `PUT` | `/password-resets` | Sets a new password from the link's token. |
 | `GET` | `/cars` | Search. Filters below. |
 | `GET` | `/cars/locations` | Distinct pickup locations, for the filter dropdown. |
 | `GET` | `/cars/{id}` | One car. |
-| `POST` `PUT` `DELETE` | `/cars`, `/cars/{id}` | Fleet management. **Admin only.** |
+| `POST` `PUT` | `/admin/cars`, `/admin/cars/{id}` | Fleet management. **Admin only.** |
+| `PUT` `DELETE` | `/admin/cars/{id}/retirement` | Retire / reinstate a car. **Admin only.** |
 | `POST` | `/reservations` | Book a car. 409 if the dates overlap a confirmed booking. |
 | `GET` | `/reservations` | The caller's reservations, upcoming and past. |
 | `PUT` | `/reservations/{id}` | Move one that has not started to new dates, repriced. |
-| `POST` | `/reservations/{id}/cancel` | Cancel one that has not started. |
+| `PUT` | `/reservations/{id}/cancellation` | Cancel one that has not started. |
 | `GET` `PUT` | `/profile` | Read and update personal details. |
 | `PUT` | `/profile/password` | Change password; signs other devices out. |
 

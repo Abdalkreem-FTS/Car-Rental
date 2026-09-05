@@ -4,7 +4,7 @@ public static class RefreshTokenCookie
 {
     public const string Name = "cr_refresh";
 
-    private const string Path = "/api/auth";
+    private const string Path = "/api/tokens";
 
     public static void Write(HttpContext context, string token, DateTimeOffset expiresAt) =>
         context.Response.Cookies.Append(Name, token, Options(context, expiresAt));

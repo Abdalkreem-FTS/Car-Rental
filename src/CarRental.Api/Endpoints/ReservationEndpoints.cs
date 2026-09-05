@@ -91,7 +91,7 @@ public static class ReservationEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .WithSummary("Move a reservation that has not started yet to new dates, repriced.");
 
-        group.MapPost("/{id:guid}/cancel", async (
+        group.MapPut("/{id:guid}/cancellation", async (
                 Guid id,
                 ClaimsPrincipal user,
                 IReservationService reservationService,

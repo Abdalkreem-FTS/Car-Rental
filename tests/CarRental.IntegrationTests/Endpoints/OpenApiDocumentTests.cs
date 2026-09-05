@@ -64,8 +64,8 @@ public sealed class OpenApiDocumentTests(CarRentalApiFactory factory) : Integrat
     [InlineData("/api/admin/cars", "post", "201")]
     [InlineData("/api/cars/{id}", "get", "404")]
     [InlineData("/api/reservations", "post", "409")]
-    [InlineData("/api/auth/login", "post", "400")]
-    [InlineData("/api/auth/forgot-password", "post", "429")]
+    [InlineData("/api/tokens", "post", "400")]
+    [InlineData("/api/password-resets", "post", "429")]
     public async Task Document_ForAKnownOperation_DeclaresTheResponseItCanReturn(string path, string method, string status)
     {
         var operations = await OperationsAsync();

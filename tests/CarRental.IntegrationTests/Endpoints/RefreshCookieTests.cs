@@ -34,7 +34,7 @@ public sealed class RefreshCookieTests(CarRentalApiFactory factory) : Integratio
     [Theory]
     [InlineData("httponly")]
     [InlineData("samesite=strict")]
-    [InlineData("path=/api/auth")]
+    [InlineData("path=/api/tokens")]
     public async Task RefreshCookie_WhenSet_CarriesTheAttributesThatProtectIt(string attribute)
     {
         var response = await Api.Http.PostAsJsonAsync(

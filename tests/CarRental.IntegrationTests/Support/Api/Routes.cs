@@ -8,15 +8,15 @@ internal static class Routes
 
     internal static class Auth
     {
-        internal const string Register = "/api/auth/register";
-        internal const string Login = "/api/auth/login";
-        internal const string Refresh = "/api/auth/refresh";
-        internal const string ConfirmEmail = "/api/auth/confirm-email";
-        internal const string ResendConfirmation = "/api/auth/resend-confirmation";
-        internal const string Logout = "/api/auth/logout";
-        internal const string LogoutAll = "/api/auth/logout-all";
-        internal const string ForgotPassword = "/api/auth/forgot-password";
-        internal const string ResetPassword = "/api/auth/reset-password";
+        internal const string Register = "/api/users";
+        internal const string Login = "/api/tokens";
+        internal const string Refresh = "/api/tokens/current";
+        internal const string ConfirmEmail = "/api/email-confirmations";
+        internal const string ResendConfirmation = "/api/email-confirmations";
+        internal const string Logout = "/api/tokens/current";
+        internal const string LogoutAll = "/api/tokens";
+        internal const string ForgotPassword = "/api/password-resets";
+        internal const string ResetPassword = "/api/password-resets";
     }
 
     internal static class Cars
@@ -30,9 +30,7 @@ internal static class Routes
 
         internal static string AdminById(Guid id) => $"{Admin}/{id}";
 
-        internal static string Reinstate(Guid id) => $"{Admin}/{id}/reinstate";
-
-        internal static string Retire(Guid id) => $"{Admin}/{id}/retire";
+        internal static string Retirement(Guid id) => $"{Admin}/{id}/retirement";
 
         internal static string AdminReservations(Guid id) => $"{Admin}/{id}/reservations";
     }
@@ -43,7 +41,7 @@ internal static class Routes
 
         internal static string ById(Guid id) => $"{Base}/{id}";
 
-        internal static string Cancel(Guid id) => $"{Base}/{id}/cancel";
+        internal static string Cancellation(Guid id) => $"{Base}/{id}/cancellation";
     }
 
     internal static class Profile
